@@ -25,5 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
     return $req->user()->notifications;
 })->middleware('auth:sanctum');
   Route::apiResource('formularios', FormularioController::class);
+
+  Route::post('/register', [AuthController::class, 'register']);
 });
 
