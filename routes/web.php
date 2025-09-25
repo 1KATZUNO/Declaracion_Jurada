@@ -2,9 +2,10 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DeclaracionController;
-use App\Http\Controllers\FormularioController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DeclaracionController;
+use App\Http\Controllers\Api\FormularioController;
+
 
 // Grupo de rutas API
 Route::middleware('api')->group(function () {
