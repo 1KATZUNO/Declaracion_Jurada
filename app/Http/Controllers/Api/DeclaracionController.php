@@ -1,6 +1,10 @@
 <?php
 
+
+
 namespace App\Http\Controllers\Api;
+
+use App\Notifications\DeclaracionGenerada; //
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -21,23 +25,25 @@ class DeclaracionController extends Controller
     /**
      * Crear nueva declaración
      */
-    public function store(Request $req)
-    {
-        $req->validate([
-            'formulario_id' => 'nullable|integer',
-            'data' => 'required|array'
-        ]);
+   public function store(Request $req)
+{
+    $req->validate([
+        'formulario_id' => 'nullable|integer',
+        'data' => 'required|array'
+    ]);
 
-        $decl = Declaracion::create([
-            'user_id' => $req->user()->id,
-            'formulario_id' => $req->formulario_id,
-            'data' => $req->data,
-            'estado' => 'generada'
-        ]);
+    $decl = Declaracion::create([
+        'user_id' => $req->user()->id,
+        'formulario_id' => $req->formulario_id,
+        'data' => $req->data,
+        'estado' => 'generada'
+    ]);
 
-        return response()->json($decl, 201);
-    }
+    // 🔔 Notificar al usuario
+    $req->user()->notify(new DeclaracionGenerada($decl));
 
+    return response()->json($decl, 201);
+}
     /**
      * Mostrar una declaración específica
      */

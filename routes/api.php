@@ -20,5 +20,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Exportar declaración a Excel
     Route::post('declaraciones/{declaracion}/export', [DeclaracionController::class,'export']);
+
+    Route::get('/notificaciones', function(Request $req) {
+    return $req->user()->notifications;
+})->middleware('auth:sanctum');
+  Route::apiResource('formularios', FormularioController::class);
 });
 

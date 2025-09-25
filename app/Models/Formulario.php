@@ -9,12 +9,7 @@ class Formulario extends Model
     protected $fillable = ['titulo', 'descripcion', 'campos'];
 
     protected $casts = [
-        'campos' => 'array', // se almacena como JSON
+        'campos' => 'array'
     ];
-
-    public function declaraciones()
-    {
-        return $this->hasMany(Declaracion::class, 'formulario_id');
-    }
 }
 
