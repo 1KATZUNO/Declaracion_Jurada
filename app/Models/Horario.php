@@ -17,7 +17,7 @@ class Horario extends Model
         'dia',
         'hora_inicio',
         'hora_fin',
-        'tipo',
+        'tipo', // 'ucr' | 'externo'
     ];
 
     public function declaracion()

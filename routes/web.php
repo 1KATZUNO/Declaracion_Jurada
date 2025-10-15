@@ -15,7 +15,7 @@ use App\Http\Controllers\{
     DeclaracionExportController
 };
 
-// Dashboard simple
+// Home
 Route::get('/', [DeclaracionController::class, 'index'])->name('home');
 
 // CRUDs
@@ -29,7 +29,6 @@ Route::resource('horarios', HorarioController::class);
 Route::resource('documentos', DocumentoController::class)->only(['index','show','destroy']);
 Route::resource('notificaciones', NotificacionController::class);
 
-// Exportación Excel desde plantilla
+// Exportación Excel
 Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 'exportar'])
      ->name('declaraciones.exportar');
-
