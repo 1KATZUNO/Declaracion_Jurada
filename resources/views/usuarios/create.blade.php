@@ -1,51 +1,57 @@
 @extends('layout')
 
-@section('titulo', 'Nuevo Usuario')
+@section('content')
+<div class="max-w-3xl mx-auto bg-white shadow-lg rounded-2xl p-8 mt-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Registrar nuevo usuario</h2>
 
-@section('contenido')
-<div class="bg-white shadow-lg rounded-xl p-6 max-w-2xl mx-auto">
-  <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Registrar Nuevo Usuario</h2>
+    <form action="{{ route('usuarios.store') }}" method="POST" class="space-y-4">
+        @csrf
 
-  <form method="POST" action="{{ route('usuarios.store') }}" class="space-y-4">
-    @csrf
+        <div>
+            <label for="nombre" class="block text-sm font-semibold text-gray-700">Nombre</label>
+            <input type="text" id="nombre" name="nombre" value="{{ old('nombre') }}"
+                   class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500" required>
+        </div>
 
-    <div>
-      <label class="block text-gray-700 font-semibold">Nombre</label>
-      <input type="text" name="nombre" class="w-full border rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500" required>
-    </div>
+        <div>
+            <label for="apellido" class="block text-sm font-semibold text-gray-700">Apellido</label>
+            <input type="text" id="apellido" name="apellido" value="{{ old('apellido') }}"
+                   class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500" required>
+        </div>
 
-    <div>
-      <label class="block text-gray-700 font-semibold">Apellido</label>
-      <input type="text" name="apellido" class="w-full border rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500" required>
-    </div>
+        <div>
+            <label for="identificacion" class="block text-sm font-semibold text-gray-700">Identificación</label>
+            <input type="text" id="identificacion" name="identificacion" value="{{ old('identificacion') }}"
+                   class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500" required>
+        </div>
 
-    <div>
-      <label class="block text-gray-700 font-semibold">Correo</label>
-      <input type="email" name="correo" class="w-full border rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500" required>
-    </div>
+        <div>
+            <label for="correo" class="block text-sm font-semibold text-gray-700">Correo electrónico</label>
+            <input type="email" id="correo" name="correo" value="{{ old('correo') }}"
+                   class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500" required>
+        </div>
 
-    <div>
-      <label class="block text-gray-700 font-semibold">Contraseña</label>
-      <input type="password" name="contrasena" class="w-full border rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500" required>
-    </div>
+        <div>
+            <label for="telefono" class="block text-sm font-semibold text-gray-700">Teléfono</label>
+            <input type="text" id="telefono" name="telefono" value="{{ old('telefono') }}"
+                   class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500">
+        </div>
 
-    <div>
-      <label class="block text-gray-700 font-semibold">Teléfono</label>
-      <input type="text" name="telefono" class="w-full border rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500">
-    </div>
+        <div>
+            <label for="rol" class="block text-sm font-semibold text-gray-700">Rol</label>
+            <select id="rol" name="rol"
+                    class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500" required>
+                <option value="funcionario">Funcionario</option>
+                <option value="admin">Administrador</option>
+            </select>
+        </div>
 
-    <div>
-      <label class="block text-gray-700 font-semibold">Rol</label>
-      <select name="rol" class="w-full border rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500" required>
-        <option value="funcionario">Funcionario</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
-
-    <div class="pt-4 flex justify-end gap-2">
-      <x-button href="{{ route('usuarios.index') }}" color="red">Cancelar</x-button>
-      <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold">Guardar</button>
-    </div>
-  </form>
+        <div class="flex justify-end">
+            <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md transition">
+                Guardar usuario
+            </button>
+        </div>
+    </form>
 </div>
 @endsection

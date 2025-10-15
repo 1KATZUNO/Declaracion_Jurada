@@ -21,22 +21,45 @@ class DeclaracionController extends Controller
         ]);
     }
 
-    public function store(Request $r){
-        $data = $r->validate([
-            'id_usuario'=>'required|exists:usuario,id_usuario',
-            'id_formulario'=>'required|exists:formulario,id_formulario',
-            'id_unidad'=>'required|exists:unidad_academica,id_unidad',
-            'id_cargo'=>'required|exists:cargo,id_cargo',
-            'fecha_desde'=>'required|date',
-            'fecha_hasta'=>'required|date|after_or_equal:fecha_desde',
-            'horas_totales'=>'required|numeric|min:0'
-        ]);
-        Declaracion::create($data + ['fecha_envio'=>now()]);
-        return redirect()->route('declaraciones.index')->with('ok','Declaración creada');
+    public function store(Request $r)
+{
+    $data = $r->validate([
+        'id_usuario'=>'required|exists:usuario,id_usuario',
+        'id_formulario'=>'required|exists:formulario,id_formulario',
+        'id_unidad'=>'required|exists:unidad_academica,id_unidad',
+        'id_cargo'=>'required|exists:cargo,id_cargo',
+        'fecha_desde'=>'required|date',
+        'fecha_hasta'=>'required|date|after_or_equal:fecha_desde',
+        'horas_totales'=>'required|numeric|min:0',
+
+        // Validación de los horarios (arrays)
+        'tipo.*' => 'required|in:ucr,externo',
+        'dia.*' => 'required|string',
+        'hora_inicio.*' => 'required',
+        'hora_fin.*' => 'required',
+    ]);
+
+    // Crear la declaración principal
+    $declaracion = Declaracion::create($data + ['fecha_envio' => now()]);
+
+    // Crear los horarios asociados
+    if ($r->has('tipo')) {
+        foreach ($r->tipo as $i => $tipo) {
+            \App\Models\Horario::create([
+                'id_declaracion' => $declaracion->id_declaracion,
+                'tipo' => $tipo,
+                'dia' => $r->dia[$i],
+                'hora_inicio' => $r->hora_inicio[$i],
+                'hora_fin' => $r->hora_fin[$i],
+            ]);
+        }
     }
 
+    return redirect()->route('declaraciones.index')->with('ok', 'Declaración creada correctamente con sus horarios.');
+}
+
     public function show($id){
-        $d = Declaracion::with(['usuario','unidad.sede','cargo','formular io','horarios'])->findOrFail($id);
+        $d = Declaracion::with(['usuario','unidad.sede','cargo','formulario','horarios'])->findOrFail($id);
         return view('declaraciones.show', compact('d'));
     }
 

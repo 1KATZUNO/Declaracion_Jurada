@@ -31,5 +31,5 @@ Route::resource('notificaciones', NotificacionController::class);
 
 // Exportación Excel desde plantilla
 Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 'exportar'])
-    ->name('declaraciones.exportar');
+     ->name('declaraciones.exportar');
 

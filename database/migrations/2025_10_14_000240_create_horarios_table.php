@@ -20,11 +20,13 @@ return new class extends Migration
             $table->time('hora_inicio');
             $table->time('hora_fin');
             $table->timestamps();
+            $table->enum('tipo', ['ucr', 'externo'])->default('ucr');
+$table->string('lugar')->nullable();
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverse the migrations.x
      */
     public function down(): void
     {
