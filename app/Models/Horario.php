@@ -12,13 +12,14 @@ class Horario extends Model
     protected $table = 'horario';
     protected $primaryKey = 'id_horario';
 
-    protected $fillable = [
-        'id_declaracion',
-        'dia',
-        'hora_inicio',
-        'hora_fin',
-        'tipo', // 'ucr' | 'externo'
-    ];
+   protected $fillable = [
+    'id_declaracion',
+    'tipo',
+    'dia',
+    'hora_inicio',
+    'hora_fin',
+];
+
 
     public function declaracion()
     {

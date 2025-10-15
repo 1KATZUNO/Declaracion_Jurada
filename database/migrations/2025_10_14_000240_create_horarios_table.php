@@ -12,7 +12,7 @@ return new class extends Migration
    public function up(): void
     {
         Schema::create('horario', function (Blueprint $table) {
-            $table->id('id_horario'); // Clave primaria
+            $table->id('id_horario'); // Clave primaria$table->foreignId('id_declaracion')->constrained('declaracion')->onDelete('cascade');
             // CORRECCIÓN: Clave foránea que referencia ID personalizada
             $table->foreignId('id_declaracion')->constrained('declaracion', 'id_declaracion')->onDelete('cascade');
             
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->time('hora_fin');
             $table->timestamps();
             $table->enum('tipo', ['ucr', 'externo'])->default('ucr');
-$table->string('lugar')->nullable();
+            $table->string('lugar')->nullable();
         });
     }
 
