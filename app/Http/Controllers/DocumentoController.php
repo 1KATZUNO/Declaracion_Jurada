@@ -2,47 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\{Documento,Declaracion};
 
 class DocumentoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    public function index(){
+        $documentos = Documento::with('declaracion.usuario')->latest('fecha_generacion')->get();
+        return view('documentos.index', compact('documentos'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function show($id){
+        $doc = Documento::with('declaracion.usuario')->findOrFail($id);
+        return view('documentos.show', compact('doc'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+    public function destroy($id){
+        Documento::findOrFail($id)->delete();
+        return back()->with('ok','Documento eliminado');
     }
 }
+
+

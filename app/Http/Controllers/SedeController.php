@@ -2,47 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Sede;
 use Illuminate\Http\Request;
 
 class SedeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    public function index() { $sedes = Sede::all(); return view('sedes.index', compact('sedes')); }
+    public function create() { return view('sedes.create'); }
+    public function store(Request $r) {
+        $data = $r->validate(['nombre'=>'required|string|max:100','ubicacion'=>'nullable|string|max:150']);
+        Sede::create($data); return redirect()->route('sedes.index')->with('ok','Sede creada');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function edit($id) { $sede = Sede::findOrFail($id); return view('sedes.edit',compact('sede')); }
+    public function update(Request $r,$id) {
+        $sede = Sede::findOrFail($id);
+        $data = $r->validate(['nombre'=>'required|string|max:100','ubicacion'=>'nullable|string|max:150']);
+        $sede->update($data); return redirect()->route('sedes.index')->with('ok','Sede actualizada');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy($id) { Sede::findOrFail($id)->delete(); return back()->with('ok','Sede eliminada'); }
 }
+

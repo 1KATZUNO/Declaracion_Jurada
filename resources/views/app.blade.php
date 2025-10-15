@@ -1,23 +1,30 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
-
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-
-        @viteReactRefresh
-        @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
-        @inertiaHead
-    </head>
-    <body class="font-sans antialiased">
-        @inertia
-    </body>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>@yield('titulo','DJ UCR')</title>
+  @vite('resources/css/app.css')
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <nav class="bg-blue-700 text-white p-4">
+    <div class="container mx-auto flex gap-4">
+      <a href="{{ route('home') }}" class="font-bold">DJ UCR</a>
+      <a href="{{ route('usuarios.index') }}">Usuarios</a>
+      <a href="{{ route('sedes.index') }}">Sedes</a>
+      <a href="{{ route('unidades.index') }}">Unidades</a>
+      <a href="{{ route('cargos.index') }}">Cargos</a>
+      <a href="{{ route('formularios.index') }}">Formularios</a>
+      <a href="{{ route('declaraciones.index') }}">Declaraciones</a>
+      <a href="{{ route('horarios.index') }}">Horarios</a>
+      <a href="{{ route('documentos.index') }}">Documentos</a>
+      <a href="{{ route('notificaciones.index') }}">Notificaciones</a>
+    </div>
+  </nav>
+  <main class="container mx-auto p-6">
+    @if(session('ok'))
+      <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('ok') }}</div>
+    @endif
+    @yield('contenido')
+  </main>
+</body>
 </html>

@@ -2,47 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UnidadAcademica;
+use App\Models\Sede;
 use Illuminate\Http\Request;
 
 class UnidadAcademicaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    public function index() {
+        $unidades = UnidadAcademica::with('sede')->get();
+        return view('unidades.index', compact('unidades'));
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function create() { $sedes = Sede::all(); return view('unidades.create', compact('sedes')); }
+    public function store(Request $r) {
+        $data = $r->validate([
+            'nombre'=>'required|string|max:100',
+            'id_sede'=>'required|exists:sede,id_sede'
+        ]);
+        UnidadAcademica::create($data);
+        return redirect()->route('unidades.index')->with('ok','Unidad creada');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+    public function edit($id) {
+        $unidad = UnidadAcademica::findOrFail($id);
+        $sedes = Sede::all();
+        return view('unidades.edit',compact('unidad','sedes'));
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+    public function update(Request $r,$id) {
+        $unidad = UnidadAcademica::findOrFail($id);
+        $data = $r->validate([
+            'nombre'=>'required|string|max:100',
+            'id_sede'=>'required|exists:sede,id_sede'
+        ]);
+        $unidad->update($data);
+        return redirect()->route('unidades.index')->with('ok','Unidad actualizada');
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy($id) { UnidadAcademica::findOrFail($id)->delete(); return back()->with('ok','Unidad eliminada'); }
 }
+

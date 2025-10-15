@@ -2,47 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Formulario;
 use Illuminate\Http\Request;
 
 class FormularioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    public function index(){ $formularios = Formulario::all(); return view('formularios.index',compact('formularios')); }
+    public function create(){ return view('formularios.create'); }
+    public function store(Request $r){
+        $data = $r->validate([
+            'titulo'=>'required|string|max:200',
+            'descripcion'=>'nullable|string',
+            'fecha_creacion'=>'required|date'
+        ]);
+        Formulario::create($data); return redirect()->route('formularios.index')->with('ok','Formulario creado');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function edit($id){ $formulario = Formulario::findOrFail($id); return view('formularios.edit',compact('formulario')); }
+    public function update(Request $r,$id){
+        $formulario = Formulario::findOrFail($id);
+        $data = $r->validate([
+            'titulo'=>'required|string|max:200',
+            'descripcion'=>'nullable|string',
+            'fecha_creacion'=>'required|date'
+        ]);
+        $formulario->update($data); return redirect()->route('formularios.index')->with('ok','Formulario actualizado');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy($id){ Formulario::findOrFail($id)->delete(); return back()->with('ok','Formulario eliminado'); }
 }
+
+
+

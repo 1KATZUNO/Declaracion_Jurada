@@ -2,47 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cargo;
 use Illuminate\Http\Request;
 
 class CargoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    public function index(){ $cargos = Cargo::all(); return view('cargos.index',compact('cargos')); }
+    public function create(){ return view('cargos.create'); }
+    public function store(Request $r){
+        $data = $r->validate([
+            'nombre'=>'required|string|max:100',
+            'jornada'=>'nullable|string|max:20',
+            'descripcion'=>'nullable|string'
+        ]);
+        Cargo::create($data); return redirect()->route('cargos.index')->with('ok','Cargo creado');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function edit($id){ $cargo = Cargo::findOrFail($id); return view('cargos.edit',compact('cargo')); }
+    public function update(Request $r,$id){
+        $cargo = Cargo::findOrFail($id);
+        $data = $r->validate([
+            'nombre'=>'required|string|max:100',
+            'jornada'=>'nullable|string|max:20',
+            'descripcion'=>'nullable|string'
+        ]);
+        $cargo->update($data); return redirect()->route('cargos.index')->with('ok','Cargo actualizado');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy($id){ Cargo::findOrFail($id)->delete(); return back()->with('ok','Cargo eliminado'); }
 }
+

@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Formulario extends Model
 {
-    protected $fillable = ['titulo', 'descripcion', 'campos'];
+    protected $table = 'formulario';
+    protected $primaryKey = 'id_formulario';
+    protected $fillable = ['titulo','descripcion','fecha_creacion'];
 
-    protected $casts = [
-        'campos' => 'array'
-    ];
+    public function declaraciones() { return $this->hasMany(Declaracion::class, 'id_formulario'); }
 }
+
 
