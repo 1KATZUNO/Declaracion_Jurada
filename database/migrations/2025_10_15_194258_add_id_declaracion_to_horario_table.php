@@ -6,28 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-   public function up()
-{
-    Schema::table('horario', function (Blueprint $table) {
-        $table->foreignId('id_declaracion')
-              ->nullable()
-              ->after('id_horario')
-              ->constrained('declaracion')
-              ->onDelete('cascade');
-    });
-}
+    public function up(): void
+    {
+        if (Schema::hasTable('horario') && ! Schema::hasColumn('horario', 'id_declaracion')) {
+            Schema::table('horario', function (Blueprint $table) {
+                $table->unsignedBigInteger('id_declaracion')->nullable()->after('id_horario');
 
+                // FK -> declaraciones.id
+                $table->foreign('id_declaracion')
+                      ->references('id')
+                      ->on('declaraciones')
+                      ->cascadeOnDelete();
+            });
+        }
+    }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('horario', function (Blueprint $table) {
-            //
-        });
+        if (Schema::hasTable('horario') && Schema::hasColumn('horario', 'id_declaracion')) {
+            Schema::table('horario', function (Blueprint $table) {
+                $table->dropForeign(['id_declaracion']);
+                $table->dropColumn('id_declaracion');
+            });
+        }
     }
 };
