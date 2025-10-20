@@ -1,121 +1,136 @@
 @extends('layout')
 
 @section('content')
-<div class="max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-8 mt-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Crear nueva declaración jurada</h2>
-
-    <form action="{{ route('declaraciones.store') }}" method="POST" id="declaracionForm" class="space-y-6">
-        @csrf
-
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label for="id_usuario" class="block text-sm font-semibold text-gray-700">Usuario</label>
-                <input type="number" name="id_usuario" id="id_usuario"
-                       class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500" required>
-            </div>
-
-            <div>
-                <label for="id_formulario" class="block text-sm font-semibold text-gray-700">Formulario</label>
-                <select name="id_formulario" id="id_formulario"
-                        class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500" required>
-                    @foreach($formularios as $f)
-                        <option value="{{ $f->id_formulario }}">{{ $f->titulo }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label for="id_unidad" class="block text-sm font-semibold text-gray-700">Unidad académica</label>
-                <select name="id_unidad" id="id_unidad"
-                        class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500" required>
-                    @foreach($unidades as $u)
-                        <option value="{{ $u->id_unidad }}">{{ $u->nombre }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label for="id_cargo" class="block text-sm font-semibold text-gray-700">Cargo</label>
-                <select name="id_cargo" id="id_cargo"
-                        class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500" required>
-                    @foreach($cargos as $c)
-                        <option value="{{ $c->id_cargo }}">{{ $c->nombre }}</option>
-                    @endforeach
-                </select>
-            </div>
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+            <h2 class="text-2xl font-semibold text-white">Crear nueva declaración jurada</h2>
+            <p class="text-blue-100 text-sm mt-1">Complete el formulario con la información requerida</p>
         </div>
 
-        <div class="grid grid-cols-3 gap-4">
-            <div>
-                <label for="fecha_desde" class="block text-sm font-semibold text-gray-700">Fecha desde</label>
-                <input type="date" name="fecha_desde" id="fecha_desde"
-                       class="w-full border-gray-300 rounded-lg p-2" required>
-            </div>
+        <form action="{{ route('declaraciones.store') }}" method="POST" id="declaracionForm" class="p-8">
+            @csrf
 
-            <div>
-                <label for="fecha_hasta" class="block text-sm font-semibold text-gray-700">Fecha hasta</label>
-                <input type="date" name="fecha_hasta" id="fecha_hasta"
-                       class="w-full border-gray-300 rounded-lg p-2" required>
-            </div>
-
-            <div>
-                <label for="horas_totales" class="block text-sm font-semibold text-gray-700">Horas totales</label>
-                <input type="number" step="0.1" name="horas_totales" id="horas_totales"
-                       class="w-full border-gray-300 rounded-lg p-2" required>
-            </div>
-        </div>
-
-        <hr class="my-6">
-
-        <h3 class="text-lg font-semibold text-gray-800 mb-2">Horarios</h3>
-
-        <div id="horarios-container" class="space-y-4">
-            <div class="border p-4 rounded-lg bg-gray-50">
-                <div class="grid grid-cols-4 gap-4">
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Información general</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700">Tipo</label>
-                        <select name="tipo[]" class="border-gray-300 rounded-lg p-2 w-full">
-                            <option value="ucr">UCR</option>
-                            <option value="externo">Otra institución</option>
+                        <label for="id_usuario" class="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+                        <input type="number" name="id_usuario" id="id_usuario"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                    </div>
+
+                    <div>
+                        <label for="id_formulario" class="block text-sm font-medium text-gray-700 mb-2">Formulario</label>
+                        <select name="id_formulario" id="id_formulario"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                            @foreach($formularios as $f)
+                                <option value="{{ $f->id_formulario }}">{{ $f->titulo }}</option>
+                            @endforeach
                         </select>
                     </div>
+
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700">Día</label>
-                        <select name="dia[]" class="border-gray-300 rounded-lg p-2 w-full">
-                            <option value="Lunes">Lunes</option>
-                            <option value="Martes">Martes</option>
-                            <option value="Miércoles">Miércoles</option>
-                            <option value="Jueves">Jueves</option>
-                            <option value="Viernes">Viernes</option>
-                            <option value="Sábado">Sábado</option>
+                        <label for="id_unidad" class="block text-sm font-medium text-gray-700 mb-2">Unidad académica</label>
+                        <select name="id_unidad" id="id_unidad"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                            @foreach($unidades as $u)
+                                <option value="{{ $u->id_unidad }}">{{ $u->nombre }}</option>
+                            @endforeach
                         </select>
                     </div>
+
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700">Inicio</label>
-                        <input type="time" name="hora_inicio[]" class="border-gray-300 rounded-lg p-2 w-full">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Fin</label>
-                        <input type="time" name="hora_fin[]" class="border-gray-300 rounded-lg p-2 w-full">
+                        <label for="id_cargo" class="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
+                        <select name="id_cargo" id="id_cargo"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                            @foreach($cargos as $c)
+                                <option value="{{ $c->id_cargo }}">{{ $c->nombre }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="flex justify-end mt-4">
-            <button type="button" id="add-horario"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition">
-                + Añadir otro horario
-            </button>
-        </div>
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Período y horas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="fecha_desde" class="block text-sm font-medium text-gray-700 mb-2">Fecha desde</label>
+                        <input type="date" name="fecha_desde" id="fecha_desde"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                    </div>
 
-        <div class="flex justify-end mt-6">
-            <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md transition">
-                Guardar declaración
-            </button>
-        </div>
-    </form>
+                    <div>
+                        <label for="fecha_hasta" class="block text-sm font-medium text-gray-700 mb-2">Fecha hasta</label>
+                        <input type="date" name="fecha_hasta" id="fecha_hasta"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                    </div>
+
+                    <div>
+                        <label for="horas_totales" class="block text-sm font-medium text-gray-700 mb-2">Horas totales</label>
+                        <input type="number" step="0.1" name="horas_totales" id="horas_totales"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horarios</h3>
+
+                <div id="horarios-container" class="space-y-4">
+                    <div class="border border-gray-300 rounded-lg p-5 bg-gray-50 hover:bg-white transition-colors">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                                <select name="tipo[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                                    <option value="ucr">UCR</option>
+                                    <option value="externo">Otra institución</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Día</label>
+                                <select name="dia[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                                    <option value="Lunes">Lunes</option>
+                                    <option value="Martes">Martes</option>
+                                    <option value="Miércoles">Miércoles</option>
+                                    <option value="Jueves">Jueves</option>
+                                    <option value="Viernes">Viernes</option>
+                                    <option value="Sábado">Sábado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Hora inicio</label>
+                                <input type="time" name="hora_inicio[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Hora fin</label>
+                                <input type="time" name="hora_fin[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="button" id="add-horario"
+                            class="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                        Añadir otro horario
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+                <a href="{{ route('declaraciones.index') }}"
+                   class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-colors">
+                    Guardar declaración
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
