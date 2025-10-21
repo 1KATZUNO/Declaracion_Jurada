@@ -12,17 +12,14 @@ use App\Http\Controllers\{
     HorarioController,
     DocumentoController,
     NotificacionController,
-    DeclaracionExportController
     DeclaracionExportController,
     LoginController
 };
 
 // Home
-Route::get('/', [DeclaracionController::class, 'index'])->name('home');
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
 
 // CRUDs
-Route::resource('usuarios', UsuarioController::class);
 Route::middleware([VerificarRol::class . ':admin'])->group(function () {
     Route::resource('usuarios', UsuarioController::class);
 });
