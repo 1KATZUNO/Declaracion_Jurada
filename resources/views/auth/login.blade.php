@@ -85,3 +85,42 @@
     </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- -<h2 class="text-2xl font-bold text-gray-800">Declaraciones juradas</h2>
+       @if(session('usuario_rol') === 'admin')
+    <p class="text-sm text-gray-600">Bienvenido administrador. Tienes acceso completo.</p>
+@elseif(session('usuario_rol') === 'funcionario')
+    <p class="text-sm text-gray-600">Bienvenido funcionario. Puedes gestionar tus declaraciones.</p>-->
+
+    
