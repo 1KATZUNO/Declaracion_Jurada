@@ -1,6 +1,6 @@
 <?php
 
-
+use App\Http\Middleware\VerificarRol;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     UsuarioController,
@@ -13,13 +13,19 @@ use App\Http\Controllers\{
     DocumentoController,
     NotificacionController,
     DeclaracionExportController
+    DeclaracionExportController,
+    LoginController
 };
 
 // Home
 Route::get('/', [DeclaracionController::class, 'index'])->name('home');
+Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
 
 // CRUDs
 Route::resource('usuarios', UsuarioController::class);
+Route::middleware([VerificarRol::class . ':admin'])->group(function () {
+    Route::resource('usuarios', UsuarioController::class);
+});
 Route::resource('sedes', SedeController::class);
 Route::resource('unidades', UnidadAcademicaController::class);
 Route::resource('cargos', CargoController::class);
@@ -32,3 +38,4 @@ Route::resource('notificaciones', NotificacionController::class);
 // Exportación Excel
 Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 'exportar'])
      ->name('declaraciones.exportar');
+Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
