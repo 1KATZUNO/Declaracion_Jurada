@@ -18,7 +18,7 @@ export default function Login() {
       // Guardar token en localStorage
       localStorage.setItem("token", res.data.token);
       navigate("/dashboard");
-    } catch (_err: unknown) {
+    } catch {
       setError("Credenciales inválidas");
     }
   };
