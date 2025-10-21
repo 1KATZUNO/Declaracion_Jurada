@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>@yield('titulo', 'Declaraciones UCR')</title>
-  @vite(['resources/css/app.css','resources/js/app.js'])
+  @vite(['resources/css/app.css'])
+  {{-- @vite(['resources/js/app.js']) --}}
 </head>
 <body class="bg-gray-50 min-h-screen">
   <header class="bg-gradient-to-r from-blue-600 to-blue-700 shadow-md">

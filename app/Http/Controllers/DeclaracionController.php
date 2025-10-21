@@ -8,8 +8,17 @@ use Illuminate\Http\Request;
 class DeclaracionController extends Controller
 {
     public function index(){
-        $declaraciones = Declaracion::with(['usuario','unidad','cargo','formulario'])->latest()->get();
-        return view('declaraciones.index', compact('declaraciones'));
+        try {
+            $declaraciones = Declaracion::with(['usuario','unidad','cargo','formulario'])->latest()->get();
+            return view('declaraciones.index', compact('declaraciones'));
+        } catch (\Exception $e) {
+            \Log::error('Error en DeclaracionController@index: ' . $e->getMessage());
+            
+            // Retornar vista con colección vacía en caso de error
+            return view('declaraciones.index', [
+                'declaraciones' => collect([])
+            ]);
+        }
     }
 
     public function create(){

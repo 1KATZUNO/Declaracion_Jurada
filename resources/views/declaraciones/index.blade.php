@@ -45,17 +45,17 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($declaraciones as $d)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="py-4 px-4 text-sm text-gray-900">{{ $d->id_declaracion }}</td>
+                                <td class="py-4 px-4 text-sm text-gray-900">{{ $d->id_declaracion ?? 'N/A' }}</td>
                                 <td class="py-4 px-4 text-sm text-gray-900">
-                                    {{ $d->usuario->nombre ?? '' }} {{ $d->usuario->apellido ?? '' }}
+                                    {{ optional($d->usuario)->nombre ?? 'Sin usuario' }} {{ optional($d->usuario)->apellido ?? '' }}
                                 </td>
-                                <td class="py-4 px-4 text-sm text-gray-600">{{ $d->unidad->nombre ?? '' }}</td>
-                                <td class="py-4 px-4 text-sm text-gray-600">{{ $d->cargo->nombre ?? '' }}</td>
-                                <td class="py-4 px-4 text-sm text-gray-600">{{ $d->formulario->titulo ?? '' }}</td>
+                                <td class="py-4 px-4 text-sm text-gray-600">{{ optional($d->unidad)->nombre ?? 'Sin unidad' }}</td>
+                                <td class="py-4 px-4 text-sm text-gray-600">{{ optional($d->cargo)->nombre ?? 'Sin cargo' }}</td>
+                                <td class="py-4 px-4 text-sm text-gray-600">{{ optional($d->formulario)->titulo ?? 'Sin formulario' }}</td>
                                 <td class="py-4 px-4 text-sm text-gray-600">
-                                    {{ \Carbon\Carbon::parse($d->fecha_desde)->format('d/m/Y') }} — {{ \Carbon\Carbon::parse($d->fecha_hasta)->format('d/m/Y') }}
+                                    {{ $d->fecha_desde ? \Carbon\Carbon::parse($d->fecha_desde)->format('d/m/Y') : 'N/A' }} — {{ $d->fecha_hasta ? \Carbon\Carbon::parse($d->fecha_hasta)->format('d/m/Y') : 'N/A' }}
                                 </td>
-                                <td class="py-4 px-4 text-sm text-gray-900 font-medium">{{ $d->horas_totales }}</td>
+                                <td class="py-4 px-4 text-sm text-gray-900 font-medium">{{ $d->horas_totales ?? '0' }}</td>
                                 <td class="py-4 px-4 text-sm">
                                     <div class="flex gap-2">
                                         <a href="{{ route('declaraciones.show', $d->id_declaracion) }}"
