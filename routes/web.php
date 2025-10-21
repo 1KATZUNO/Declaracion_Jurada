@@ -41,3 +41,7 @@ Route::resource('notificaciones', NotificacionController::class);
 Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 'exportar'])
      ->name('declaraciones.exportar');
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+
+/*
+Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+ */
