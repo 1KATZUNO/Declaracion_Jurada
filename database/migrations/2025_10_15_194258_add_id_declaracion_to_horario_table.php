@@ -12,10 +12,10 @@ return new class extends Migration
             Schema::table('horario', function (Blueprint $table) {
                 $table->unsignedBigInteger('id_declaracion')->nullable()->after('id_horario');
 
-                // FK -> declaraciones.id
+                // FK -> declaracion.id_declaracion (corregido)
                 $table->foreign('id_declaracion')
-                      ->references('id')
-                      ->on('declaraciones')
+                      ->references('id_declaracion')
+                      ->on('declaracion')
                       ->cascadeOnDelete();
             });
         }
