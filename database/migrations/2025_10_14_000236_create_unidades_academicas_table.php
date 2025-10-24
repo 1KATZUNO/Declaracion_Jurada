@@ -6,25 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
- public function up(): void
+    public function up(): void
     {
-        Schema::create('unidad_academica', function (Blueprint $table) {
-            $table->id('id_unidad'); // Clave primaria
-            $table->string('nombre', 100);
-            // CORRECCIÓN: constrained('tabla', 'nombre_de_la_id_en_esa_tabla')
-            $table->foreignId('id_sede')->constrained('sede', 'id_sede')->onDelete('cascade');
-            $table->timestamps();
+        Schema::table('unidad_academica', function (Blueprint $table) {
+            if (!Schema::hasColumn('unidad_academica', 'estado')) {
+                // enum con default ACTIVA
+                $table->enum('estado', ['ACTIVA','INACTIVA'])
+                      ->default('ACTIVA')
+                      ->after('id_sede');
+                $table->index('estado');
+            }
+
+            if (!Schema::hasColumn('unidad_academica', 'deleted_at')) {
+                $table->softDeletes();
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('unidad_academica');
+        Schema::table('unidad_academica', function (Blueprint $table) {
+            if (Schema::hasColumn('unidad_academica', 'estado')) {
+                $table->dropIndex(['estado']);
+                $table->dropColumn('estado');
+            }
+            if (Schema::hasColumn('unidad_academica', 'deleted_at')) {
+                $table->dropSoftDeletes();
+            }
+        });
     }
 };
