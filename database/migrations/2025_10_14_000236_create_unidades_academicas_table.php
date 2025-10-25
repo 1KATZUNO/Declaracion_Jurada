@@ -8,19 +8,42 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('unidad_academica', function (Blueprint $table) {
-            // Campo 'estado' compatible con SQLite
-            if (!Schema::hasColumn('unidad_academica', 'estado')) {
-                $table->string('estado', 10)  // varchar compatible con SQLite
-                      ->default('ACTIVA');
-                $table->index('estado');
-            }
+        // Verificamos si la tabla existe, si no, la creamos
+        if (!Schema::hasTable('unidad_academica')) {
+            Schema::create('unidad_academica', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('id_sede');
+                
+                // Estado: usamos string en SQLite, enum en MySQL
+                if (Schema::getConnection()->getDriverName() === 'sqlite') {
+                    $table->string('estado')->default('ACTIVA');
+                } else {
+                    $table->enum('estado', ['ACTIVA', 'INACTIVA'])->default('ACTIVA');
+                }
 
-            // Soft deletes
-            if (!Schema::hasColumn('unidad_academica', 'deleted_at')) {
+                $table->timestamps();
                 $table->softDeletes();
-            }
-        });
+
+                // Index para estado
+                $table->index('estado');
+            });
+        } else {
+            // Si la tabla ya existe, agregamos solo las columnas faltantes
+            Schema::table('unidad_academica', function (Blueprint $table) {
+                if (!Schema::hasColumn('unidad_academica', 'estado')) {
+                    if (Schema::getConnection()->getDriverName() === 'sqlite') {
+                        $table->string('estado')->default('ACTIVA');
+                    } else {
+                        $table->enum('estado', ['ACTIVA', 'INACTIVA'])->default('ACTIVA');
+                    }
+                    $table->index('estado');
+                }
+
+                if (!Schema::hasColumn('unidad_academica', 'deleted_at')) {
+                    $table->softDeletes();
+                }
+            });
+        }
     }
 
     public function down(): void
