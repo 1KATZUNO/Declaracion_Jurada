@@ -41,3 +41,7 @@ Route::resource('notificaciones', NotificacionController::class);
 Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 'exportar'])
      ->name('declaraciones.exportar');
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+
+// Catálogo JSON para selects
+Route::get('/catalogos/unidades', [UnidadAcademicaController::class, 'catalogo'])
+     ->name('catalogos.unidades');
