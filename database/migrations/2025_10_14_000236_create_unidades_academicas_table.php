@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('unidad_academica', function (Blueprint $table) {
+            // Campo 'estado' compatible con SQLite
             if (!Schema::hasColumn('unidad_academica', 'estado')) {
-                // enum con default ACTIVA
-                $table->enum('estado', ['ACTIVA','INACTIVA'])
-                      ->default('ACTIVA')
-                      ->after('id_sede');
+                $table->string('estado', 10)  // varchar compatible con SQLite
+                      ->default('ACTIVA');
                 $table->index('estado');
             }
 
+            // Soft deletes
             if (!Schema::hasColumn('unidad_academica', 'deleted_at')) {
                 $table->softDeletes();
             }
