@@ -37,20 +37,36 @@
                     </select>
                 </div>
 
-                <!-- Hora de inicio -->
-                <div>
-                    <label for="hora_inicio" class="block text-sm font-medium text-gray-700 mb-2">Hora de inicio</label>
-                    <input type="time" id="hora_inicio" name="hora_inicio"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                </div>
+               <div class="bg-white p-5 rounded-2xl shadow-md space-y-4 w-full max-w-md">
+  <h2 class="text-lg font-semibold text-gray-800 mb-3">Horario</h2>
 
-                <!-- Hora de fin -->
-                <div>
-                    <label for="hora_fin" class="block text-sm font-medium text-gray-700 mb-2">Hora de fin</label>
-                    <input type="time" id="hora_fin" name="hora_fin"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                </div>
-            </div>
+  <div class="flex items-center justify-between space-x-4">
+    <!-- Hora de inicio -->
+    <div class="flex flex-col w-1/2">
+      <label for="hora_inicio" class="text-sm font-medium text-gray-600 mb-1">Hora de inicio</label>
+      <div class="flex items-center bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v3.586l2.293 2.293a1 1 0 101.414-1.414L11 9.586V6z" clip-rule="evenodd" />
+        </svg>
+        <input type="time" id="hora_inicio" name="hora_inicio"
+               class="bg-transparent flex-1 text-gray-800 outline-none" required>
+      </div>
+    </div>
+
+    <!-- Hora de fin -->
+    <div class="flex flex-col w-1/2">
+      <label for="hora_fin" class="text-sm font-medium text-gray-600 mb-1">Hora de fin</label>
+      <div class="flex items-center bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v3.586l2.293 2.293a1 1 0 101.414-1.414L11 9.586V6z" clip-rule="evenodd" />
+        </svg>
+        <input type="time" id="hora_fin" name="hora_fin"
+               class="bg-transparent flex-1 text-gray-800 outline-none" required>
+      </div>
+    </div>
+  </div>
+</div>
+
 
             <!-- Botones -->
             <div class="mt-6 flex items-center justify-end gap-3">
