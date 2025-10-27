@@ -6,8 +6,9 @@
     <title>Iniciar Sesión - Declaraciones UCR</title>
     @vite(['resources/css/app.css'])
 </head>
-<body class="bg-gray-100">
-    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<body 
+    class="min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center"
+    style="background-image: url('{{ asset('imagenes/Login.png') }}');">
         <div class="max-w-md w-full">
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
