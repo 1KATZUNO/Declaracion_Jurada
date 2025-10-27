@@ -23,6 +23,13 @@
                     </select>
                 </div>
 
+                <!-- Lugar / Institución (visible solo si tipo = externo) -->
+                <div id="lugar-group" class="hidden">
+                    <label for="lugar" class="block text-sm font-medium text-gray-700 mb-2">Lugar / Institución</label>
+                    <input id="lugar" name="lugar" type="text" maxlength="255"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Nombre de la otra institución (opcional)">
+                </div>
+
                 <!-- Día -->
                 <div>
                     <label for="dia" class="block text-sm font-medium text-gray-700 mb-2">Día</label>
@@ -82,4 +89,18 @@
         </form>
     </div>
 </div>
+
+<script>
+document.getElementById('tipo').addEventListener('change', function(){
+    const grupo = document.getElementById('lugar-group');
+    if (this.value === 'externo') {
+        grupo.classList.remove('hidden');
+    } else {
+        grupo.classList.add('hidden');
+        // limpiar valor cuando no sea externo
+        const inp = grupo.querySelector('input');
+        if (inp) inp.value = '';
+    }
+});
+</script>
 @endsection

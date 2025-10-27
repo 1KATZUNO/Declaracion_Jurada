@@ -32,6 +32,7 @@
                             <td class="py-4 px-4 text-sm">
                                 <div class="flex gap-2">
                                     <a href="{{ asset($doc->archivo) }}"
+                                       download="{{ basename($doc->archivo) }}" target="_blank" rel="noopener"
                                        class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-300 rounded hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors">
                                         Descargar
                                     </a>

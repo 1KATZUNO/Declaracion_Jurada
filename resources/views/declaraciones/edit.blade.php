@@ -93,17 +93,22 @@
 
                 <div id="horarios-container" class="space-y-4">
                     @foreach($d->horarios as $h)
-                        <div class="border border-gray-300 rounded-lg p-5 bg-gray-50 hover:bg-white transition-colors">
+                        <div class="border border-gray-300 rounded-lg p-5 bg-gray-50 hover:bg-white transition-colors horario-block">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
-                                    <select name="tipo[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                                    <select name="tipo[]" class="tipo-select w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                                         <option value="ucr" {{ $h->tipo === 'ucr' ? 'selected' : '' }}>UCR</option>
                                         <option value="externo" {{ $h->tipo === 'externo' ? 'selected' : '' }}>Otra institución</option>
                                     </select>
                                 </div>
 
-                                <div>
+                                <div class="lugar-wrapper {{ $h->tipo === 'externo' ? '' : 'hidden' }}">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Lugar / Institución</label>
+                                    <input type="text" name="lugar[]" value="{{ $h->lugar ?? '' }}" class="w-full px-4 py-2.5 border border-gray-300 rounded-md ..." placeholder="Nombre de la institución (solo para externo)">
+                                </div>
+
+                                <div class="dia-wrapper">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Día</label>
                                     <select name="dia[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                                         @foreach(['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'] as $dia)
@@ -114,14 +119,12 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Hora inicio</label>
-                                    <input type="time" name="hora_inicio[]" value="{{ $h->hora_inicio }}"
-                                           class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                                    <input type="time" name="hora_inicio[]" value="{{ $h->hora_inicio }}" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Hora fin</label>
-                                    <input type="time" name="hora_fin[]" value="{{ $h->hora_fin }}"
-                                           class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                                    <input type="time" name="hora_fin[]" value="{{ $h->hora_fin }}" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                                 </div>
                             </div>
                         </div>
@@ -151,20 +154,41 @@
 </div>
 
 <script>
+function setTipoBehavior(block){
+    const tipo = block.querySelector('.tipo-select');
+    const lugarWr = block.querySelector('.lugar-wrapper');
+
+    const toggle = () => {
+        if(tipo.value === 'externo'){
+            lugarWr.classList.remove('hidden');
+        } else {
+            lugarWr.classList.add('hidden');
+        }
+    };
+    tipo.addEventListener('change', toggle);
+    toggle();
+}
+
+document.querySelectorAll('#horarios-container .horario-block').forEach(setTipoBehavior);
+
 document.getElementById('add-horario').addEventListener('click', () => {
     const container = document.getElementById('horarios-container');
     const block = document.createElement('div');
-    block.classList.add('border','border-gray-300','rounded-lg','p-5','bg-gray-50','hover:bg-white','transition-colors','mt-4');
+    block.classList.add('border','border-gray-300','rounded-lg','p-5','bg-gray-50','hover:bg-white','transition-colors','mt-4','horario-block');
     block.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
-                <select name="tipo[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                <select name="tipo[]" class="tipo-select w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                     <option value="ucr">UCR</option>
                     <option value="externo">Otra institución</option>
                 </select>
             </div>
-            <div>
+            <div class="lugar-wrapper hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Lugar / Institución</label>
+                <input type="text" name="lugar[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md ..." placeholder="Nombre de la institución (solo para externo)">
+            </div>
+            <div class="dia-wrapper">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Día</label>
                 <select name="dia[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                     <option value="Lunes">Lunes</option>
@@ -186,6 +210,7 @@ document.getElementById('add-horario').addEventListener('click', () => {
         </div>
     `;
     container.appendChild(block);
+    setTipoBehavior(block);
 });
 </script>
 @endsection

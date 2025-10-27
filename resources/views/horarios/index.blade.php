@@ -27,6 +27,7 @@
                         <tr>
                             <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">#</th>
                             <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Tipo</th>
+                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Lugar</th>
                             <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Día</th>
                             <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Hora inicio</th>
                             <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Hora fin</th>
@@ -40,6 +41,7 @@
                                 <td class="py-4 px-4 text-sm text-gray-600">
                                     {{ $h->tipo === 'ucr' ? 'UCR' : 'Otra institución' }}
                                 </td>
+                                <td class="py-4 px-4 text-sm text-gray-900 font-medium">{{ $h->lugar ?? '-' }}</td>
                                 <td class="py-4 px-4 text-sm text-gray-900 font-medium">{{ $h->dia }}</td>
                                 <td class="py-4 px-4 text-sm text-gray-600">{{ $h->hora_inicio }}</td>
                                 <td class="py-4 px-4 text-sm text-gray-600">{{ $h->hora_fin }}</td>
@@ -55,7 +57,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-8 text-gray-500">No hay horarios registrados.</td>
+                                <td colspan="7" class="text-center py-8 text-gray-500">No hay horarios registrados.</td>
                             </tr>
                         @endforelse
                     </tbody>

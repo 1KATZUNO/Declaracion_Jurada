@@ -28,9 +28,17 @@ class HorarioController extends Controller
             'dia' => 'required|string',
             'hora_inicio' => 'required',
             'hora_fin' => 'required',
+            'lugar' => 'nullable|string|max:255',
         ]);
 
-        Horario::create($validated);
+        // Persistir con campo 'lugar' si viene
+        Horario::create([
+            'tipo' => $validated['tipo'],
+            'dia' => $validated['dia'],
+            'hora_inicio' => $validated['hora_inicio'],
+            'hora_fin' => $validated['hora_fin'],
+            'lugar' => $validated['lugar'] ?? null,
+        ]);
 
         return redirect()->route('horarios.index')
                          ->with('success', 'Horario registrado correctamente');
