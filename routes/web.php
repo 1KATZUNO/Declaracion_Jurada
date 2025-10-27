@@ -41,3 +41,9 @@ Route::resource('notificaciones', NotificacionController::class);
 Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 'exportar'])
      ->name('declaraciones.exportar');
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+
+// Formulario de cambio de contraseña
+Route::get('/change-password', [LoginController::class, 'showChangePasswordForm'])->name('password.form');
+Route::post('/change-password', [LoginController::class, 'changePassword'])->name('password.change');
+
+

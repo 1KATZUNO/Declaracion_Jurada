@@ -19,6 +19,7 @@
                     <p class="mt-2 text-blue-100">
                         Iniciar Sesión
                     </p>
+                    
                 </div>
 
                 <!-- Form -->
@@ -72,6 +73,12 @@
                                 Iniciar Sesión
                             </button>
                         </div>
+                        <!-- Enlace a cambiar contraseña -->
+<div class="mt-4 text-center">
+    <a href="{{ route('password.form') }}" class="text-blue-600 hover:underline text-sm">
+        ¿Olvidaste tu contraseña o deseas cambiarla?
+    </a>
+</div>
                     </form>
                 </div>
             </div>

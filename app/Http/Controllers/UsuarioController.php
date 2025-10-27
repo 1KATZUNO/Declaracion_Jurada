@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UsuarioCreado;
 
 class UsuarioController extends Controller
 {
@@ -17,25 +21,29 @@ class UsuarioController extends Controller
     {
         return view('usuarios.create');
     }
+public function store(Request $request)
+{
+    $data = $request->validate([
+        'nombre' => 'required|string|max:50',
+        'apellido' => 'required|string|max:50',
+        'identificacion' => 'required|string|max:20',
+        'correo' => 'required|email|max:100|unique:usuario,correo',
+        'telefono' => 'nullable|string|max:20',
+        'rol' => 'required|in:funcionario,admin',
+    ]);
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'nombre' => 'required|string|max:50',
-            'apellido' => 'required|string|max:50',
-            'identificacion' => 'required|string|max:20',
-            'correo' => 'required|email|max:100|unique:usuario,correo',
-            'telefono' => 'nullable|string|max:20',
-            'contrasena' => 'required|string|min:6',
-            'rol' => 'required|in:funcionario,admin',
-        ]);
+    // Generar contraseña 
+    $passwordPlain = Str::random(10);
+    $data['contrasena'] = Hash::make($passwordPlain);
 
-        $data['contrasena'] = bcrypt($data['contrasena']);
+    // Crear usuario
+    $usuario = Usuario::create($data);
 
-        Usuario::create($data);
+    // Enviar correo
+    Mail::to($usuario->correo)->send(new UsuarioCreado($usuario, $passwordPlain));
 
-        return redirect()->route('usuarios.index')->with('ok','Usuario creado correctamente');
-    }
+    return redirect()->route('usuarios.index')->with('ok', 'Usuario creado y contraseña enviada por correo.');
+}
 
     public function edit($id)
     {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Usuario; 
 use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\Hash; 
+use Illuminate\Support\Facades\Mail;
 
 class LoginController extends Controller 
 { 
@@ -44,6 +45,39 @@ class LoginController extends Controller
 
         return redirect()->route('declaraciones.index'); 
     } 
+    // Mostrar formulario de cambio de contraseña
+public function showChangePasswordForm()
+{
+    return view('auth.change_password');
+}
+
+// Procesar cambio de contraseña
+public function changePassword(Request $request)
+{
+    $data = $request->validate([
+        'correo' => 'required|email',
+        'current_password' => 'required|string',
+        'new_password' => 'required|string|min:6|confirmed',
+    ]);
+
+    $usuario = Usuario::where('correo', $data['correo'])->first();
+
+    if (!$usuario || !Hash::check($data['current_password'], $usuario->contrasena)) {
+        return back()->withErrors(['current_password' => 'Correo o contraseña actual incorrecta']);
+    }
+
+    // Actualizar contraseña
+    $usuario->contrasena = Hash::make($data['new_password']);
+    $usuario->save();
+
+    // Enviar correo de confirmación
+    Mail::raw("Hola {$usuario->nombre}, tu contraseña se ha cambiado correctamente.", function($message) use ($usuario) {
+        $message->to($usuario->correo)
+                ->subject('Cambio de contraseña exitoso');
+    });
+
+    return redirect()->route('login')->with('ok', 'Contraseña cambiada correctamente. Se ha enviado un correo de confirmación.');
+}
 
     // Cerrar sesión 
     public function logout(Request $request) 
@@ -52,4 +86,3 @@ class LoginController extends Controller
         return redirect()->route('login'); 
     } 
 }
-// hola
