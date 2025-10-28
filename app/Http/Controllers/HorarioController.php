@@ -68,4 +68,32 @@ class HorarioController extends Controller
         return redirect()->route('horarios.index')
                          ->with('success', 'Horario eliminado correctamente');
     }
+    // PUT/PATCH /horarios/{id}
+public function update(Request $request, $id)
+{
+    $horario = Horario::findOrFail($id);
+
+    // Validación (mismos criterios de creación + campos opcionales del modelo)
+    $validated = $request->validate([
+        'tipo'         => 'required|in:ucr,externo',
+        'dia'          => 'required|in:Lunes,Martes,Miércoles,Jueves,Viernes,Sábado,Domingo',
+        'hora_inicio'  => 'required|date_format:H:i',
+        'hora_fin'     => 'required|date_format:H:i|after:hora_inicio',
+        'lugar'        => 'nullable|string|max:255',
+        'cargo'        => 'nullable|string|max:255',
+        'jornada'      => 'nullable|string|max:50',
+        'desde'        => 'nullable|date',
+        'hasta'        => 'nullable|date|after_or_equal:desde',
+    ], [
+        'hora_fin.after'           => 'La hora fin debe ser mayor que la hora inicio.',
+        'hasta.after_or_equal'     => 'La fecha "hasta" debe ser igual o posterior a "desde".',
+    ]);
+
+    // Actualiza solo lo validado
+    $horario->update($validated);
+
+    // Volvemos a la lista con mensaje
+    return back()->with('success', 'Horario actualizado correctamente.');
+}
+
 }
