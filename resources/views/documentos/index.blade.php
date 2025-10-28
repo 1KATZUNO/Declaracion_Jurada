@@ -24,6 +24,11 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach ($documentos as $doc)
+                            @php
+                                $fileUrl = (strpos($doc->archivo, 'public/') === 0)
+                                    ? \Illuminate\Support\Facades\Storage::url($doc->archivo)
+                                    : asset($doc->archivo);
+                            @endphp
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="py-4 px-4 text-sm text-gray-900 font-medium">{{ $doc->declaracion->usuario->nombre }} {{ $doc->declaracion->usuario->apellido }}</td>
                             <td class="py-4 px-4 text-sm text-gray-600">{{ basename($doc->archivo) }}</td>
@@ -31,7 +36,8 @@
                             <td class="py-4 px-4 text-sm text-gray-600">{{ $doc->fecha_generacion }}</td>
                             <td class="py-4 px-4 text-sm">
                                 <div class="flex gap-2">
-                                    <a href="{{ asset($doc->archivo) }}"
+-                                    <a href="{{ asset($doc->archivo) }}"
++                                    <a href="{{ $fileUrl }}"
                                        download="{{ basename($doc->archivo) }}" target="_blank" rel="noopener"
                                        class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-300 rounded hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors">
                                         Descargar
