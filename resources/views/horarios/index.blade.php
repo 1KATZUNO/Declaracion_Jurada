@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-8 relative">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 flex items-center justify-between">
             <div>
@@ -46,10 +46,10 @@
                                 <td class="py-4 px-4 text-sm text-gray-600">{{ $h->hora_inicio }}</td>
                                 <td class="py-4 px-4 text-sm text-gray-600">{{ $h->hora_fin }}</td>
                                 <td class="py-4 px-4 text-sm">
-                                    <form action="{{ route('horarios.destroy', $h->id_horario) }}" method="POST"
-                                          onsubmit="return confirm('¿Eliminar este horario?')">
+                                    <form action="{{ route('horarios.destroy', $h->id_horario) }}" method="POST" class="inline delete-form">
                                         @csrf @method('DELETE')
-                                        <button class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">
+                                        <button type="submit"
+                                            class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">
                                             Eliminar
                                         </button>
                                     </form>
@@ -66,6 +66,41 @@
 
             <div class="mt-6">
                 {{ $horarios->links() }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Cajita flotante -->
+    <div id="popupConfirm" class="hidden absolute top-1/3 left-1/2 transform -translate-x-1/2 bg-white border border-gray-300 shadow-lg rounded-lg p-5 w-80 text-center z-50">
+        <p class="text-gray-800 mb-4 font-medium">¿Eliminar este horario?</p>
+        <div class="flex justify-center space-x-3">
+            <button id="cancelPopup" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">Cancelar</button>
+            <button id="confirmPopup" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Eliminar</button>
+        </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let formToDelete = null;
+
+    document.querySelectorAll('.delete-form').forEach(form => {
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            formToDelete = form;
+            document.getElementById('popupConfirm').classList.remove('hidden');
+        });
+    });
+
+    document.getElementById('cancelPopup').addEventListener('click', () => {
+        formToDelete = null;
+        document.getElementById('popupConfirm').classList.add('hidden');
+    });
+
+    document.getElementById('confirmPopup').addEventListener('click', () => {
+        if (formToDelete) formToDelete.submit();
+        document.getElementById('popupConfirm').classList.add('hidden');
+    });
+});
+</script>
 @endsection
