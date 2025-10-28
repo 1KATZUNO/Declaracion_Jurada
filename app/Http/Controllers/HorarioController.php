@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Horario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB; // 👈 usamos DB para leer la tabla 'declaracion'
 
 class HorarioController extends Controller
 {
@@ -17,27 +18,41 @@ class HorarioController extends Controller
     // Formulario de creación
     public function create()
     {
-        return view('horarios.create');
+        // Trae opciones para el select si no llega la FK por URL
+        $declaraciones = DB::table('declaracion') // 👈 tu tabla real
+            ->orderBy('id_declaracion', 'desc')
+            ->get(['id_declaracion']);
+
+        return view('horarios.create', compact('declaraciones'));
     }
 
     // Guardar nuevo horario
     public function store(Request $request)
     {
+        // Evita caída si no viene la FK
+        if (!$request->filled('id_declaracion')) {
+            return back()
+                ->withErrors(['id_declaracion' => 'Falta la declaración a la que pertenece el horario.'])
+                ->withInput();
+        }
+
         $validated = $request->validate([
-            'tipo' => 'required|in:ucr,externo',
-            'dia' => 'required|string',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required',
-            'lugar' => 'nullable|string|max:255',
+            // 👇 usa la tabla REAL 'declaracion' (singular)
+            'id_declaracion' => 'required|exists:declaracion,id_declaracion',
+            'tipo'           => 'required|in:ucr,externo',
+            'dia'            => 'required|in:Lunes,Martes,Miércoles,Jueves,Viernes,Sábado,Domingo',
+            'hora_inicio'    => 'required|date_format:H:i',
+            'hora_fin'       => 'required|date_format:H:i|after:hora_inicio',
+            'lugar'          => 'nullable|string|max:255',
         ]);
 
-        // Persistir con campo 'lugar' si viene
         Horario::create([
-            'tipo' => $validated['tipo'],
-            'dia' => $validated['dia'],
-            'hora_inicio' => $validated['hora_inicio'],
-            'hora_fin' => $validated['hora_fin'],
-            'lugar' => $validated['lugar'] ?? null,
+            'id_declaracion' => $validated['id_declaracion'],
+            'tipo'           => $validated['tipo'],
+            'dia'            => $validated['dia'],
+            'hora_inicio'    => $validated['hora_inicio'],
+            'hora_fin'       => $validated['hora_fin'],
+            'lugar'          => $validated['lugar'] ?? null,
         ]);
 
         return redirect()->route('horarios.index')
@@ -54,4 +69,3 @@ class HorarioController extends Controller
                          ->with('success', 'Horario eliminado correctamente');
     }
 }
-
