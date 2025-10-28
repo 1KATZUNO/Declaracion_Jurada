@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Horario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // 👈 usamos DB para leer la tabla 'declaracion'
+use Illuminate\Support\Facades\DB; //  usamos DB para leer la tabla 'declaracion'
 
 class HorarioController extends Controller
 {
@@ -19,7 +19,7 @@ class HorarioController extends Controller
     public function create()
     {
         // Trae opciones para el select si no llega la FK por URL
-        $declaraciones = DB::table('declaracion') // 👈 tu tabla real
+        $declaraciones = DB::table('declaracion') 
             ->orderBy('id_declaracion', 'desc')
             ->get(['id_declaracion']);
 
@@ -29,7 +29,7 @@ class HorarioController extends Controller
     // Guardar nuevo horario
     public function store(Request $request)
     {
-        // Evita caída si no viene la FK
+        // Evita caída si no viene la llave foranea
         if (!$request->filled('id_declaracion')) {
             return back()
                 ->withErrors(['id_declaracion' => 'Falta la declaración a la que pertenece el horario.'])
@@ -37,7 +37,7 @@ class HorarioController extends Controller
         }
 
         $validated = $request->validate([
-            // 👇 usa la tabla REAL 'declaracion' (singular)
+            //  usa la tabla REAL 'declaracion' (singular)
             'id_declaracion' => 'required|exists:declaracion,id_declaracion',
             'tipo'           => 'required|in:ucr,externo',
             'dia'            => 'required|in:Lunes,Martes,Miércoles,Jueves,Viernes,Sábado,Domingo',
@@ -45,7 +45,7 @@ class HorarioController extends Controller
             'hora_fin'       => 'required|date_format:H:i|after:hora_inicio',
             'lugar'          => 'nullable|string|max:255',
         ]);
-
+//Crea horario correctamente
         Horario::create([
             'id_declaracion' => $validated['id_declaracion'],
             'tipo'           => $validated['tipo'],
