@@ -6,6 +6,7 @@ use App\Models\Usuario;
 use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\Hash; 
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class LoginController extends Controller 
 { 
@@ -37,10 +38,16 @@ class LoginController extends Controller
         } 
 
         // Guardar informacion en sesion 
+        $avatarUrl = null;
+        if (!empty($usuario->avatar)) {
+            // avatar guardado en BD (path 'public/avatars/..')
+            $avatarUrl = Storage::url($usuario->avatar);
+        }
         session([ 
             'usuario_id' => $usuario->id_usuario ?? $usuario->id, 
-            'usuario_nombre' => $usuario->nombre . ' ' . $usuario->apellido, 
+            'usuario_nombre' => trim(($usuario->nombre ?? '') . ' ' . ($usuario->apellido ?? '')), 
             'usuario_rol' => $usuario->rol, 
+            'usuario_avatar' => $avatarUrl,
         ]); 
 
         return redirect()->route('declaraciones.index'); 

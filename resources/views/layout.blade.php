@@ -64,13 +64,18 @@
 
       {{-- Navegación superior --}}
       <nav class="hidden lg:flex items-center gap-8 text-[13px] font-medium text-gray-800">
-        <a href="{{ route('home') }}" class="hover:text-[var(--ucr-azul)]">INICIO</a>
+        <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 inline">
+          @csrf
+          <button type="submit" class="hover:text-[var(--ucr-azul)] bg-transparent border-0 p-0 m-0 cursor-pointer">
+            Cerrar sesión
+          </button>
+        </form>
         <a href="#" class="hover:text-[var(--ucr-azul)]">ACCESIBILIDAD</a>
         <a href="#" class="hover:text-[var(--ucr-azul)]">AYUDA</a>
         <a href="#" class="hover:text-[var(--ucr-azul)]">ACERCA DE</a>
       </nav>
 
-      {{-- Usuario logueado --}}
+      {{-- Usuario logueado (clickable) --}}
       @php
         $nombreActual = session('usuario_nombre');
         if (!$nombreActual && function_exists('auth') && auth()->check()) {
@@ -84,13 +89,62 @@
           }
         }
         if (!$nombreActual) $nombreActual = 'Usuario';
+
+        // avatar: preferir session, luego auth user->avatar si existe
+        $avatarUrl = session('usuario_avatar') ?? (function_exists('auth') && auth()->check() ? (auth()->user()->avatar ?? null) : null);
+        // rol
+        $rolActual = session('usuario_rol') ?? (function_exists('auth') && auth()->check() ? (auth()->user()->rol ?? null) : null);
       @endphp
 
-      <div class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1.5">
-        <div class="rounded-full bg-gray-300 grid place-content-center"
-             style="height:var(--user-avatar); width:var(--user-avatar);" aria-hidden="true">👤</div>
-        <span class="text-[12px] text-gray-800">{{ $nombreActual }}</span>
+      <div class="relative">
+        <button id="user-button" class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1.5 focus:outline-none">
+          <div class="rounded-full bg-gray-300 overflow-hidden"
+               style="height:var(--user-avatar); width:var(--user-avatar);">
+            @if($avatarUrl)
+              <img src="{{ asset($avatarUrl) }}" alt="avatar" class="w-full h-full object-cover">
+            @else
+              <span class="block w-full h-full grid place-content-center">👤</span>
+            @endif
+          </div>
+          <span class="text-[12px] text-gray-800">{{ $nombreActual }}</span>
+          <svg class="w-3 h-3 text-gray-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 011.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+        </button>
+
+        <!-- Dropdown perfil -->
+        <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+          <div class="p-4">
+            <p class="text-sm font-semibold">{{ $nombreActual }}</p>
+            <p class="text-xs text-gray-500 mb-3">{{ $rolActual ? strtoupper($rolActual) : 'ROL DESCONOCIDO' }}</p>
+
+            <form action="{{ route('perfil.update') }}" method="POST" enctype="multipart/form-data" class="space-y-3">
+              @csrf
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Nombre</label>
+                <input type="text" name="nombre" value="{{ old('nombre', (function_exists('auth') && auth()->check()) ? auth()->user()->nombre : '') }}"
+                       class="w-full px-3 py-2 border rounded text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Apellido</label>
+                <input type="text" name="apellido" value="{{ old('apellido', (function_exists('auth') && auth()->check()) ? auth()->user()->apellido : '') }}"
+                       class="w-full px-3 py-2 border rounded text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Foto de perfil</label>
+                <input type="file" name="avatar" id="avatar-input" accept="image/*" class="text-xs">
+                <div id="avatar-preview" class="mt-2 w-20 h-20 rounded overflow-hidden border" style="display:{{ $avatarUrl ? 'block' : 'none' }};">
+                  @if($avatarUrl)<img src="{{ asset($avatarUrl) }}" id="avatar-preview-img" class="w-full h-full object-cover">@endif
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded">Guardar</button>
+                <a href="{{ route('declaraciones.index') }}" class="text-xs text-gray-500">Mi perfil</a>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
+      {{-- fin usuario --}}
     </div>
   </header>
 
@@ -155,5 +209,44 @@
   <footer class="bg-[var(--ucr-azul)] text-blue-100 text-center text-[11px] py-3">
     © {{ date('Y') }} Universidad de Costa Rica — Sistema de Gestión Académica
   </footer>
+
+  <script>
+    // toggle dropdown
+    document.addEventListener('click', function(e){
+      const btn = document.getElementById('user-button');
+      const dd = document.getElementById('user-dropdown');
+      if (!btn || !dd) return;
+      if (btn.contains(e.target)) {
+        dd.classList.toggle('hidden');
+      } else if (!dd.contains(e.target)) {
+        dd.classList.add('hidden');
+      }
+    });
+
+    // preview avatar
+    const avatarInput = document.getElementById('avatar-input');
+    if (avatarInput) {
+      avatarInput.addEventListener('change', function(){
+        const file = this.files && this.files[0];
+        const preview = document.getElementById('avatar-preview');
+        const previewImg = document.getElementById('avatar-preview-img');
+        if (!file) {
+          if (preview) preview.style.display = 'none';
+          return;
+        }
+        const url = URL.createObjectURL(file);
+        if (previewImg) {
+          previewImg.src = url;
+        } else if (preview) {
+          const img = document.createElement('img');
+          img.id = 'avatar-preview-img';
+          img.className = 'w-full h-full object-cover';
+          img.src = url;
+          preview.appendChild(img);
+        }
+        if (preview) preview.style.display = 'block';
+      });
+    }
+  </script>
 </body>
 </html>

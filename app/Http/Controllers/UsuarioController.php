@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UsuarioCreado;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class UsuarioController extends Controller
 {
@@ -80,5 +82,68 @@ public function store(Request $request)
     {
         Usuario::findOrFail($id)->delete();
         return back()->with('ok','Usuario eliminado');
+    }
+
+    // Actualizar perfil del usuario autenticado (nombre/apellido + avatar opcional)
+    public function updateProfile(Request $request)
+    {
+        $data = $request->validate([
+            'nombre' => 'nullable|string|max:50',
+            'apellido' => 'nullable|string|max:50',
+            'avatar' => 'nullable|image|max:2048', // 2MB
+        ]);
+
+        $user = null;
+        if (function_exists('auth') && auth()->check()) {
+            $user = auth()->user();
+        } elseif (session()->has('usuario_id')) {
+            $user = Usuario::find(session('usuario_id'));
+        }
+
+        $avatarUrl = null;
+        if ($request->hasFile('avatar')) {
+            // Guardar en storage/app/public/avatars y obtener URL pública (/storage/avatars/...)
+            $path = $request->file('avatar')->store('public/avatars');
+            $avatarUrl = Storage::url($path); // => /storage/avatars/filename.jpg
+        }
+
+        if ($user) {
+            // actualizar nombre/apellido en DB si vienen
+            $update = [];
+            if (isset($data['nombre'])) $update['nombre'] = $data['nombre'];
+            if (isset($data['apellido'])) $update['apellido'] = $data['apellido'];
+
+            // si la tabla usuario tiene columna 'avatar', guardarla; si no, la llevamos a sesión
+            if ($avatarUrl && Schema::hasColumn($user->getTable(), 'avatar')) {
+                // Guardar el path en BD para consistencia (usamos $path que es 'public/avatars/filename')
+                $update['avatar'] = $path;
+            }
+
+            if (!empty($update)) {
+                $user->update($update);
+            }
+
+            // actualizar sesión (nombre y avatar)
+            session(['usuario_nombre' => trim(($update['nombre'] ?? $user->nombre) . ' ' . ($update['apellido'] ?? $user->apellido))]);
+            if ($avatarUrl) {
+                // preferir columna DB si existe
+                if (Schema::hasColumn($user->getTable(), 'avatar')) {
+                    // Si BD tuvo avatar guardado, obtener su URL pública desde Storage
+                    $dbAvatar = $user->getAttribute('avatar') ?? null;
+                    session(['usuario_avatar' => $dbAvatar ? Storage::url($dbAvatar) : $avatarUrl]);
+                } else {
+                    session(['usuario_avatar' => $avatarUrl]);
+                }
+            }
+        } else {
+            // si no hay usuario en DB (caso raro), solo actualizar sesión
+            if (isset($data['nombre']) || isset($data['apellido'])) {
+                $nombre = trim(($data['nombre'] ?? session('usuario.nombre') ?? '') . ' ' . ($data['apellido'] ?? session('usuario.apellido') ?? ''));
+                session(['usuario_nombre' => $nombre]);
+            }
+            if ($avatarUrl) session(['usuario_avatar' => $avatarUrl]);
+        }
+
+        return back()->with('ok','Perfil actualizado');
     }
 }
