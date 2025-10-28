@@ -9,61 +9,64 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    :root{
-      /* Colores institucionales y grises */
-      --ucr-azul:#0B2C59;
-      --ucr-azul-menu:#0F2B55;
-      --ucr-fondo:#F3F5F7;
-      --ucr-top-gray:#BDBDBD;
-      --ucr-top-border:#C7CCD3;
+  :root{
+    /* Colores institucionales y grises */
+    --ucr-azul:#0B2C59;
+    --ucr-azul-menu:#0F2B55;
+    --ucr-fondo:#F3F5F7;
+    --ucr-top-gray:#BDBDBD;
+    --ucr-top-border:#C7CCD3;
 
-      /* Medidas base */
-      --container-max:1440px;
-      --topbar-h:110px;      
-      --sidebar-w:240px;
-      --content-px:36px;
-      --content-py:28px;
-      --logo-size:44px;
-      --user-avatar:28px;
-    }
-    html,body{
-      font-family:'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans';
-      background:var(--ucr-fondo);
-      color:#0f172a;
-    }
-    .nav-item{
-      display:flex; align-items:center; gap:.75rem;
-      padding:.75rem 1rem;
-      font-size:.9rem;
-      color:#0f172a;
-      transition:background .15s ease;
-    }
-    .nav-item:hover{
-      background:#e5e7eb;
-    }
+    /* Medidas base */
+    --container-max:1440px;
+    --topbar-h:110px;      
+    --sidebar-w:240px;
+    --content-px:36px;
+    --content-py:28px;
+    --logo-size:44px;
+    --user-avatar:28px;
+  }
+  html,body{
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans';
+    background:var(--ucr-fondo);
+    color:#0f172a;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:.75rem;
+    padding:.75rem 1rem;
+    font-size:.9rem;
+    color:#0f172a;
+    transition:background .15s ease;
+  }
+  .nav-item:hover{
+    background:#e5e7eb;
+  }
 
-    /* Topbar responsive tweaks */
-    .topbar-container{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      padding-left:1rem;
-      padding-right:1rem;
-      gap:0.5rem;
-    }
-    @media(min-width:768px){
-      .topbar-container{ padding-left:2rem; padding-right:2rem; }
-    }
+  /* Topbar responsive tweaks */
+  .topbar-container{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    padding-left:1rem;
+    padding-right:1rem;
+    gap:0.5rem;
+  }
+  @media(min-width:768px){
+    .topbar-container{ padding-left:2rem; padding-right:2rem; }
+  }
 
-    /* Shift logo left */
-    .logo-shift{ margin-left:-20px; }
-    @media(max-width:640px){ .logo-shift{ margin-left:-40px; } }/* */ 
+  /* Shift logo left — corregido */
+  .logo-shift{ margin-left:-60px; } /* antes -20px */
 
-    /* Mostrar enlaces auxiliares solo en md+ */
-    .aux-nav{ display:none; }
-    @media(min-width:768px){ .aux-nav{ display:block; } }
-  </style>
+  @media(max-width:640px){ 
+    .logo-shift{ margin-left:-40px; } 
+  }
+
+  /* Mostrar enlaces auxiliares solo en md+ */
+  .aux-nav{ display:none; }
+  @media(min-width:768px){ .aux-nav{ display:block; } }
+</style>
 
   @vite(['resources/css/app.css'])
 </head>
