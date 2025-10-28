@@ -100,22 +100,19 @@ public function store(Request $request)
             $user = Usuario::find(session('usuario_id'));
         }
 
-        $avatarUrl = null;
+        $path = null;
         if ($request->hasFile('avatar')) {
-            // Guardar en storage/app/public/avatars y obtener URL pública (/storage/avatars/...)
-            $path = $request->file('avatar')->store('public/avatars');
-            $avatarUrl = Storage::url($path); // => /storage/avatars/filename.jpg
+            // Guardar en storage/app/public/avatars
+            $path = $request->file('avatar')->store('public/avatars'); // ej. "public/avatars/xxx.jpg"
         }
 
         if ($user) {
-            // actualizar nombre/apellido en DB si vienen
             $update = [];
             if (isset($data['nombre'])) $update['nombre'] = $data['nombre'];
             if (isset($data['apellido'])) $update['apellido'] = $data['apellido'];
 
-            // si la tabla usuario tiene columna 'avatar', guardarla; si no, la llevamos a sesión
-            if ($avatarUrl && Schema::hasColumn($user->getTable(), 'avatar')) {
-                // Guardar el path en BD para consistencia (usamos $path que es 'public/avatars/filename')
+            if ($path && Schema::hasColumn($user->getTable(), 'avatar')) {
+                // Guardar path en BD (public/avatars/...)
                 $update['avatar'] = $path;
             }
 
@@ -123,27 +120,62 @@ public function store(Request $request)
                 $user->update($update);
             }
 
-            // actualizar sesión (nombre y avatar)
+            // REFRESCAR modelo y actualizar el usuario autenticado
+            $user = $user->fresh();
+            if (function_exists('auth') && auth()->check()) {
+                auth()->setUser($user);
+            }
+
+            // construir URL pública final del avatar (maneja distintos formatos guardados)
+            $publicAvatar = null;
+            if (Schema::hasColumn($user->getTable(), 'avatar') && !empty($user->avatar)) {
+                $publicAvatar = $this->normalizeAvatarPublicUrl($user->avatar);
+            } elseif ($path) {
+                $publicAvatar = $this->normalizeAvatarPublicUrl($path);
+            }
+
+            // actualizar sesión (nombre y avatar pública)
             session(['usuario_nombre' => trim(($update['nombre'] ?? $user->nombre) . ' ' . ($update['apellido'] ?? $user->apellido))]);
-            if ($avatarUrl) {
-                // preferir columna DB si existe
-                if (Schema::hasColumn($user->getTable(), 'avatar')) {
-                    // Si BD tuvo avatar guardado, obtener su URL pública desde Storage
-                    $dbAvatar = $user->getAttribute('avatar') ?? null;
-                    session(['usuario_avatar' => $dbAvatar ? Storage::url($dbAvatar) : $avatarUrl]);
-                } else {
-                    session(['usuario_avatar' => $avatarUrl]);
-                }
+            if ($publicAvatar) {
+                session(['usuario_avatar' => $publicAvatar]);
             }
         } else {
-            // si no hay usuario en DB (caso raro), solo actualizar sesión
+            // caso sin usuario: solo sesión
             if (isset($data['nombre']) || isset($data['apellido'])) {
                 $nombre = trim(($data['nombre'] ?? session('usuario.nombre') ?? '') . ' ' . ($data['apellido'] ?? session('usuario.apellido') ?? ''));
                 session(['usuario_nombre' => $nombre]);
             }
-            if ($avatarUrl) session(['usuario_avatar' => $avatarUrl]);
+            if ($path) session(['usuario_avatar' => $this->normalizeAvatarPublicUrl($path)]);
         }
 
         return back()->with('ok','Perfil actualizado');
+    }
+
+    // Helper privado: devuelve URL pública utilizable por la vista
+    private function normalizeAvatarPublicUrl(?string $value): ?string
+    {
+        if (empty($value)) return null;
+
+        // Si ya es url absoluta o protocolo relativo
+        if (preg_match('/^(?:https?:)?\\/\\//', $value)) return $value;
+
+        // Si ya empieza con /storage — es la URL pública esperada
+        if (strpos($value, '/storage/') === 0) return $value;
+
+        // Si empieza con 'storage/' (sin slash) -> añadir slash
+        if (strpos($value, 'storage/') === 0) return '/'.$value;
+
+        // Si empieza con 'public/' -> Storage::url lo normaliza a /storage/...
+        if (strpos($value, 'public/') === 0) {
+            return \Illuminate\Support\Facades\Storage::url($value);
+        }
+
+        // cualquier otro (por ejemplo guardado directamente como 'avatars/..' o 'public/..'), intentar Storage::url
+        try {
+            return \Illuminate\Support\Facades\Storage::url($value);
+        } catch (\Exception $e) {
+            // fallback: asset si parece una ruta relativa
+            return asset($value);
+        }
     }
 }

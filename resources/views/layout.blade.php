@@ -56,10 +56,9 @@
       .topbar-container{ padding-left:2rem; padding-right:2rem; }
     }
 
-    /* Empujar ligeramente el logo hacia la izquierda en pantallas pequeñas */
-    /* Empujar el logo más a la izquierda (ajusta valores si quieres más/menos) */
-    .logo-shift{ margin-left:-20px; }          /* escritorio / tablet */
-    @media(max-width:640px){ .logo-shift{ margin-left:-40px; } } /* móviles */
+    /* Shift logo left */
+    .logo-shift{ margin-left:-20px; }
+    @media(max-width:640px){ .logo-shift{ margin-left:-40px; } }
 
     /* Mostrar enlaces auxiliares solo en md+ */
     .aux-nav{ display:none; }
@@ -80,47 +79,52 @@
             <img src="{{ asset('imagenes/uc_logo.png') }}" alt="Universidad de Costa Rica" class="h-full w-full object-contain" onerror="this.onerror=null; this.style.display='none'">
           </div>
           <div class="ml-0">
-            <img src="{{ asset('imagenes/firma-horizontal-una-linea-reverso-rgb.png') }}"
-                 alt="Firma UCR"
-                 class="h-20 object-contain"
-                 style="max-height:90px; display:block;"
-                 onerror="this.onerror=null; this.style.display='none'">
+            <img src="{{ asset('imagenes/firma-horizontal-una-linea-reverso-rgb.png') }}" alt="Firma UCR"
+                 class="h-20 object-contain" style="max-height:90px; display:block;" onerror="this.onerror=null; this.style.display='none'">
           </div>
         </div>
       </div>
 
-      {{-- Derecha: cerrar sesión + usuario (en blanco) --}}
+      {{-- Derecha: cerrar sesión + usuario --}}
       <div class="flex items-center gap-4">
         <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 inline">
           @csrf
-          <button type="submit" class="text-white bg-transparent border-0 p-0 m-0 cursor-pointer text-sm font-medium">
-            Cerrar sesión
-          </button>
+          <button type="submit" class="text-white bg-transparent border-0 p-0 m-0 cursor-pointer text-sm font-medium">Cerrar sesión</button>
         </form>
 
-        {{-- Usuario logueado (clickable) --}}
         @php
           $nombreActual = session('usuario_nombre') ?? (function_exists('auth') && auth()->check() ? trim((auth()->user()->nombre ?? '') . ' ' . (auth()->user()->apellido ?? '')) : 'Usuario');
-          $avatarUrl = session('usuario_avatar') ?? (function_exists('auth') && auth()->check() ? (auth()->user()->avatar ?? null) : null);
+          $avatarSrc = session('usuario_avatar') ?? null;
+          if (empty($avatarSrc) && function_exists('auth') && auth()->check()) {
+              $dbAvatar = auth()->user()->avatar ?? null;
+              if (!empty($dbAvatar)) {
+                  $avatarSrc = \Illuminate\Support\Facades\Storage::url($dbAvatar);
+              }
+          }
+          if (!empty($avatarSrc) && !preg_match('/^(?:https?:)?\\/\\//', $avatarSrc) && strpos($avatarSrc, '/') !== 0) {
+              $avatarSrc = asset($avatarSrc);
+          }
         @endphp
+
         <div class="relative">
           <button id="user-button" class="flex items-center gap-2 bg-white/10 text-white border border-white/20 rounded-full px-3 py-1.5 focus:outline-none">
             <div class="rounded-full bg-white/20 overflow-hidden" style="height:var(--user-avatar); width:var(--user-avatar);">
-              @if($avatarUrl)
-                <img src="{{ asset($avatarUrl) }}" alt="avatar" class="w-full h-full object-cover">
+              @if(!empty($avatarSrc))
+                <img id="user-avatar-top-img" src="{{ $avatarSrc }}" alt="avatar" class="w-full h-full object-cover">
               @else
-                <span class="block w-full h-full grid place-content-center">👤</span>
+                <span id="user-avatar-top-placeholder" class="block w-full h-full grid place-content-center">👤</span>
               @endif
             </div>
             <span class="text-[12px] text-white">{{ $nombreActual }}</span>
             <svg class="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 011.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
           </button>
 
-          <!-- Dropdown perfil (mismo contenido que antes) -->
+          <!-- Dropdown perfil -->
           <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
             <div class="p-4">
               <p class="text-sm font-semibold text-gray-800">{{ $nombreActual }}</p>
               <p class="text-xs text-gray-500 mb-3">{{ session('usuario_rol') ? strtoupper(session('usuario_rol')) : 'ROL DESCONOCIDO' }}</p>
+
               <form action="{{ route('perfil.update') }}" method="POST" enctype="multipart/form-data" class="space-y-3">
                 @csrf
                 <div>
@@ -134,10 +138,11 @@
                 <div>
                   <label class="block text-xs text-gray-600 mb-1">Foto de perfil</label>
                   <input type="file" name="avatar" id="avatar-input" accept="image/*" class="text-xs">
-                  <div id="avatar-preview" class="mt-2 w-20 h-20 rounded overflow-hidden border" style="display:{{ $avatarUrl ? 'block' : 'none' }};">
-                    @if($avatarUrl)<img src="{{ asset($avatarUrl) }}" id="avatar-preview-img" class="w-full h-full object-cover">@endif
+                  <div id="avatar-preview" class="mt-2 w-20 h-20 rounded overflow-hidden border" style="display:{{ $avatarSrc ? 'block' : 'none' }};">
+                    @if($avatarSrc)<img src="{{ $avatarSrc }}" id="avatar-preview-img" class="w-full h-full object-cover">@endif
                   </div>
                 </div>
+
                 <div class="flex items-center justify-between">
                   <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded">Guardar</button>
                   <a href="{{ route('declaraciones.index') }}" class="text-xs text-gray-500">Mi perfil</a>
@@ -146,10 +151,11 @@
             </div>
           </div>
         </div>
+
       </div>
     </div>
 
-    {{-- Segunda fila con enlaces auxiliares (solo en md+) --}}
+    {{-- Enlaces auxiliares (md+) --}}
     <div class="w-full aux-nav" style="background:#0369a1;">
       <div class="mx-auto max-w-[var(--container-max)] px-8 py-2">
         <nav class="flex items-center justify-start gap-6 text-sm text-white/90">
@@ -161,67 +167,36 @@
     </div>
   </header>
 
-  {{-- DETECCIÓN SI HAY QUE OCULTAR SIDEBAR --}}
+  {{-- CONTENIDO PRINCIPAL --}}
   @php $hideSidebar = View::hasSection('hide_sidebar'); @endphp
-
-  {{-- CONTENEDOR PRINCIPAL --}}
   <div class="w-full bg-[var(--ucr-top-gray)]">
-    <div class="mx-auto w-full max-w-[var(--container-max)]" 
-         style="display:grid; grid-template-columns: {{ $hideSidebar ? '1fr' : 'var(--sidebar-w) 1fr' }};">
-      
-      {{-- SIDEBAR  --}}
+    <div class="mx-auto w-full max-w-[var(--container-max)]" style="display:grid; grid-template-columns: {{ $hideSidebar ? '1fr' : 'var(--sidebar-w) 1fr' }};">
       @unless($hideSidebar)
         <aside class="min-h-[calc(100vh-var(--topbar-h))] bg-[var(--ucr-top-gray)] border-r border-gray-300">
-          <div class="bg-[var(--ucr-azul-menu)] text-white px-4 py-2.5 text-[13px] font-semibold uppercase">
-            Menú Principal
-          </div>
-
+          <div class="bg-[var(--ucr-azul-menu)] text-white px-4 py-2.5 text-[13px] font-semibold uppercase">Menú Principal</div>
           <nav class="pt-1.5">
             <a href="{{ route('unidades.index') }}" class="nav-item"><span>🏫</span><span class="font-medium">Mis Unidades Académicas</span></a>
             <a href="{{ route('sedes.index') }}" class="nav-item"><span>📍</span><span class="font-medium">Sedes</span></a>
-
-            @if (Route::has('usuarios.index'))
-              <a href="{{ route('usuarios.index') }}" class="nav-item"><span>👤</span><span class="font-medium">Usuarios</span></a>
-            @endif
-            @if (Route::has('cargos.index'))
-              <a href="{{ route('cargos.index') }}" class="nav-item"><span>🧩</span><span class="font-medium">Cargos</span></a>
-            @endif
-            @if (Route::has('formularios.index'))
-              <a href="{{ route('formularios.index') }}" class="nav-item"><span>📄</span><span class="font-medium">Formularios</span></a>
-            @endif
-            @if (Route::has('declaraciones.index'))
-              <a href="{{ route('declaraciones.index') }}" class="nav-item"><span>📝</span><span class="font-medium">Declaraciones</span></a>
-            @endif
-            @if (Route::has('horarios.index'))
-              <a href="{{ route('horarios.index') }}" class="nav-item"><span>🕒</span><span class="font-medium">Horarios</span></a>
-            @endif
-            @if (Route::has('documentos.index'))
-              <a href="{{ route('documentos.index') }}" class="nav-item"><span>📎</span><span class="font-medium">Documentos</span></a>
-            @endif
-            @if (Route::has('notificaciones.index'))
-              <a href="{{ route('notificaciones.index') }}" class="nav-item"><span>🔔</span><span class="font-medium">Notificaciones</span></a>
-            @endif
+            @if (Route::has('usuarios.index'))<a href="{{ route('usuarios.index') }}" class="nav-item"><span>👤</span><span class="font-medium">Usuarios</span></a>@endif
+            @if (Route::has('cargos.index'))<a href="{{ route('cargos.index') }}" class="nav-item"><span>🧩</span><span class="font-medium">Cargos</span></a>@endif
+            @if (Route::has('formularios.index'))<a href="{{ route('formularios.index') }}" class="nav-item"><span>📄</span><span class="font-medium">Formularios</span></a>@endif
+            @if (Route::has('declaraciones.index'))<a href="{{ route('declaraciones.index') }}" class="nav-item"><span>📝</span><span class="font-medium">Declaraciones</span></a>@endif
+            @if (Route::has('horarios.index'))<a href="{{ route('horarios.index') }}" class="nav-item"><span>🕒</span><span class="font-medium">Horarios</span></a>@endif
+            @if (Route::has('documentos.index'))<a href="{{ route('documentos.index') }}" class="nav-item"><span>📎</span><span class="font-medium">Documentos</span></a>@endif
+            @if (Route::has('notificaciones.index'))<a href="{{ route('notificaciones.index') }}" class="nav-item"><span>🔔</span><span class="font-medium">Notificaciones</span></a>@endif
           </nav>
         </aside>
       @endunless
 
-      {{-- CONTENIDO PRINCIPAL --}}
       <main class="bg-[var(--ucr-fondo)]" style="padding:var(--content-py) var(--content-px);">
         @includeIf('components.flash')
-
-        @hasSection('content')
-          @yield('content')
-        @elseif (View::hasSection('contenido'))
-          @yield('contenido')
-        @endif
+        @hasSection('content') @yield('content') @elseif(View::hasSection('contenido')) @yield('contenido') @endif
       </main>
     </div>
   </div>
 
   {{-- FOOTER --}}
-  <footer class="bg-[var(--ucr-azul)] text-blue-100 text-center text-[11px] py-3">
-    © {{ date('Y') }} Universidad de Costa Rica — Sistema de Gestión Académica
-  </footer>
+  <footer class="bg-[var(--ucr-azul)] text-blue-100 text-center text-[11px] py-3">© {{ date('Y') }} Universidad de Costa Rica — Sistema de Gestión Académica</footer>
 
   <script>
     // toggle dropdown
@@ -229,37 +204,36 @@
       const btn = document.getElementById('user-button');
       const dd = document.getElementById('user-dropdown');
       if (!btn || !dd) return;
-      if (btn.contains(e.target)) {
-        dd.classList.toggle('hidden');
-      } else if (!dd.contains(e.target)) {
-        dd.classList.add('hidden');
-      }
+      if (btn.contains(e.target)) dd.classList.toggle('hidden'); else if (!dd.contains(e.target)) dd.classList.add('hidden');
     });
 
-    // preview avatar
-    const avatarInput = document.getElementById('avatar-input');
-    if (avatarInput) {
+    // preview avatar + actualizar topbar
+    (function(){
+      const avatarInput = document.getElementById('avatar-input');
+      if (!avatarInput) return;
       avatarInput.addEventListener('change', function(){
         const file = this.files && this.files[0];
         const preview = document.getElementById('avatar-preview');
-        const previewImg = document.getElementById('avatar-preview-img');
-        if (!file) {
-          if (preview) preview.style.display = 'none';
-          return;
-        }
+        let previewImg = document.getElementById('avatar-preview-img');
+        const topImg = document.getElementById('user-avatar-top-img');
+        const topPlaceholder = document.getElementById('user-avatar-top-placeholder');
+
+        if (!file) { if (preview) preview.style.display = 'none'; return; }
         const url = URL.createObjectURL(file);
-        if (previewImg) {
-          previewImg.src = url;
-        } else if (preview) {
-          const img = document.createElement('img');
-          img.id = 'avatar-preview-img';
-          img.className = 'w-full h-full object-cover';
-          img.src = url;
-          preview.appendChild(img);
-        }
+
+        if (previewImg) previewImg.src = url;
+        else if (preview) { previewImg = document.createElement('img'); previewImg.id='avatar-preview-img'; previewImg.className='w-full h-full object-cover'; previewImg.src = url; preview.appendChild(previewImg); }
         if (preview) preview.style.display = 'block';
+
+        if (topImg) topImg.src = url;
+        else if (topPlaceholder) {
+          const img = document.createElement('img'); img.id='user-avatar-top-img'; img.className='w-full h-full object-cover'; img.src = url; topPlaceholder.replaceWith(img);
+        }
+
+        const cleanup = () => { try{ URL.revokeObjectURL(url); }catch(e){} };
+        if (previewImg) previewImg.onload = previewImg.onerror = cleanup;
       });
-    }
+    })();
   </script>
 </body>
 </html>

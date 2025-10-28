@@ -37,12 +37,12 @@ class LoginController extends Controller
             return back()->withErrors(['password' => 'Credenciales incorrectas'])->withInput(); 
         } 
 
-        // Guardar informacion en sesion 
+        // Normalizar avatar y guardar en sesión
         $avatarUrl = null;
         if (!empty($usuario->avatar)) {
-            // avatar guardado en BD (path 'public/avatars/..')
-            $avatarUrl = Storage::url($usuario->avatar);
+            $avatarUrl = $this->normalizeAvatarPublicUrl($usuario->avatar);
         }
+
         session([ 
             'usuario_id' => $usuario->id_usuario ?? $usuario->id, 
             'usuario_nombre' => trim(($usuario->nombre ?? '') . ' ' . ($usuario->apellido ?? '')), 
@@ -52,6 +52,19 @@ class LoginController extends Controller
 
         return redirect()->route('declaraciones.index'); 
     } 
+    // Copia del helper para este controlador
+    private function normalizeAvatarPublicUrl(?string $value): ?string
+    {
+        if (empty($value)) return null;
+        if (preg_match('/^(?:https?:)?\\/\\//', $value)) return $value;
+        if (strpos($value, '/storage/') === 0) return $value;
+        if (strpos($value, 'storage/') === 0) return '/'.$value;
+        if (strpos($value, 'public/') === 0) {
+            return Storage::url($value);
+        }
+        try { return Storage::url($value); } catch (\Exception $e) { return asset($value); }
+    }
+
     // Mostrar formulario de cambio de contraseña
 public function showChangePasswordForm()
 {
