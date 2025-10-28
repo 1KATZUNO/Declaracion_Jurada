@@ -41,6 +41,29 @@
     .nav-item:hover{
       background:#e5e7eb;
     }
+
+    /* Topbar responsive tweaks */
+    .topbar-container{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      padding-left:1rem;
+      padding-right:1rem;
+      gap:0.5rem;
+    }
+    @media(min-width:768px){
+      .topbar-container{ padding-left:2rem; padding-right:2rem; }
+    }
+
+    /* Empujar ligeramente el logo hacia la izquierda en pantallas pequeñas */
+    /* Empujar el logo más a la izquierda (ajusta valores si quieres más/menos) */
+    .logo-shift{ margin-left:-20px; }          /* escritorio / tablet */
+    @media(max-width:640px){ .logo-shift{ margin-left:-40px; } } /* móviles */
+
+    /* Mostrar enlaces auxiliares solo en md+ */
+    .aux-nav{ display:none; }
+    @media(min-width:768px){ .aux-nav{ display:block; } }
   </style>
 
   @vite(['resources/css/app.css'])
@@ -48,103 +71,93 @@
 
 <body class="min-h-screen">
   {{-- TOPBAR --}}
-  <header class="w-full bg-[var(--ucr-top-gray)] border-b" style="border-color:var(--ucr-top-border)">
-    <div class="mx-auto max-w-[var(--container-max)] px-8 flex items-center justify-between" style="height:var(--topbar-h);">
+  <header class="w-full" style="background:#0369a1;">
+    <div class="mx-auto max-w-[var(--container-max)] topbar-container" style="height:var(--topbar-h);">
       <div class="flex items-center gap-3">
-        {{-- Logo --}}
-        <div class="rounded bg-[var(--ucr-azul)] flex items-center justify-center text-white font-semibold"
-             style="height:var(--logo-size); width:var(--logo-size); font-size:12px;">
-          UCR
-        </div>
-        <div class="leading-tight">
-          <p class="text-[15px] font-semibold tracking-wide text-[var(--ucr-azul)]">DECLARACIONES</p>
-          <p class="text-[10px] text-gray-700 -mt-0.5">JURADAS DE HORARIO</p>
+        {{-- Logo Universidad + imagen de encabezado (firma) --}}
+        <div class="flex items-center gap-3 logo-shift">
+          <div style="height:var(--logo-size); width:var(--logo-size);">
+            <img src="{{ asset('imagenes/uc_logo.png') }}" alt="Universidad de Costa Rica" class="h-full w-full object-contain" onerror="this.onerror=null; this.style.display='none'">
+          </div>
+          <div class="ml-0">
+            <img src="{{ asset('imagenes/firma-horizontal-una-linea-reverso-rgb.png') }}"
+                 alt="Firma UCR"
+                 class="h-20 object-contain"
+                 style="max-height:90px; display:block;"
+                 onerror="this.onerror=null; this.style.display='none'">
+          </div>
         </div>
       </div>
 
-      {{-- Navegación superior --}}
-      <nav class="hidden lg:flex items-center gap-8 text-[13px] font-medium text-gray-800">
+      {{-- Derecha: cerrar sesión + usuario (en blanco) --}}
+      <div class="flex items-center gap-4">
         <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 inline">
           @csrf
-          <button type="submit" class="hover:text-[var(--ucr-azul)] bg-transparent border-0 p-0 m-0 cursor-pointer">
+          <button type="submit" class="text-white bg-transparent border-0 p-0 m-0 cursor-pointer text-sm font-medium">
             Cerrar sesión
           </button>
         </form>
-        <a href="#" class="hover:text-[var(--ucr-azul)]">ACCESIBILIDAD</a>
-        <a href="#" class="hover:text-[var(--ucr-azul)]">AYUDA</a>
-        <a href="#" class="hover:text-[var(--ucr-azul)]">ACERCA DE</a>
-      </nav>
 
-      {{-- Usuario logueado (clickable) --}}
-      @php
-        $nombreActual = session('usuario_nombre');
-        if (!$nombreActual && function_exists('auth') && auth()->check()) {
-          $u = auth()->user();
-          $nombreActual = trim(($u->nombre ?? '').' '.($u->apellido ?? '')) ?: ($u->name ?? 'Usuario');
-        }
-        if (!$nombreActual && session()->has('usuario')) {
-          $su = session('usuario');
-          if (is_array($su)) {
-            $nombreActual = trim(($su['nombre'] ?? '').' '.($su['apellido'] ?? '')) ?: ($su['name'] ?? 'Usuario');
-          }
-        }
-        if (!$nombreActual) $nombreActual = 'Usuario';
+        {{-- Usuario logueado (clickable) --}}
+        @php
+          $nombreActual = session('usuario_nombre') ?? (function_exists('auth') && auth()->check() ? trim((auth()->user()->nombre ?? '') . ' ' . (auth()->user()->apellido ?? '')) : 'Usuario');
+          $avatarUrl = session('usuario_avatar') ?? (function_exists('auth') && auth()->check() ? (auth()->user()->avatar ?? null) : null);
+        @endphp
+        <div class="relative">
+          <button id="user-button" class="flex items-center gap-2 bg-white/10 text-white border border-white/20 rounded-full px-3 py-1.5 focus:outline-none">
+            <div class="rounded-full bg-white/20 overflow-hidden" style="height:var(--user-avatar); width:var(--user-avatar);">
+              @if($avatarUrl)
+                <img src="{{ asset($avatarUrl) }}" alt="avatar" class="w-full h-full object-cover">
+              @else
+                <span class="block w-full h-full grid place-content-center">👤</span>
+              @endif
+            </div>
+            <span class="text-[12px] text-white">{{ $nombreActual }}</span>
+            <svg class="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 011.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
 
-        // avatar: preferir session, luego auth user->avatar si existe
-        $avatarUrl = session('usuario_avatar') ?? (function_exists('auth') && auth()->check() ? (auth()->user()->avatar ?? null) : null);
-        // rol
-        $rolActual = session('usuario_rol') ?? (function_exists('auth') && auth()->check() ? (auth()->user()->rol ?? null) : null);
-      @endphp
-
-      <div class="relative">
-        <button id="user-button" class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1.5 focus:outline-none">
-          <div class="rounded-full bg-gray-300 overflow-hidden"
-               style="height:var(--user-avatar); width:var(--user-avatar);">
-            @if($avatarUrl)
-              <img src="{{ asset($avatarUrl) }}" alt="avatar" class="w-full h-full object-cover">
-            @else
-              <span class="block w-full h-full grid place-content-center">👤</span>
-            @endif
-          </div>
-          <span class="text-[12px] text-gray-800">{{ $nombreActual }}</span>
-          <svg class="w-3 h-3 text-gray-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 011.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
-        </button>
-
-        <!-- Dropdown perfil -->
-        <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-          <div class="p-4">
-            <p class="text-sm font-semibold">{{ $nombreActual }}</p>
-            <p class="text-xs text-gray-500 mb-3">{{ $rolActual ? strtoupper($rolActual) : 'ROL DESCONOCIDO' }}</p>
-
-            <form action="{{ route('perfil.update') }}" method="POST" enctype="multipart/form-data" class="space-y-3">
-              @csrf
-              <div>
-                <label class="block text-xs text-gray-600 mb-1">Nombre</label>
-                <input type="text" name="nombre" value="{{ old('nombre', (function_exists('auth') && auth()->check()) ? auth()->user()->nombre : '') }}"
-                       class="w-full px-3 py-2 border rounded text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-gray-600 mb-1">Apellido</label>
-                <input type="text" name="apellido" value="{{ old('apellido', (function_exists('auth') && auth()->check()) ? auth()->user()->apellido : '') }}"
-                       class="w-full px-3 py-2 border rounded text-sm">
-              </div>
-              <div>
-                <label class="block text-xs text-gray-600 mb-1">Foto de perfil</label>
-                <input type="file" name="avatar" id="avatar-input" accept="image/*" class="text-xs">
-                <div id="avatar-preview" class="mt-2 w-20 h-20 rounded overflow-hidden border" style="display:{{ $avatarUrl ? 'block' : 'none' }};">
-                  @if($avatarUrl)<img src="{{ asset($avatarUrl) }}" id="avatar-preview-img" class="w-full h-full object-cover">@endif
+          <!-- Dropdown perfil (mismo contenido que antes) -->
+          <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+            <div class="p-4">
+              <p class="text-sm font-semibold text-gray-800">{{ $nombreActual }}</p>
+              <p class="text-xs text-gray-500 mb-3">{{ session('usuario_rol') ? strtoupper(session('usuario_rol')) : 'ROL DESCONOCIDO' }}</p>
+              <form action="{{ route('perfil.update') }}" method="POST" enctype="multipart/form-data" class="space-y-3">
+                @csrf
+                <div>
+                  <label class="block text-xs text-gray-600 mb-1">Nombre</label>
+                  <input type="text" name="nombre" value="{{ old('nombre', (function_exists('auth') && auth()->check()) ? auth()->user()->nombre : '') }}" class="w-full px-3 py-2 border rounded text-sm">
                 </div>
-              </div>
-
-              <div class="flex items-center justify-between">
-                <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded">Guardar</button>
-                <a href="{{ route('declaraciones.index') }}" class="text-xs text-gray-500">Mi perfil</a>
-              </div>
-            </form>
+                <div>
+                  <label class="block text-xs text-gray-600 mb-1">Apellido</label>
+                  <input type="text" name="apellido" value="{{ old('apellido', (function_exists('auth') && auth()->check()) ? auth()->user()->apellido : '') }}" class="w-full px-3 py-2 border rounded text-sm">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600 mb-1">Foto de perfil</label>
+                  <input type="file" name="avatar" id="avatar-input" accept="image/*" class="text-xs">
+                  <div id="avatar-preview" class="mt-2 w-20 h-20 rounded overflow-hidden border" style="display:{{ $avatarUrl ? 'block' : 'none' }};">
+                    @if($avatarUrl)<img src="{{ asset($avatarUrl) }}" id="avatar-preview-img" class="w-full h-full object-cover">@endif
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded">Guardar</button>
+                  <a href="{{ route('declaraciones.index') }}" class="text-xs text-gray-500">Mi perfil</a>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-      {{-- fin usuario --}}
+    </div>
+
+    {{-- Segunda fila con enlaces auxiliares (solo en md+) --}}
+    <div class="w-full aux-nav" style="background:#0369a1;">
+      <div class="mx-auto max-w-[var(--container-max)] px-8 py-2">
+        <nav class="flex items-center justify-start gap-6 text-sm text-white/90">
+          <a href="#" class="hover:underline">ACCESIBILIDAD</a>
+          <a href="#" class="hover:underline">AYUDA</a>
+          <a href="#" class="hover:underline">ACERCA DE</a>
+        </nav>
+      </div>
     </div>
   </header>
 
