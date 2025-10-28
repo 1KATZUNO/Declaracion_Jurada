@@ -7,7 +7,8 @@
     @vite(['resources/css/app.css'])
 </head>
 <body 
-    class="min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center"
+    class="min-h-screen bg-cover bg-center bg-no-repeat flex items-start justify-center pt-30
+"
     style="background-image: url('{{ asset('imagenes/Login.png') }}');">
         <div class="max-w-md w-full">
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
