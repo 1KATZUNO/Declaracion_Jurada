@@ -232,12 +232,32 @@ class DeclaracionExportController extends Controller
         $sheet->getStyle('B3:R6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
         $sheet->getStyle('B3:R6')->getFont()->getColor()->setRGB('000000');
 
+      
+                // ======= ESPACIO PARA FIRMAS IMPRESAS =======
+        $lastRow = $sheet->getHighestRow() + 3; // deja un poco de espacio al final del documento
+
+        // Firma del funcionario (profesor)
+        $sheet->mergeCells("B{$lastRow}:H" . ($lastRow + 1));
+        $sheet->setCellValue("B{$lastRow}", 'Firma del funcionario: _______________________________');
+        $sheet->getStyle("B{$lastRow}:H" . ($lastRow + 1))->getFont()->setBold(true);
+
+        // Firma del encargado o validador (unidad académica o administrativo)
+        $sheet->mergeCells("J{$lastRow}:R" . ($lastRow + 1));
+        $sheet->setCellValue("J{$lastRow}", 'Firma del encargado: _______________________________');
+        $sheet->getStyle("J{$lastRow}:R" . ($lastRow + 1))->getFont()->setBold(true);
+
+        // Centrar visualmente las firmas
+        $sheet->getStyle("B{$lastRow}:R" . ($lastRow + 1))
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
         // ======= EXPORTAR Y GUARDAR =======
         $nombre = 'Declaracion_' . Str::slug(($d->usuario->nombre ?? '') . ' ' . ($d->usuario->apellido ?? '')) . '_' . $d->id_declaracion . '.xlsx';
         $dir = storage_path('app/public');
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
+
         $ruta = $dir . DIRECTORY_SEPARATOR . $nombre;
         (new Xlsx($spreadsheet))->save($ruta);
 
@@ -252,5 +272,6 @@ class DeclaracionExportController extends Controller
         return response()->download($ruta, $nombre)->deleteFileAfterSend(false);
     }
 }
+
 
 
