@@ -4,18 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Horario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; //  usamos DB para leer la tabla 'declaracion'
+use Illuminate\Support\Facades\DB; //  se usa DB para leer la tabla 'declaracion'
 
 class HorarioController extends Controller
 {
-    // Mostrar todos los horarios
+    // Muestra todos los horarios
     public function index()
     {
         $horarios = Horario::orderBy('id_horario', 'desc')->paginate(10);
         return view('horarios.index', compact('horarios'));
     }
 
-    // Formulario de creación
+    // EL formulario de creación
     public function create()
     {
         // Trae opciones para el select si no llega la FK por URL
@@ -26,7 +26,7 @@ class HorarioController extends Controller
         return view('horarios.create', compact('declaraciones'));
     }
 
-    // Guardar nuevo horario
+    // Guardar un nuevo horario
     public function store(Request $request)
     {
         // Evita caída si no viene la llave foranea
