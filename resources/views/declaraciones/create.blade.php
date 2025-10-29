@@ -16,8 +16,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="id_usuario" class="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
-                        <input type="number" name="id_usuario" id="id_usuario"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                        <select name="id_usuario" id="id_usuario" required
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white">
+                            @foreach($usuarios as $u)
+                                <option value="{{ $u->id_usuario }}">{{ $u->nombre }} {{ $u->apellido }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div>
@@ -79,16 +83,22 @@
                 <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horarios</h3>
 
                 <div id="horarios-container" class="space-y-4">
-                    <div class="border border-gray-300 rounded-lg p-5 bg-gray-50 hover:bg-white transition-colors">
+                    <div class="border border-gray-300 rounded-lg p-5 bg-gray-50 hover:bg-white transition-colors horario-block">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
-                                <select name="tipo[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                                <select name="tipo[]" class="tipo-select w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                                     <option value="ucr">UCR</option>
                                     <option value="externo">Otra institución</option>
                                 </select>
                             </div>
-                            <div>
+
+                            <div class="lugar-wrapper hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Lugar / Institución</label>
+                                <input type="text" name="lugar[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" placeholder="Nombre de la institución (solo para externo)">
+                            </div>
+
+                            <div class="dia-wrapper">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Día</label>
                                 <select name="dia[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                                     <option value="Lunes">Lunes</option>
@@ -134,11 +144,38 @@
 </div>
 
 <script>
+function setTipoBehavior(block){
+    const tipo = block.querySelector('.tipo-select');
+    const lugarWr = block.querySelector('.lugar-wrapper');
+    const diaWr = block.querySelector('.dia-wrapper');
+    const horaInicio = block.querySelector('input[name="hora_inicio[]"]');
+    const horaFin = block.querySelector('input[name="hora_fin[]"]');
+
+    const toggle = () => {
+        if(tipo.value === 'externo'){
+            lugarWr.classList.remove('hidden');
+            // para externos puedes permitir también horarios opcionales; aquí los dejamos opcionales
+        } else {
+            lugarWr.classList.add('hidden');
+        }
+    };
+    tipo.addEventListener('change', toggle);
+    toggle();
+}
+
+document.querySelectorAll('#horarios-container .horario-block').forEach(setTipoBehavior);
+
 document.getElementById('add-horario').addEventListener('click', () => {
     const container = document.getElementById('horarios-container');
     const clone = container.children[0].cloneNode(true);
-    clone.querySelectorAll('input, select').forEach(el => el.value = '');
+
+    // limpiar valores
+    clone.querySelectorAll('input').forEach(el => el.value = '');
+    clone.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+
+    // re-ajustar visibilidad y eventos
     container.appendChild(clone);
+    setTipoBehavior(clone);
 });
 </script>
 @endsection

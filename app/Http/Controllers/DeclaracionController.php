@@ -46,25 +46,73 @@ class DeclaracionController extends Controller
         'dia.*' => 'nullable|string',
         'hora_inicio.*' => 'nullable',
         'hora_fin.*' => 'nullable',
+        'lugar.*' => 'nullable|string|max:255',
     ]);
+
+    // Construimos array temporal de horarios para validar solapamientos
+    $items = [];
+    if ($r->has('tipo')) {
+        foreach ($r->tipo as $i => $tipo) {
+            $dia = $r->input("dia.$i");
+            $hi = $r->input("hora_inicio.$i");
+            $hf = $r->input("hora_fin.$i");
+            $lugar = $r->input("lugar.$i");
+
+            // Si es fila vacía (sin tipo o sin día), ignorar
+            if (!$tipo || (!$lugar && !$dia && !$hi && !$hf)) continue;
+
+            // Normalizar: si tipo externo y no tiene horas, permitimos guardar con hora null
+            $items[] = [
+                'tipo' => $tipo,
+                'dia' => $dia,
+                'hora_inicio' => $hi,
+                'hora_fin' => $hf,
+                'lugar' => $lugar,
+            ];
+        }
+    }
+
+    // Verificar solapamientos: para cada día, recoger intervalos con horas y comprobar
+    $intervalsByDay = [];
+    foreach ($items as $it) {
+        if (!empty($it['hora_inicio']) && !empty($it['hora_fin']) && !empty($it['dia'])) {
+            $start = strtotime($it['hora_inicio']);
+            $end = strtotime($it['hora_fin']);
+            if ($end <= $start) {
+                return back()->withInput()->withErrors(['horarios' => "Hora fin debe ser mayor que hora inicio para el día {$it['dia']}."]);
+            }
+            $intervalsByDay[$it['dia']][] = ['start' => $start, 'end' => $end, 'tipo' => $it['tipo'], 'lugar' => $it['lugar'] ?? null];
+        }
+    }
+
+    // Función simple para detectar overlap
+    foreach ($intervalsByDay as $dia => $intervals) {
+        usort($intervals, function($a,$b){ return $a['start'] <=> $b['start']; });
+        $prevEnd = null;
+        foreach ($intervals as $int) {
+            if ($prevEnd !== null && $int['start'] < $prevEnd) {
+                return back()->withInput()->withErrors(['horarios' => "Solapamiento detectado en $dia entre horarios (no está permitido)."]);
+            }
+            $prevEnd = $int['end'];
+        }
+    }
 
     // Crear la declaración
     $declaracion = Declaracion::create($data + ['fecha_envio' => now()]);
 
-    // Verificamos si hay horarios y creamos cada uno
-    if ($r->has('tipo')) {
-        foreach ($r->tipo as $i => $tipo) {
-            // Evita crear filas vacías
-            if (!$tipo || !$r->dia[$i] || !$r->hora_inicio[$i] || !$r->hora_fin[$i]) continue;
+    // Persistir horarios
+    foreach ($items as $it) {
+        // Evita crear filas vacías (si no tiene día ni horas y es externo con solo lugar, aún guardamos)
+        if (empty($it['dia']) && empty($it['hora_inicio']) && empty($it['hora_fin']) && empty($it['lugar'])) continue;
 
-            \App\Models\Horario::create([
-                'id_declaracion' => $declaracion->id_declaracion, // 🔥 clave principal
-                'tipo' => $tipo,
-                'dia' => $r->dia[$i],
-                'hora_inicio' => $r->hora_inicio[$i],
-                'hora_fin' => $r->hora_fin[$i],
-            ]);
-        }
+        Horario::create([
+            'id_declaracion' => $declaracion->id_declaracion,
+            'tipo' => $it['tipo'],
+            'dia' => $it['dia'] ?? null,
+            'hora_inicio' => $it['hora_inicio'] ?? null,
+            'hora_fin' => $it['hora_fin'] ?? null,
+            'lugar' => $it['lugar'] ?? null,
+        ]);
     }
 
     return redirect()
@@ -74,8 +122,8 @@ class DeclaracionController extends Controller
 
 
     public function show($id){
-        $d = Declaracion::with(['usuario','unidad.sede','cargo','formulario','horarios'])->findOrFail($id);
-        return view('declaraciones.show', compact('d'));
+        $declaracion = Declaracion::with(['usuario','unidad.sede','cargo','formulario','horarios'])->findOrFail($id);
+        return view('declaraciones.show', compact('declaracion'));
     }
 
     public function edit($id){

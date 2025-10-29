@@ -81,14 +81,14 @@
         <tr>
             <td class="sub">Nombre completo:</td>
             <td colspan="3">{{ $declaracion->usuario->nombre }} {{ $declaracion->usuario->apellido }}</td>
-            <td class="sub">Cédula:</td>
-            <td>{{ $declaracion->usuario->cedula ?? 'N/A' }}</td>
+            <td class="sub">Cédula / Identificación:</td>
+            <td>{{ $declaracion->usuario->identificacion ?? $declaracion->usuario->cedula ?? 'N/A' }}</td>
         </tr>
         <tr>
             <td class="sub">Unidad académica:</td>
             <td colspan="3">{{ $declaracion->unidad->nombre }}</td>
             <td class="sub">Correo electrónico:</td>
-            <td>{{ $declaracion->usuario->correo }}</td>
+            <td>{{ $declaracion->usuario->correo ?? $declaracion->usuario->email ?? 'N/A' }}</td>
         </tr>
         <tr>
             <td class="sub">Teléfono:</td>

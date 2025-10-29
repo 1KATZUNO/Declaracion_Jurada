@@ -9,7 +9,14 @@
   <p><strong>Profesor:</strong> {{ $doc->declaracion->usuario->nombre }} {{ $doc->declaracion->usuario->apellido }}</p>
   <p><strong>Formato:</strong> {{ $doc->formato }}</p>
   <p><strong>Fecha Generación:</strong> {{ $doc->fecha_generacion }}</p>
-  <p><strong>Archivo:</strong> <a href="{{ asset($doc->archivo) }}" class="text-indigo-600 underline">{{ basename($doc->archivo) }}</a></p>
+  <p><strong>Archivo:</strong>
+    @php
+      $fileUrl = (strpos($doc->archivo, 'public/') === 0)
+        ? \Illuminate\Support\Facades\Storage::url($doc->archivo)
+        : asset($doc->archivo);
+    @endphp
+    <a href="{{ $fileUrl }}" download="{{ basename($doc->archivo) }}" target="_blank" rel="noopener" class="text-indigo-600 underline">{{ basename($doc->archivo) }}</a>
+  </p>
 
   <div class="mt-6 flex justify-end">
     <x-button href="{{ route('documentos.index') }}" color="indigo">⬅️ Volver</x-button>

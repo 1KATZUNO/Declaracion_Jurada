@@ -50,12 +50,7 @@
                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
                         @error('correo')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
-                        <input type="password" name="contrasena"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
-                        @error('contrasena')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-                    </div>
+                    
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Rol</label>
                         <select name="rol" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>

@@ -18,6 +18,12 @@ class Horario extends Model
     'dia',
     'hora_inicio',
     'hora_fin',
+    // campos opcionales para "otras instituciones"
+    'lugar',
+    'cargo',
+    'jornada',
+    'desde',
+    'hasta',
 ];
 
 
