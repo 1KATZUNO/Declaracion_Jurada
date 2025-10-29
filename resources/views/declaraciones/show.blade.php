@@ -79,6 +79,23 @@
                 </div>
             </div>
 
+<hr class="my-8 border-gray-300">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-10 text-center mt-10">
+    <div>
+        <p class="text-sm font-semibold text-gray-800 mb-8">Firma del funcionario</p>
+        <div class="border-t-2 border-gray-500 w-3/4 mx-auto"></div>
+        <p class="text-xs text-gray-500 mt-2">{{ $declaracion->usuario->nombre }} {{ $declaracion->usuario->apellido }}</p>
+    </div>
+    <div>
+        <p class="text-sm font-semibold text-gray-800 mb-8">Firma del encargado</p>
+        <div class="border-t-2 border-gray-500 w-3/4 mx-auto"></div>
+        <p class="text-xs text-gray-500 mt-2">Coordinación UCR</p>
+    </div>
+</div>
+
+
+
             <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
                 <a href="{{ route('declaraciones.index') }}"
                    class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
