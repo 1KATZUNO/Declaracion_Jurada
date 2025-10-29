@@ -53,30 +53,28 @@ public function store(Request $request)
         return view('usuarios.edit', compact('usuario'));
     }
 
-    public function update(Request $request, $id)
-    {
-        $usuario = Usuario::findOrFail($id);
+   public function update(Request $request, $id)
+{
+    $usuario = Usuario::findOrFail($id);
 
-        $data = $request->validate([
-            'nombre' => 'required|string|max:50',
-            'apellido' => 'required|string|max:50',
-            'identificacion' => 'required|string|max:20',
-            'correo' => 'required|email|max:100|unique:usuario,correo,'.$usuario->id_usuario.',id_usuario',
-            'telefono' => 'nullable|string|max:20',
-            'contrasena' => 'nullable|string|min:6',
-            'rol' => 'required|in:funcionario,admin',
-        ]);
+    // Validamos solo los campos que sí se pueden editar
+    $data = $request->validate([
+        'nombre' => 'required|string|max:50',
+        'apellido' => 'required|string|max:50',
+        'correo' => 'required|email|max:100|unique:usuario,correo,' . $usuario->id_usuario . ',id_usuario',
+        'telefono' => 'nullable|string|max:20',
+        'rol' => 'required|in:funcionario,admin',
+    ]);
 
-        if (!empty($data['contrasena'])) {
-            $data['contrasena'] = bcrypt($data['contrasena']);
-        } else {
-            unset($data['contrasena']);
-        }
+    // 🔒 No permitir modificar identificación ni contraseña
+    unset($data['identificacion']);
+    unset($data['contrasena']);
 
-        $usuario->update($data);
+    // Actualizamos solo los campos permitidos
+    $usuario->update($data);
 
-        return redirect()->route('usuarios.index')->with('ok','Usuario actualizado');
-    }
+    return redirect()->route('usuarios.index')->with('ok', 'Usuario actualizado correctamente.');
+}
 
     public function destroy($id)
     {
