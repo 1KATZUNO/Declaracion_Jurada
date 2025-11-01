@@ -1,5 +1,5 @@
 @extends('layout')
-
+ @csrf
 @section('titulo', 'Documentos Generados')
 
 @section('contenido')

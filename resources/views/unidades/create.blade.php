@@ -1,6 +1,6 @@
 @extends('layout')
 @section('titulo', 'Registrar Unidad Académica')
-
+ @csrf
 {{-- Oculta el menú lateral en esta vista --}}
 @section('hide_sidebar', true)
 

@@ -1,5 +1,5 @@
 @extends('layout')
-
+ @csrf
 @section('titulo', 'Notificaciones')
 
 @section('contenido')

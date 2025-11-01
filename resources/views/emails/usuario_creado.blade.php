@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+ @csrf
 <html>
 <head>
     <meta charset="utf-8">

@@ -1,6 +1,6 @@
 @extends('layout')
 @section('titulo', 'Nueva Sede')
-
+ @csrf
 @section('contenido')
 <div class="max-w-5xl mx-auto px-4 py-8">
 

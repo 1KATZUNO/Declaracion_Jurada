@@ -1,5 +1,5 @@
 @props(['href' => '#', 'color' => 'indigo'])
-
+ @csrf
 @php
 $colores = [
   'blue' => 'bg-blue-600 hover:bg-blue-700 text-white',

@@ -1,3 +1,4 @@
+ @csrf
 @if (session('ok') || session('error') || $errors->any())
   <div role="status" aria-live="polite" class="mx-auto mb-4 max-w-7xl px-4">
     @if (session('ok'))

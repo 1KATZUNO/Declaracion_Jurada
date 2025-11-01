@@ -1,5 +1,5 @@
 @extends('layout')
-
+ @csrf
 @section('titulo', 'Detalles del Documento')
 
 @section('contenido')

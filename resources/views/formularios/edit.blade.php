@@ -1,6 +1,7 @@
 @extends('layout')
 @section('titulo', 'Editar Formulario')
 @section('contenido')
+ @csrf
 <div class="max-w-4xl mx-auto py-8">
     <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <!-- Header -->

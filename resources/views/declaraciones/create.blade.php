@@ -1,5 +1,5 @@
 @extends('layout')
-
+ @csrf
 @section('content')
 <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">

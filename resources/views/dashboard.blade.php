@@ -3,6 +3,7 @@
 @section('titulo', 'Panel Principal')
 
 @section('contenido')
+ @csrf
 <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
                 <div class="py-12">

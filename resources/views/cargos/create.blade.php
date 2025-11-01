@@ -1,6 +1,7 @@
 @extends('layout')
 @section('titulo', 'Nuevo Cargo')
 @section('contenido')
+ @csrf
 <div class="max-w-4xl mx-auto px-4 py-8">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
