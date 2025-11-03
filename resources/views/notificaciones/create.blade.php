@@ -2,7 +2,7 @@
 @section('titulo', 'Nueva Notificación')
 @section('contenido')
  @csrf
-<div class="max-w-4xl mx-auto py-8">
+<div class="container mx-auto w-full max-w-4xl px-2 sm:px-4 md:px-8 py-8">
     <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <!-- Header -->
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
@@ -10,7 +10,7 @@
         </div>
 
         <!-- Form -->
-        <form method="POST" action="{{ route('notificaciones.store') }}" class="p-6">
+        <form method="POST" action="{{ route('notificaciones.store') }}" class="p-2 sm:p-4 md:p-6">
             @csrf
             
             <div class="space-y-6">
@@ -49,7 +49,7 @@
             </div>
 
             <!-- Botones -->
-            <div class="mt-6 flex items-center justify-end gap-3">
+            <div class="mt-6 flex flex-col md:flex-row items-center justify-end gap-3">
                 <a href="{{ route('notificaciones.index') }}" 
                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Cancelar

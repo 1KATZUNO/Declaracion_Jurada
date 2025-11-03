@@ -2,8 +2,7 @@
 @section('titulo', 'Nueva Sede')
  @csrf
 @section('contenido')
-<div class="max-w-5xl mx-auto px-4 py-8">
-
+<div class="container mx-auto w-full max-w-5xl px-2 sm:px-4 md:px-8 py-8">
     <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
 
         <div class="px-8 py-6 border-b border-gray-200">
@@ -11,7 +10,7 @@
             <p class="text-gray-500 text-sm mt-1">Complete la información requerida para registrar una nueva sede universitaria.</p>
         </div>
 
-        <form method="POST" action="{{ route('sedes.store') }}" class="p-8 space-y-8">
+        <form method="POST" action="{{ route('sedes.store') }}" class="p-2 sm:p-4 md:p-8 space-y-8">
             @csrf
 
             <section>

@@ -1,14 +1,14 @@
 @extends('layout')
  @csrf
 @section('content')
-<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="container mx-auto w-full max-w-6xl px-2 sm:px-4 md:px-8 py-8">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
             <h2 class="text-2xl font-semibold text-white">Crear nueva declaración jurada</h2>
             <p class="text-blue-100 text-sm mt-1">Complete el formulario con la información requerida</p>
         </div>
 
-        <form action="{{ route('declaraciones.store') }}" method="POST" id="declaracionForm" class="p-8">
+        <form action="{{ route('declaraciones.store') }}" method="POST" id="declaracionForm" class="p-2 sm:p-4 md:p-8">
             @csrf
 
             <div class="mb-8">
@@ -55,7 +55,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Período y horas</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -79,12 +78,8 @@
                     </div>
                 </div>
             </div>
-
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horario asociado</h3>
-
-                <p class="text-sm text-gray-600 mb-3">Seleccione un horario previamente registrado (si corresponde). Para crear/editar horarios use el módulo <strong>Horarios</strong>.</p>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                     <div>
                         <label for="id_horario" class="block text-sm font-medium text-gray-700 mb-2">Horario disponible</label>
@@ -107,8 +102,7 @@
                     </div>
                 </div>
             </div>
-
-            <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+            <div class="flex flex-col md:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
                 <a href="{{ route('declaraciones.index') }}"
                    class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
                     Cancelar
@@ -121,7 +115,6 @@
         </form>
     </div>
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const sel = document.getElementById('id_horario');

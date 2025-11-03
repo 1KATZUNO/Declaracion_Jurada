@@ -14,7 +14,7 @@
   ];
 @endphp
 
-<div class="max-w-5xl mx-auto bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+<div class="container mx-auto w-full max-w-5xl bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
   {{-- Breadcrumb suave  --}}
   <nav class="px-6 py-3 text-xs text-gray-600 bg-[#F0F2F5]" aria-label="Breadcrumb">
     <ol class="flex flex-wrap items-center gap-1">
@@ -43,7 +43,7 @@
   </div>
 
   {{-- Contenido --}}
-  <div class="p-6 md:p-8 space-y-8">
+  <div class="p-2 sm:p-6 md:p-8 space-y-8">
 
     {{-- Resumen de errores --}}
     @if ($errors->any())
@@ -66,7 +66,6 @@
           <h3 id="sec-datos-unidad" class="text-base font-semibold text-gray-900">Datos de la unidad</h3>
           <p class="text-sm text-gray-500 mt-1">Use el nombre institucional oficial.</p>
         </div>
-
         <div class="px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {{-- Nombre --}}
           <div class="md:col-span-2">
@@ -117,8 +116,6 @@
           <div class="md:col-span-1"></div>
         </div>
       </section>
-
-      {{-- Botones --}}
       <div class="flex flex-col md:flex-row md:justify-end gap-3 pt-2">
         <a href="{{ route('unidades.index') }}"
            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500">

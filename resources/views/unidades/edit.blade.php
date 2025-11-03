@@ -14,7 +14,7 @@
   ];
 @endphp
 
-<div class="max-w-5xl mx-auto bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+<div class="container mx-auto w-full max-w-5xl bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
   {{-- Breadcrumb --}}
   <nav class="px-6 py-3 text-xs text-gray-600 bg-[#F0F2F5]" aria-label="Breadcrumb">
     <ol class="flex flex-wrap items-center gap-1">
@@ -42,7 +42,7 @@
     </a>
   </div>
 
-  <div class="p-6 md:p-8 space-y-8">
+  <div class="p-2 sm:p-6 md:p-8 space-y-8">
     {{-- Resumen de errores --}}
     @if ($errors->any())
       <div class="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="status" aria-live="polite">
@@ -115,8 +115,6 @@
           <div class="md:col-span-1"></div>
         </div>
       </section>
-
-      {{-- Acciones --}}
       <div class="flex flex-col md:flex-row md:justify-end gap-3 pt-2">
         <a href="{{ route('unidades.index') }}"
            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500">
