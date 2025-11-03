@@ -74,58 +74,37 @@
                     <div>
                         <label for="horas_totales" class="block text-sm font-medium text-gray-700 mb-2">Horas totales</label>
                         <input type="number" step="0.1" name="horas_totales" id="horas_totales"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
+                               readonly>
                     </div>
                 </div>
             </div>
 
             <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horarios</h3>
+                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horario asociado</h3>
 
-                <div id="horarios-container" class="space-y-4">
-                    <div class="border border-gray-300 rounded-lg p-5 bg-gray-50 hover:bg-white transition-colors horario-block">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
-                                <select name="tipo[]" class="tipo-select w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                                    <option value="ucr">UCR</option>
-                                    <option value="externo">Otra institución</option>
-                                </select>
-                            </div>
+                <p class="text-sm text-gray-600 mb-3">Seleccione un horario previamente registrado (si corresponde). Para crear/editar horarios use el módulo <strong>Horarios</strong>.</p>
 
-                            <div class="lugar-wrapper hidden">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Lugar / Institución</label>
-                                <input type="text" name="lugar[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" placeholder="Nombre de la institución (solo para externo)">
-                            </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                    <div>
+                        <label for="id_horario" class="block text-sm font-medium text-gray-700 mb-2">Horario disponible</label>
+                        <select name="id_horario" id="id_horario" class="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-white">
+                            <option value="">-- Ninguno --</option>
+                            @foreach(($horarios ?? []) as $h)
+                                <option value="{{ $h->id_horario }}" data-horas="{{ optional($h->jornada)->horas_por_semana ?? '' }}">
+                                    Horario #{{ $h->id_horario }} — {{ $h->dia }} {{ \Illuminate\Support\Str::substr($h->hora_inicio,0,5) }}‑{{ \Illuminate\Support\Str::substr($h->hora_fin,0,5) }} @if($h->jornada) ({{ $h->jornada->tipo }} {{ $h->jornada->horas_por_semana }}h) @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Si selecciona un horario, las horas totales se ajustarán automáticamente a la jornada asociada.</p>
+                    </div>
 
-                            <div class="dia-wrapper">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Día</label>
-                                <select name="dia[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                                    <option value="Lunes">Lunes</option>
-                                    <option value="Martes">Martes</option>
-                                    <option value="Miércoles">Miércoles</option>
-                                    <option value="Jueves">Jueves</option>
-                                    <option value="Viernes">Viernes</option>
-                                    <option value="Sábado">Sábado</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Hora inicio</label>
-                                <input type="time" name="hora_inicio[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Hora fin</label>
-                                <input type="time" name="hora_fin[]" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                            </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Horas (objetivo)</label>
+                        <div id="horasObjetivo" class="w-full px-4 py-2.5 border border-gray-200 rounded-md bg-gray-50 text-gray-800">
+                            — h
                         </div>
                     </div>
-                </div>
-
-                <div class="mt-4">
-                    <button type="button" id="add-horario"
-                            class="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
-                        Añadir otro horario
-                    </button>
                 </div>
             </div>
 
@@ -144,38 +123,18 @@
 </div>
 
 <script>
-function setTipoBehavior(block){
-    const tipo = block.querySelector('.tipo-select');
-    const lugarWr = block.querySelector('.lugar-wrapper');
-    const diaWr = block.querySelector('.dia-wrapper');
-    const horaInicio = block.querySelector('input[name="hora_inicio[]"]');
-    const horaFin = block.querySelector('input[name="hora_fin[]"]');
-
-    const toggle = () => {
-        if(tipo.value === 'externo'){
-            lugarWr.classList.remove('hidden');
-            // para externos puedes permitir también horarios opcionales; aquí los dejamos opcionales
-        } else {
-            lugarWr.classList.add('hidden');
-        }
-    };
-    tipo.addEventListener('change', toggle);
-    toggle();
-}
-
-document.querySelectorAll('#horarios-container .horario-block').forEach(setTipoBehavior);
-
-document.getElementById('add-horario').addEventListener('click', () => {
-    const container = document.getElementById('horarios-container');
-    const clone = container.children[0].cloneNode(true);
-
-    // limpiar valores
-    clone.querySelectorAll('input').forEach(el => el.value = '');
-    clone.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
-
-    // re-ajustar visibilidad y eventos
-    container.appendChild(clone);
-    setTipoBehavior(clone);
+document.addEventListener('DOMContentLoaded', () => {
+    const sel = document.getElementById('id_horario');
+    const objetivo = document.getElementById('horasObjetivo');
+    const horasInput = document.getElementById('horas_totales');
+    if (!sel) return;
+    sel.addEventListener('change', () => {
+        const opt = sel.selectedOptions[0];
+        const h = opt ? opt.dataset.horas || '' : '';
+        objetivo.textContent = h ? `${h} h (desde jornada)` : '— h';
+        // Rellenar el campo horas_totales (readonly)
+        horasInput.value = h ? Number(h) : '';
+    });
 });
 </script>
 @endsection

@@ -1,4 +1,5 @@
 <!doctype html>
+@csrf
 <html>
 <head>
 	<!-- ...existing code... -->

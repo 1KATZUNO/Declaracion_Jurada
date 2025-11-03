@@ -12,7 +12,6 @@ class CargoController extends Controller
     public function store(Request $r){
         $data = $r->validate([
             'nombre'=>'required|string|max:100',
-            'jornada'=>'nullable|string|max:20',
             'descripcion'=>'nullable|string'
         ]);
         Cargo::create($data); return redirect()->route('cargos.index')->with('ok','Cargo creado');
@@ -22,7 +21,6 @@ class CargoController extends Controller
         $cargo = Cargo::findOrFail($id);
         $data = $r->validate([
             'nombre'=>'required|string|max:100',
-            'jornada'=>'nullable|string|max:20',
             'descripcion'=>'nullable|string'
         ]);
         $cargo->update($data); return redirect()->route('cargos.index')->with('ok','Cargo actualizado');

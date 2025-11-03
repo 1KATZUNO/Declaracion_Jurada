@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('horario', function (Blueprint $table) {
             $table->id('id_horario'); // Clave primaria$table->foreignId('id_declaracion')->constrained('declaracion')->onDelete('cascade');
             // CORRECCIÓN: Clave foránea que referencia ID personalizada
-            $table->foreignId('id_declaracion')->constrained('declaracion', 'id_declaracion')->onDelete('cascade');
+  
             
             $table->enum('dia', ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']);
             $table->time('hora_inicio');

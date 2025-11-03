@@ -1,5 +1,5 @@
 @extends('layout')
-
+@csrf
 @section('titulo', ($mode === 'create' ? 'Nueva Jornada' : 'Editar Jornada'))
 
 @section('content')

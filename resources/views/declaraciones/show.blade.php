@@ -67,12 +67,23 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach ($declaracion->horarios as $h)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="py-3 px-4 text-sm text-gray-900 font-medium">{{ $h->dia }}</td>
-                                    <td class="py-3 px-4 text-sm text-gray-600">{{ $h->hora_inicio }}</td>
-                                    <td class="py-3 px-4 text-sm text-gray-600">{{ $h->hora_fin }}</td>
-                                    <td class="py-3 px-4 text-sm text-gray-600">{{ $h->tipo === 'ucr' ? 'UCR' : 'Otra institución pública/privada' }}</td>
-                                </tr>
+                                @if($h->detalles && $h->detalles->isNotEmpty())
+                                    @foreach($h->detalles as $det)
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="py-3 px-4 text-sm text-gray-900 font-medium">{{ $det->dia }}</td>
+                                            <td class="py-3 px-4 text-sm text-gray-600">{{ $det->hora_inicio }}</td>
+                                            <td class="py-3 px-4 text-sm text-gray-600">{{ $det->hora_fin }}</td>
+                                            <td class="py-3 px-4 text-sm text-gray-600">{{ $h->tipo === 'ucr' ? 'UCR' : 'Otra institución pública/privada' }}</td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="py-3 px-4 text-sm text-gray-900 font-medium">{{ $h->dia }}</td>
+                                        <td class="py-3 px-4 text-sm text-gray-600">{{ $h->hora_inicio }}</td>
+                                        <td class="py-3 px-4 text-sm text-gray-600">{{ $h->hora_fin }}</td>
+                                        <td class="py-3 px-4 text-sm text-gray-600">{{ $h->tipo === 'ucr' ? 'UCR' : 'Otra institución pública/privada' }}</td>
+                                    </tr>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>

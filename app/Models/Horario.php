@@ -45,6 +45,12 @@ class Horario extends Model
         return $this->belongsTo(Jornada::class, 'id_jornada', 'id_jornada');
     }
 
+    // Nueva relación: detalles (intervalos) asociados al horario padre
+    public function detalles()
+    {
+        return $this->hasMany(HorarioDetalle::class, 'id_horario', 'id_horario');
+    }
+
     /**
      * Scopes útiles
      */
@@ -82,6 +88,25 @@ class Horario extends Model
         $h = intdiv($min, 60);
         $m = $min % 60;
         return sprintf('%02d:%02d', $h, $m);
+    }
+
+    // Devuelve minutos totales: suma de detalles si existen, si no cae al cálculo por campos directos
+    public function getTotalMinutosAttribute(): int
+    {
+        if ($this->detalles()->exists()) {
+            $sum = 0;
+            foreach ($this->detalles as $d) {
+                $hi = $this->parseHora($d->hora_inicio);
+                $hf = $this->parseHora($d->hora_fin);
+                $sum += $hf->diffInMinutes($hi);
+            }
+            return $sum;
+        }
+
+        // Fallback al comportamiento anterior (fila simple)
+        $hi = $this->parseHora($this->hora_inicio ?? '00:00');
+        $hf = $this->parseHora($this->hora_fin ?? '00:00');
+        return $hf->diffInMinutes($hi);
     }
 
     /**

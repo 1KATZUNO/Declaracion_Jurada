@@ -1,5 +1,5 @@
 @extends('layout')
-
+@csrf
 @section('titulo', 'Jornadas')
 
 @section('content')
