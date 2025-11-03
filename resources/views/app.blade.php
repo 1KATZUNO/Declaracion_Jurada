@@ -15,6 +15,7 @@
       <a href="{{ route('unidades.index') }}">Unidades</a>
       <a href="{{ route('cargos.index') }}">Cargos</a>
       <a href="{{ route('formularios.index') }}">Formularios</a>
+      <a href="{{ route('jornadas.index') }}">Jornadas</a>
       <a href="{{ route('declaraciones.index') }}">Declaraciones</a>
       <a href="{{ route('horarios.index') }}">Horarios</a>
       <a href="{{ route('documentos.index') }}">Documentos</a>

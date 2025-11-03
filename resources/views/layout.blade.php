@@ -209,6 +209,13 @@
               <span class="font-medium">Cargos</span>
             </a>
           @endif
+@if (Route::has('jornadas.index'))
+  <a href="{{ route('jornadas.index') }}" class="nav-item">
+    <img src="{{ asset('imagenes/jornadas.png') }}" alt="Jornadas" class="inline-block w-4 h-4 mr-2"
+         onerror="this.style.display='none'">
+    <span class="font-medium">Jornadas</span>
+  </a>
+@endif
 
           @if (Route::has('formularios.index'))
             <a href="{{ route('formularios.index') }}" class="nav-item">
