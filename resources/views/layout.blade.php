@@ -19,11 +19,11 @@
     --ucr-top-border:#C7CCD3;
 
     /* Medidas base */
-    --container-max:1440px;
+    --container-max:100%;
     --topbar-h:110px;      
-    --sidebar-w:240px;
-    --content-px:36px;
-    --content-py:28px;
+    --sidebar-w:260px;
+    --content-px:1.5rem;
+    --content-py:1.5rem;
     --logo-size:44px;
     --user-avatar:28px;
   }
@@ -173,11 +173,10 @@
 
   {{-- CONTENIDO PRINCIPAL --}}
   @php $hideSidebar = View::hasSection('hide_sidebar'); @endphp
-  <div class="w-full bg-[var(--ucr-top-gray)]">
-    <div class="container mx-auto w-full max-w-[var(--container-max)] px-2 sm:px-4 md:px-8"
-         style="display:grid; grid-template-columns: {{ $hideSidebar ? '1fr' : 'var(--sidebar-w) 1fr' }};">
+  <div class="w-full bg-white">
+    <div class="flex flex-col md:flex-row w-full h-[calc(100vh-var(--topbar-h))]">
       @unless($hideSidebar)
-        <aside class="min-h-[calc(100vh-var(--topbar-h))] bg-[var(--ucr-top-gray)] border-r border-gray-300 hidden md:block">
+        <aside class="w-full md:w-[var(--sidebar-w)] flex-shrink-0 bg-[var(--ucr-top-gray)] border-r border-gray-300 hidden md:block overflow-y-auto">
           <div class="bg-[var(--ucr-azul-menu)] text-white px-4 py-2.5 text-[13px] font-semibold uppercase">
             Menú Principal
           </div>
@@ -255,9 +254,11 @@
           </nav>
         </aside>
       @endunless
-      <main class="bg-[var(--ucr-fondo)] w-full px-2 sm:px-4 md:px-8 py-4 md:py-[var(--content-py)] overflow-x-auto">
-        @includeIf('components.flash')
-        @hasSection('content') @yield('content') @elseif(View::hasSection('contenido')) @yield('contenido') @endif
+      <main class="flex-grow overflow-auto bg-[var(--ucr-fondo)]">
+        <div class="container mx-auto px-4 py-6">
+          @includeIf('components.flash')
+          @hasSection('content') @yield('content') @elseif(View::hasSection('contenido')) @yield('contenido') @endif
+        </div>
       </main>
     </div>
   </div>
