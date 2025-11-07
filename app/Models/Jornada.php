@@ -12,7 +12,6 @@ class Jornada extends Model
     protected $fillable = [
         'tipo',          // "1/8", "1/4", "1/2", "3/4", "TC"
         'horas_por_semana',
-        'activo',
     ];
 
     public function horarios()
