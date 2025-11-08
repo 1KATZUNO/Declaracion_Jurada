@@ -1,6 +1,6 @@
 @extends('layout')
 @section('titulo', 'UA – Unidades Académicas')
-
+ @csrf
 @section('contenido')
   {{-- Título principal --}}
   <header class="mb-6">
@@ -81,7 +81,7 @@
     <h2 class="text-sm font-extrabold text-[var(--ucr-azul)] uppercase tracking-wider mb-3">UA – Lista de unidades</h2>
 
     <div class="bg-white border border-gray-200 rounded-md">
-      <div class="max-h-[420px] overflow-y-auto">
+      <div class="max-h-[420px] overflow-x-auto overflow-y-auto">
         <table class="min-w-full text-sm">
           <thead class="bg-gray-50 sticky top-0 border-b border-gray-200 z-10">
             <tr>

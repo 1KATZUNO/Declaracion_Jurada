@@ -1,14 +1,14 @@
 @extends('layout')
-
+ @csrf
 @section('content')
-<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="container mx-auto w-full max-w-6xl px-2 sm:px-4 md:px-8 py-8">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
             <h2 class="text-2xl font-semibold text-white">Detalle de la Declaración Jurada</h2>
             <p class="text-blue-100 text-sm mt-1">Información completa de la declaración</p>
         </div>
 
-        <div class="p-8">
+        <div class="p-2 sm:p-4 md:p-8">
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Información del funcionario</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -67,19 +67,42 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach ($declaracion->horarios as $h)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="py-3 px-4 text-sm text-gray-900 font-medium">{{ $h->dia }}</td>
-                                    <td class="py-3 px-4 text-sm text-gray-600">{{ $h->hora_inicio }}</td>
-                                    <td class="py-3 px-4 text-sm text-gray-600">{{ $h->hora_fin }}</td>
-                                    <td class="py-3 px-4 text-sm text-gray-600">{{ $h->tipo === 'ucr' ? 'UCR' : 'Otra institución pública/privada' }}</td>
-                                </tr>
+                                @if($h->detalles && $h->detalles->isNotEmpty())
+                                    @foreach($h->detalles as $det)
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="py-3 px-4 text-sm text-gray-900 font-medium">{{ $det->dia }}</td>
+                                            <td class="py-3 px-4 text-sm text-gray-600">{{ $det->hora_inicio }}</td>
+                                            <td class="py-3 px-4 text-sm text-gray-600">{{ $det->hora_fin }}</td>
+                                            <td class="py-3 px-4 text-sm text-gray-600">{{ $h->tipo === 'ucr' ? 'UCR' : 'Otra institución pública/privada' }}</td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="py-3 px-4 text-sm text-gray-900 font-medium">{{ $h->dia }}</td>
+                                        <td class="py-3 px-4 text-sm text-gray-600">{{ $h->hora_inicio }}</td>
+                                        <td class="py-3 px-4 text-sm text-gray-600">{{ $h->hora_fin }}</td>
+                                        <td class="py-3 px-4 text-sm text-gray-600">{{ $h->tipo === 'ucr' ? 'UCR' : 'Otra institución pública/privada' }}</td>
+                                    </tr>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
-
-            <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+            <hr class="my-8 border-gray-300">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 text-center mt-10">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800 mb-8">Firma del funcionario</p>
+                    <div class="border-t-2 border-gray-500 w-3/4 mx-auto"></div>
+                    <p class="text-xs text-gray-500 mt-2">{{ $declaracion->usuario->nombre }} {{ $declaracion->usuario->apellido }}</p>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-800 mb-8">Firma del encargado</p>
+                    <div class="border-t-2 border-gray-500 w-3/4 mx-auto"></div>
+                    <p class="text-xs text-gray-500 mt-2">Coordinación UCR</p>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
                 <a href="{{ route('declaraciones.index') }}"
                    class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
                    Volver

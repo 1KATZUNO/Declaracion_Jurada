@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+ @csrf
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -76,7 +77,7 @@
                         </div>
                         <!-- Enlace a cambiar contraseña -->
 <div class="mt-4 text-center">
-    <a href="{{ route('password.form') }}" class="text-blue-600 hover:underline text-sm">
+    <a href="{{ url('/change-password') }}" class="text-blue-600 hover:underline text-sm">
         ¿Olvidaste tu contraseña o deseas cambiarla?
     </a>
 </div>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+     @csrf
 <head>
     <meta charset="UTF-8">
     <title>Declaración Jurada - {{ $declaracion->usuario->nombre ?? 'Funcionario' }}</title>

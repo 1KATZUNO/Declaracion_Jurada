@@ -38,9 +38,10 @@
                             <th class="bg-gray-50/90 sticky top-0 z-10 text-left py-3.5 px-4 font-semibold rounded-tl-xl">#</th>
                             <th class="bg-gray-50/90 sticky top-0 z-10 text-left py-3.5 px-4 font-semibold">Tipo</th>
                             <th class="bg-gray-50/90 sticky top-0 z-10 text-left py-3.5 px-4 font-semibold">Lugar</th>
-                            <th class="bg-gray-50/90 sticky top-0 z-10 text-left py-3.5 px-4 font-semibold">Día</th>
-                            <th class="bg-gray-50/90 sticky top-0 z-10 text-left py-3.5 px-4 font-semibold">Hora inicio</th>
-                            <th class="bg-gray-50/90 sticky top-0 z-10 text-left py-3.5 px-4 font-semibold">Hora fin</th>
+
+                            <!-- Reemplazamos las columnas individuales por una sola columna "Detalles" -->
+                            <th class="bg-gray-50/90 sticky top-0 z-10 text-left py-3.5 px-4 font-semibold">Detalles</th>
+
                             <th class="bg-gray-50/90 sticky top-0 z-10 text-left py-3.5 px-4 font-semibold rounded-tr-xl">Acciones</th>
                         </tr>
                     </thead>
@@ -67,14 +68,23 @@
 
                                 <td class="py-3.5 px-4 text-gray-900 font-medium">{{ $h->lugar ?? '-' }}</td>
 
+                                <!-- Nueva celda: Detalles (muestra cada detalle en su propia línea) -->
                                 <td class="py-3.5 px-4">
-                                    <span class="inline-flex items-center rounded-md bg-slate-100 text-slate-700 px-2 py-0.5 text-xs font-semibold">
-                                        {{ $h->dia }}
-                                    </span>
+                                    @if($h->detalles && $h->detalles->isNotEmpty())
+                                        @foreach($h->detalles as $d)
+                                            <div class="mb-1">
+                                                <span class="text-sm font-medium text-gray-900">{{ $d->dia }}</span>
+                                                <span class="ml-2 text-xs font-mono text-slate-700">{{ \Illuminate\Support\Str::substr($d->hora_inicio,0,5) }}‑{{ \Illuminate\Support\Str::substr($d->hora_fin,0,5) }}</span>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        {{-- Compatibilidad: si no hay detalles, mostrar campos del padre --}}
+                                        <div class="mb-1">
+                                            <span class="text-sm font-medium text-gray-900">{{ $h->dia ?? '-' }}</span>
+                                            <span class="ml-2 text-xs font-mono text-slate-700">{{ $h->hora_inicio ? \Illuminate\Support\Str::substr($h->hora_inicio,0,5) : '‑' }}‑{{ $h->hora_fin ? \Illuminate\Support\Str::substr($h->hora_fin,0,5) : '‑' }}</span>
+                                        </div>
+                                    @endif
                                 </td>
-
-                                <td class="py-3.5 px-4 text-slate-700 font-mono">{{ $h->hora_inicio }}</td>
-                                <td class="py-3.5 px-4 text-slate-700 font-mono">{{ $h->hora_fin }}</td>
 
                                 <td class="py-3.5 px-4 flex items-center gap-2">
                                     <!-- EDITAR -->
@@ -92,10 +102,6 @@
                                         @csrf @method('DELETE')
                                         <button type="submit" title="Eliminar horario"
                                             class="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 hover:border-red-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 transition">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0l1-2h4l1 2M4 7h16"/>
-                                            </svg>
                                             Eliminar
                                         </button>
                                     </form>
@@ -103,7 +109,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-10 text-gray-500">
+                                <td colspan="5" class="text-center py-10 text-gray-500">
                                     No hay horarios registrados.
                                 </td>
                             </tr>

@@ -1,16 +1,16 @@
 @extends('layout')
-
+ @csrf
 @section('titulo', 'Documentos Generados')
 
 @section('contenido')
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="container mx-auto w-full max-w-7xl px-2 sm:px-4 md:px-8 py-8">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
             <h2 class="text-2xl font-semibold text-white">Documentos de Declaraciones</h2>
             <p class="text-blue-100 text-sm mt-1">Archivos generados del sistema</p>
         </div>
 
-        <div class="p-8">
+        <div class="p-2 sm:p-4 md:p-8">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">

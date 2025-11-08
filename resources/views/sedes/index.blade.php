@@ -1,10 +1,9 @@
 @extends('layout')
-
+ @csrf
 @section('titulo', 'Sedes')
 
 @section('contenido')
-<div class="max-w-7xl mx-auto px-4 py-8">
-
+<div class="container mx-auto w-full max-w-7xl px-2 sm:px-4 md:px-8 py-8">
     <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
 
         <div class="px-8 py-6 border-b border-gray-200">

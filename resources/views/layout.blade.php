@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+   @csrf
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>@yield('titulo', 'Declaraciones UCR')</title>
@@ -18,11 +19,11 @@
     --ucr-top-border:#C7CCD3;
 
     /* Medidas base */
-    --container-max:1440px;
+    --container-max:100%;
     --topbar-h:110px;      
-    --sidebar-w:240px;
-    --content-px:36px;
-    --content-py:28px;
+    --sidebar-w:260px;
+    --content-px:1.5rem;
+    --content-py:1.5rem;
     --logo-size:44px;
     --user-avatar:28px;
   }
@@ -172,86 +173,92 @@
 
   {{-- CONTENIDO PRINCIPAL --}}
   @php $hideSidebar = View::hasSection('hide_sidebar'); @endphp
-<div class="w-full bg-[var(--ucr-top-gray)]">
-  <div class="mx-auto w-full max-w-[var(--container-max)]" 
-       style="display:grid; grid-template-columns: {{ $hideSidebar ? '1fr' : 'var(--sidebar-w) 1fr' }};">
-    @unless($hideSidebar)
-      <aside class="min-h-[calc(100vh-var(--topbar-h))] bg-[var(--ucr-top-gray)] border-r border-gray-300">
-        <div class="bg-[var(--ucr-azul-menu)] text-white px-4 py-2.5 text-[13px] font-semibold uppercase">
-          Menú Principal
+  <div class="w-full bg-white">
+    <div class="flex flex-col md:flex-row w-full h-[calc(100vh-var(--topbar-h))]">
+      @unless($hideSidebar)
+        <aside class="w-full md:w-[var(--sidebar-w)] flex-shrink-0 bg-[var(--ucr-top-gray)] border-r border-gray-300 hidden md:block overflow-y-auto">
+          <div class="bg-[var(--ucr-azul-menu)] text-white px-4 py-2.5 text-[13px] font-semibold uppercase">
+            Menú Principal
+          </div>
+
+          <nav class="pt-1.5 space-y-0.5">
+
+            @if (Route::has('unidades.index'))
+              <a href="{{ route('unidades.index') }}" class="nav-item">
+                <img src="{{ asset('imagenes/unidades.png') }}" alt="Unidades" class="inline-block w-4 h-4 mr-2">
+                <span class="font-medium">Mis Unidades Académicas</span>
+              </a>
+            @endif
+
+            <a href="{{ route('sedes.index') }}" class="nav-item">
+              <img src="{{ asset('imagenes/sedes.png') }}" alt="Sedes" class="inline-block w-4 h-4 mr-2">
+              <span class="font-medium">Sedes</span>
+            </a>
+
+            @if (Route::has('usuarios.index'))
+              <a href="{{ route('usuarios.index') }}" class="nav-item">
+                <img src="{{ asset('imagenes/usuarios.png') }}" alt="Usuarios" class="inline-block w-4 h-4 mr-2">
+                <span class="font-medium">Usuarios</span>
+              </a>
+            @endif
+
+            @if (Route::has('cargos.index'))
+              <a href="{{ route('cargos.index') }}" class="nav-item">
+                <img src="{{ asset('imagenes/cargos.png') }}" alt="Cargos" class="inline-block w-4 h-4 mr-2">
+                <span class="font-medium">Cargos</span>
+              </a>
+            @endif
+@if (Route::has('jornadas.index'))
+  <a href="{{ route('jornadas.index') }}" class="nav-item">
+    <img src="{{ asset('imagenes/jornadas.png') }}" alt="Jornadas" class="inline-block w-4 h-4 mr-2"
+         onerror="this.style.display='none'">
+    <span class="font-medium">Jornadas</span>
+  </a>
+@endif
+
+            @if (Route::has('formularios.index'))
+              <a href="{{ route('formularios.index') }}" class="nav-item">
+                <img src="{{ asset('imagenes/formularios.png') }}" alt="Formularios" class="inline-block w-4 h-4 mr-2">
+                <span class="font-medium">Formularios</span>
+              </a>
+            @endif
+
+            @if (Route::has('declaraciones.index'))
+              <a href="{{ route('declaraciones.index') }}" class="nav-item">
+                <img src="{{ asset('imagenes/declaraciones.png') }}" alt="Declaraciones" class="inline-block w-4 h-4 mr-2">
+                <span class="font-medium">Declaraciones</span>
+              </a>
+            @endif
+
+            @if (Route::has('horarios.index'))
+              <a href="{{ route('horarios.index') }}" class="nav-item">
+                <img src="{{ asset('imagenes/horarios.png') }}" alt="Horarios" class="inline-block w-4 h-4 mr-2">
+                <span class="font-medium">Horarios</span>
+              </a>
+            @endif
+
+            @if (Route::has('documentos.index'))
+              <a href="{{ route('documentos.index') }}" class="nav-item">
+                <img src="{{ asset('imagenes/documentos.png') }}" alt="Documentos" class="inline-block w-4 h-4 mr-2">
+                <span class="font-medium">Documentos</span>
+              </a>
+            @endif
+
+            @if (Route::has('notificaciones.index'))
+              <a href="{{ route('notificaciones.index') }}" class="nav-item">
+                <img src="{{ asset('imagenes/notificaciones.png') }}" alt="Notificaciones" class="inline-block w-4 h-4 mr-2">
+                <span class="font-medium">Notificaciones</span>
+              </a>
+            @endif
+
+          </nav>
+        </aside>
+      @endunless
+      <main class="flex-grow overflow-auto bg-[var(--ucr-fondo)]">
+        <div class="container mx-auto px-4 py-6">
+          @includeIf('components.flash')
+          @hasSection('content') @yield('content') @elseif(View::hasSection('contenido')) @yield('contenido') @endif
         </div>
-
-        <nav class="pt-1.5 space-y-0.5">
-
-          @if (Route::has('unidades.index'))
-            <a href="{{ route('unidades.index') }}" class="nav-item">
-              <img src="{{ asset('imagenes/unidades.png') }}" alt="Unidades" class="inline-block w-4 h-4 mr-2">
-              <span class="font-medium">Mis Unidades Académicas</span>
-            </a>
-          @endif
-
-          <a href="{{ route('sedes.index') }}" class="nav-item">
-            <img src="{{ asset('imagenes/sedes.png') }}" alt="Sedes" class="inline-block w-4 h-4 mr-2">
-            <span class="font-medium">Sedes</span>
-          </a>
-
-          @if (Route::has('usuarios.index'))
-            <a href="{{ route('usuarios.index') }}" class="nav-item">
-              <img src="{{ asset('imagenes/usuarios.png') }}" alt="Usuarios" class="inline-block w-4 h-4 mr-2">
-              <span class="font-medium">Usuarios</span>
-            </a>
-          @endif
-
-          @if (Route::has('cargos.index'))
-            <a href="{{ route('cargos.index') }}" class="nav-item">
-              <img src="{{ asset('imagenes/cargos.png') }}" alt="Cargos" class="inline-block w-4 h-4 mr-2">
-              <span class="font-medium">Cargos</span>
-            </a>
-          @endif
-
-          @if (Route::has('formularios.index'))
-            <a href="{{ route('formularios.index') }}" class="nav-item">
-              <img src="{{ asset('imagenes/formularios.png') }}" alt="Formularios" class="inline-block w-4 h-4 mr-2">
-              <span class="font-medium">Formularios</span>
-            </a>
-          @endif
-
-          @if (Route::has('declaraciones.index'))
-            <a href="{{ route('declaraciones.index') }}" class="nav-item">
-              <img src="{{ asset('imagenes/declaraciones.png') }}" alt="Declaraciones" class="inline-block w-4 h-4 mr-2">
-              <span class="font-medium">Declaraciones</span>
-            </a>
-          @endif
-
-          @if (Route::has('horarios.index'))
-            <a href="{{ route('horarios.index') }}" class="nav-item">
-              <img src="{{ asset('imagenes/horarios.png') }}" alt="Horarios" class="inline-block w-4 h-4 mr-2">
-              <span class="font-medium">Horarios</span>
-            </a>
-          @endif
-
-          @if (Route::has('documentos.index'))
-            <a href="{{ route('documentos.index') }}" class="nav-item">
-              <img src="{{ asset('imagenes/documentos.png') }}" alt="Documentos" class="inline-block w-4 h-4 mr-2">
-              <span class="font-medium">Documentos</span>
-            </a>
-          @endif
-
-          @if (Route::has('notificaciones.index'))
-            <a href="{{ route('notificaciones.index') }}" class="nav-item">
-              <img src="{{ asset('imagenes/notificaciones.png') }}" alt="Notificaciones" class="inline-block w-4 h-4 mr-2">
-              <span class="font-medium">Notificaciones</span>
-            </a>
-          @endif
-
-        </nav>
-      </aside>
-    @endunless
-
-
-      <main class="bg-[var(--ucr-fondo)]" style="padding:var(--content-py) var(--content-px);">
-        @includeIf('components.flash')
-        @hasSection('content') @yield('content') @elseif(View::hasSection('contenido')) @yield('contenido') @endif
       </main>
     </div>
   </div>
