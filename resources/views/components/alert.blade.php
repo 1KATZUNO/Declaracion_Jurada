@@ -1,5 +1,5 @@
 @props(['tipo' => 'info', 'mensaje'])
-
+ @csrf
 @php
 $colores = [
   'success' => 'bg-green-100 text-green-800 border-green-300',

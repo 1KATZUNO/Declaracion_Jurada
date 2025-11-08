@@ -1,14 +1,14 @@
 @extends('layout')
 
 @section('content')
-<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="container mx-auto w-full max-w-6xl px-2 sm:px-4 md:px-8 py-8">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
             <h2 class="text-2xl font-semibold text-white">Registrar nuevo usuario</h2>
             <p class="text-blue-100 text-sm mt-1">Complete los datos del nuevo usuario</p>
         </div>
 
-        <form action="{{ route('usuarios.store') }}" method="POST" class="p-8">
+        <form action="{{ route('usuarios.store') }}" method="POST" class="p-2 sm:p-4 md:p-8">
             @csrf
 
             <div class="mb-8">
@@ -50,12 +50,7 @@
                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
                         @error('correo')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
-                        <input type="password" name="contrasena"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
-                        @error('contrasena')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-                    </div>
+                    
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Rol</label>
                         <select name="rol" class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>

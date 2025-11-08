@@ -1,6 +1,5 @@
 @extends('layout')
 @section('titulo', 'Editar Unidad Académica')
-
 {{-- Oculta el menú lateral en esta vista --}}
 @section('hide_sidebar', true)
 
@@ -36,8 +35,8 @@
       <p class="text-blue-100 text-sm mt-1">Modifique la información de la unidad.</p>
     </div>
     <a href="{{ route('unidades.index') }}"
-       class="px-4 py-2 text-sm font-medium text-[#0B5ED7] bg-white rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white shadow-sm"
-       aria-label="Volver al listado">
+      class="px-4 py-2 text-sm font-medium text-[#0B5ED7] bg-white rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white shadow-sm"
+      aria-label="Volver al listado">
       ← Volver
     </a>
   </div>
@@ -119,7 +118,7 @@
       {{-- Acciones --}}
       <div class="flex flex-col md:flex-row md:justify-end gap-3 pt-2">
         <a href="{{ route('unidades.index') }}"
-           class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500">
+          class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500">
           Cancelar
         </a>
         <button type="submit"

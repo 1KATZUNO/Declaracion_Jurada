@@ -8,6 +8,7 @@ use App\Http\Controllers\{
     UnidadAcademicaController,
     CargoController,
     FormularioController,
+    JornadaController,
     DeclaracionController,
     HorarioController,
     DocumentoController,
@@ -33,6 +34,7 @@ Route::resource('unidades', UnidadAcademicaController::class);
 Route::resource('cargos', CargoController::class);
 Route::resource('formularios', FormularioController::class);
 Route::resource('declaraciones', DeclaracionController::class);
+Route::resource('jornadas', JornadaController::class)->except(['show']);
 Route::resource('horarios', HorarioController::class);
 Route::resource('documentos', DocumentoController::class)->only(['index','show','destroy']);
 Route::resource('notificaciones', NotificacionController::class);

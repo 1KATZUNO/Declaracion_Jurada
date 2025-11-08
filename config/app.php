@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -95,8 +94,6 @@ return [
     |
     */
 
-    'cipher' => 'AES-256-CBC',
-
     'key' => env('APP_KEY'),
 
     'previous_keys' => [
@@ -104,6 +101,17 @@ return [
             explode(',', env('APP_PREVIOUS_KEYS', ''))
         ),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Encryption Cipher
+    |--------------------------------------------------------------------------
+    |
+    | Supported: "aes-128-cbc", "aes-256-cbc", "aes-128-gcm", "aes-256-gcm"
+    |
+    */
+
+    'cipher' => env('APP_CIPHER', 'aes-256-cbc'),
 
     /*
     |--------------------------------------------------------------------------
@@ -122,5 +130,4 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
-
 ];

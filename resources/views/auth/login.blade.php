@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+ @csrf
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -6,8 +7,10 @@
     <title>Iniciar Sesión - Declaraciones UCR</title>
     @vite(['resources/css/app.css'])
 </head>
-<body class="bg-gray-100">
-    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<body 
+    class="min-h-screen bg-cover bg-center bg-no-repeat flex items-start justify-center pt-30
+"
+    style="background-image: url('{{ asset('imagenes/Login.png') }}');">
         <div class="max-w-md w-full">
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
@@ -18,6 +21,7 @@
                     <p class="mt-2 text-blue-100">
                         Iniciar Sesión
                     </p>
+                    
                 </div>
 
                 <!-- Form -->
@@ -71,6 +75,12 @@
                                 Iniciar Sesión
                             </button>
                         </div>
+                        <!-- Enlace a cambiar contraseña -->
+<div class="mt-4 text-center">
+    <a href="{{ url('/change-password') }}" class="text-blue-600 hover:underline text-sm">
+        ¿Olvidaste tu contraseña o deseas cambiarla?
+    </a>
+</div>
                     </form>
                 </div>
             </div>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+   @csrf
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>@yield('titulo', 'Declaraciones UCR')</title>
@@ -155,5 +156,43 @@
   <footer class="bg-[var(--ucr-azul)] text-blue-100 text-center text-[11px] py-3">
     © {{ date('Y') }} Universidad de Costa Rica — Sistema de Gestión Académica
   </footer>
+
+  <script>
+    // toggle dropdown
+    document.addEventListener('click', function(e){
+      const btn = document.getElementById('user-button');
+      const dd = document.getElementById('user-dropdown');
+      if (!btn || !dd) return;
+      if (btn.contains(e.target)) dd.classList.toggle('hidden'); else if (!dd.contains(e.target)) dd.classList.add('hidden');
+    });
+
+    // preview avatar + actualizar topbar
+    (function(){
+      const avatarInput = document.getElementById('avatar-input');
+      if (!avatarInput) return;
+      avatarInput.addEventListener('change', function(){
+        const file = this.files && this.files[0];
+        const preview = document.getElementById('avatar-preview');
+        let previewImg = document.getElementById('avatar-preview-img');
+        const topImg = document.getElementById('user-avatar-top-img');
+        const topPlaceholder = document.getElementById('user-avatar-top-placeholder');
+
+        if (!file) { if (preview) preview.style.display = 'none'; return; }
+        const url = URL.createObjectURL(file);
+
+        if (previewImg) previewImg.src = url;
+        else if (preview) { previewImg = document.createElement('img'); previewImg.id='avatar-preview-img'; previewImg.className='w-full h-full object-cover'; previewImg.src = url; preview.appendChild(previewImg); }
+        if (preview) preview.style.display = 'block';
+
+        if (topImg) topImg.src = url;
+        else if (topPlaceholder) {
+          const img = document.createElement('img'); img.id='user-avatar-top-img'; img.className='w-full h-full object-cover'; img.src = url; topPlaceholder.replaceWith(img);
+        }
+
+        const cleanup = () => { try{ URL.revokeObjectURL(url); }catch(e){} };
+        if (previewImg) previewImg.onload = previewImg.onerror = cleanup;
+      });
+    })();
+  </script>
 </body>
 </html>

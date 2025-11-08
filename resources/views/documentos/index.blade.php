@@ -1,16 +1,16 @@
 @extends('layout')
-
+ @csrf
 @section('titulo', 'Documentos Generados')
 
 @section('contenido')
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="container mx-auto w-full max-w-7xl px-2 sm:px-4 md:px-8 py-8">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
             <h2 class="text-2xl font-semibold text-white">Documentos de Declaraciones</h2>
             <p class="text-blue-100 text-sm mt-1">Archivos generados del sistema</p>
         </div>
 
-        <div class="p-8">
+        <div class="p-2 sm:p-4 md:p-8">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -24,6 +24,11 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach ($documentos as $doc)
+                            @php
+                                $fileUrl = (strpos($doc->archivo, 'public/') === 0)
+                                    ? \Illuminate\Support\Facades\Storage::url($doc->archivo)
+                                    : asset($doc->archivo);
+                            @endphp
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="py-4 px-4 text-sm text-gray-900 font-medium">{{ $doc->declaracion->usuario->nombre }} {{ $doc->declaracion->usuario->apellido }}</td>
                             <td class="py-4 px-4 text-sm text-gray-600">{{ basename($doc->archivo) }}</td>
@@ -31,7 +36,9 @@
                             <td class="py-4 px-4 text-sm text-gray-600">{{ $doc->fecha_generacion }}</td>
                             <td class="py-4 px-4 text-sm">
                                 <div class="flex gap-2">
-                                    <a href="{{ asset($doc->archivo) }}"
+-                                    <a href="{{ asset($doc->archivo) }}"
++                                    <a href="{{ $fileUrl }}"
+                                       download="{{ basename($doc->archivo) }}" target="_blank" rel="noopener"
                                        class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-300 rounded hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors">
                                         Descargar
                                     </a>

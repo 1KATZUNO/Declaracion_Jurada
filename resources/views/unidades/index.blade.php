@@ -1,6 +1,5 @@
 @extends('layout')
 @section('titulo', 'UA – Unidades Académicas')
-
 @section('contenido')
   {{-- Título principal --}}
   <header class="mb-6">
