@@ -71,7 +71,7 @@ class UnidadAcademicaController extends Controller
         // Si tiene declaraciones, NO borrar; inactivar para guardar historial
         if ($unidad->declaraciones_count > 0) {
             $unidad->update(['estado' => 'INACTIVA']);
-            return back()->with('ok','Unidad inactivada (tenía declaraciones asociadas).');
+            return back()->with('ok','⚠ No se pudo eliminar la unidad porque tiene declaraciones juradas asociadas. El sistema la marcó como INACTIVA.');
         }
 
         $unidad->delete(); // soft delete
