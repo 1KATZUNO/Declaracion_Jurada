@@ -1,52 +1,23 @@
 @extends('layout')
-@section('titulo', 'Registrar Unidad Académica')
-{{-- Oculta el menú lateral en esta vista --}}
-@section('hide_sidebar', true)
+@section('titulo', 'Nueva Unidad Académica')
+
+{{-- Mostramos el sidebar --}}
 
 @section('contenido')
-
-@php
-  $breadcrumbs = [
-    'Inicio' => route('home'),
-    'Unidades Académicas' => route('unidades.index'),
-    'Registrar' => null,
-  ];
-@endphp
-
 <div class="max-w-5xl mx-auto bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-  {{-- Breadcrumb suave  --}}
-  <nav class="px-6 py-3 text-xs text-gray-600 bg-[#F0F2F5]" aria-label="Breadcrumb">
-    <ol class="flex flex-wrap items-center gap-1">
-      @foreach($breadcrumbs as $label => $url)
-        @if ($url)
-          <li><a href="{{ $url }}" class="hover:text-gray-800 hover:underline">{{ $label }}</a></li>
-          <li class="text-gray-400">/</li>
-        @else
-          <li class="text-gray-800 font-medium" aria-current="page">{{ $label }}</li>
-        @endif
-      @endforeach
-    </ol>
-  </nav>
 
-  {{-- Encabezado con botón Volver --}}
-  <div class="bg-[#0B5ED7] px-6 md:px-8 py-5 md:py-6 flex items-center justify-between">
-    <div class="min-w-0">
-      <h2 class="text-xl md:text-2xl font-semibold text-white truncate">Registrar Unidad Académica</h2>
-      <p class="text-blue-100 text-sm mt-1">Complete la información de la nueva unidad (tal como aparecerá en la Declaración Jurada).</p>
-    </div>
-    <a href="{{ route('unidades.index') }}"
-       class="px-4 py-2 text-sm font-medium text-[#0B5ED7] bg-white rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white shadow-sm"
-       aria-label="Volver al listado">
-      ← Volver
-    </a>
+  {{-- Encabezado tipo Figma --}}
+  <div class="px-6 md:px-8 py-6">
+    <h1 class="text-[22px] md:text-2xl font-bold text-[#0B2C63] tracking-wide uppercase">
+      Nueva Unidad Académica
+    </h1>
+    <p class="text-sm text-gray-600 mt-2">Datos de la unidad</p>
   </div>
 
-  {{-- Contenido --}}
-  <div class="p-6 md:p-8 space-y-8">
-
+  <div class="px-6 md:px-8 pb-8">
     {{-- Resumen de errores --}}
     @if ($errors->any())
-      <div class="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="status" aria-live="polite">
+      <div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="status" aria-live="polite">
         <p class="font-medium mb-1">Por favor corrija los siguientes campos:</p>
         <ul class="list-disc list-inside">
           @foreach ($errors->all() as $error)
@@ -56,76 +27,55 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ route('unidades.store') }}" novalidate class="space-y-8">
+    <form method="POST" action="{{ route('unidades.store') }}" class="grid grid-cols-1 md:grid-cols-2 gap-6" novalidate>
       @csrf
 
-      {{-- Sección: Datos de la unidad --}}
-      <section aria-labelledby="sec-datos-unidad" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h3 id="sec-datos-unidad" class="text-base font-semibold text-gray-900">Datos de la unidad</h3>
-          <p class="text-sm text-gray-500 mt-1">Use el nombre institucional oficial.</p>
-        </div>
+      {{-- Nombre --}}
+      <div class="md:col-span-1">
+        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la unidad académica o administrativa</label>
+        <input
+          id="nombre"
+          name="nombre"
+          type="text"
+          maxlength="100"
+          placeholder="Ej: Escuela de Matemática"
+          value="{{ old('nombre') }}"
+          class="w-full px-4 py-2.5 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#0B5ED7] focus:border-[#0B5ED7] @error('nombre') border-red-500 ring-red-200 @enderror"
+          required
+        />
+        @error('nombre')
+          <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+        @enderror
+      </div>
 
-        <div class="px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {{-- Nombre --}}
-          <div class="md:col-span-2">
-            <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">
-              Nombre de la unidad académica o administrativa
-            </label>
-            <p class="text-xs text-gray-500 mb-2">
-              Ejemplos: “Escuela de Ciencias de la Computación e Informática”, “Facultad de Educación”, “Escuela de Matemática”.
-            </p>
-            <input
-              id="nombre"
-              type="text"
-              name="nombre"
-              value="{{ old('nombre') }}"
-              maxlength="100"
-              placeholder="Ej.: Escuela de Ciencias de la Computación e Informática"
-              class="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-gray-50 hover:bg-white focus:ring-2 focus:ring-[#0B5ED7] focus:border-[#0B5ED7] @error('nombre') border-red-500 ring-red-200 @enderror"
-              required
-              aria-describedby="ayuda-nombre"
-            />
-            @error('nombre')
-              <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-            @enderror
-            <p id="ayuda-nombre" class="mt-1 text-xs text-gray-500">
-              Este nombre aparecerá en la Declaración Jurada del funcionario.
-            </p>
-          </div>
+      {{-- Sede asociada (select estilizado como input del Figma) --}}
+      <div class="md:col-span-1">
+        <label for="id_sede" class="block text-sm font-medium text-gray-700 mb-1">Sede Asociada</label>
+        <select
+          id="id_sede"
+          name="id_sede"
+          class="w-full px-4 py-2.5 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#0B5ED7] focus:border-[#0B5ED7] @error('id_sede') border-red-500 ring-red-200 @enderror"
+          required
+        >
+          <option value="">Seleccione una sede...</option>
+          @foreach($sedes as $s)
+            <option value="{{ $s->id_sede }}" @selected(old('id_sede') == $s->id_sede)>{{ $s->nombre }}</option>
+          @endforeach
+        </select>
+        @error('id_sede')
+          <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+        @enderror
+      </div>
 
-          {{-- Sede --}}
-          <div class="md:col-span-1">
-            <label for="id_sede" class="block text-sm font-medium text-gray-700 mb-2">Sede asociada</label>
-            <select
-              id="id_sede"
-              name="id_sede"
-              class="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-gray-50 hover:bg-white focus:ring-2 focus:ring-[#0B5ED7] focus:border-[#0B5ED7] @error('id_sede') border-red-500 ring-red-200 @enderror"
-              required
-            >
-              <option value="">Seleccione una sede...</option>
-              @foreach($sedes as $s)
-                <option value="{{ $s->id_sede }}" @selected(old('id_sede') == $s->id_sede)>{{ $s->nombre }}</option>
-              @endforeach
-            </select>
-            @error('id_sede')
-              <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-            @enderror
-          </div>
-
-          <div class="md:col-span-1"></div>
-        </div>
-      </section>
-
-      {{-- Botones --}}
-      <div class="flex flex-col md:flex-row md:justify-end gap-3 pt-2">
+      {{-- Acciones --}}
+      <div class="md:col-span-2 flex items-center gap-3 pt-2">
         <a href="{{ route('unidades.index') }}"
-           class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500">
+           class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
           Cancelar
         </a>
         <button type="submit"
                 onclick="this.disabled=true; this.innerText='Guardando…'; this.form.submit();"
-                class="px-6 py-2.5 text-sm font-medium text-white bg-[#0B5ED7] border border-transparent rounded-md hover:bg-[#0A53C1] focus:outline-none focus:ring-2 focus:ring-[#0B5ED7] shadow-sm">
+                class="px-5 py-2.5 text-sm font-medium text-white bg-[#0B2C63] rounded-md hover:opacity-90">
           Guardar
         </button>
       </div>

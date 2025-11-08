@@ -11,13 +11,17 @@
         <h2 class="text-2xl font-semibold text-white tracking-tight">Jornadas laborales</h2>
         <p class="text-blue-100 text-sm mt-1">Gestión de jornadas registradas en el sistema</p>
       </div>
-      <a href="{{ route('jornadas.create') }}"
-         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-white rounded-lg hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"/>
-        </svg>
-        Nueva Jornada
-      </a>
+
+      {{-- Mostrar "Modificar jornada TC" que abre el edit de la jornada TC --}}
+      @if(!empty($tcJornada))
+        <a href="{{ route('jornadas.edit', $tcJornada->id_jornada) }}"
+           class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-white rounded-lg hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h10M11 12h10M11 19h10M6 5h.01M6 12h.01M6 19h.01"/>
+          </svg>
+          Modificar jornada (TC)
+        </a>
+      @endif
     </div>
 
     <div class="p-8">
@@ -47,27 +51,19 @@
                 <td class="py-3.5 px-4 text-gray-900 font-medium">{{ $j->tipo }}</td>
                 <td class="py-3.5 px-4 text-slate-700 font-mono">{{ $j->horas_por_semana }}</td>
                 <td class="py-3.5 px-4 flex items-center gap-2">
-                  <a href="{{ route('jornadas.edit', $j->id_jornada) }}"
-                     class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15.232 5.232l3.536 3.536M16.5 3.964a2.25 2.25 0 113.182 3.182L7.5 19.5 3 21l1.5-4.5 12-12z"/>
-                    </svg>
-                    Editar
-                  </a>
-
-                  {{-- BOTÓN ELIMINAR CON POPUP --}}
-                  <form action="{{ route('jornadas.destroy', $j->id_jornada) }}" method="POST" class="inline delete-form">
-                    @csrf @method('DELETE')
-                    <button type="submit" title="Eliminar jornada"
-                            class="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 hover:border-red-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 transition">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0l1-2h4l1 2M4 7h16"/>
-                      </svg>
-                      Eliminar
-                    </button>
-                  </form>
+                  @if($j->tipo === 'TC')
+                    <a href="{{ route('jornadas.edit', $j->id_jornada) }}"
+                       class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 transition">
+                      Editar
+                    </a>
+                    {{-- opción de eliminar sigue deshabilitada en UI según flujo --}}
+                    <span class="text-xs text-gray-400 italic">Protegida</span>
+                  @else
+                    {{-- Fracciones automáticas: no permitir edición desde la lista --}}
+                    <span class="inline-flex items-center gap-2 rounded-md px-3 py-1 text-xs font-medium text-gray-500 bg-gray-50 border border-gray-200">
+                      Protegida
+                    </span>
+                  @endif
                 </td>
               </tr>
             @empty
