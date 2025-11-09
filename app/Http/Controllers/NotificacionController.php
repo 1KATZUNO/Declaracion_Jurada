@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Usuario;
+use App\Notifications\NotificacionPersonalizada;
 
 class NotificacionController extends Controller
 {
@@ -32,6 +33,37 @@ class NotificacionController extends Controller
         return view('notificaciones.index', compact('notificaciones'));
     }
 
+    public function create()
+    {
+        $usuarios = Usuario::orderBy('nombre')->orderBy('apellido')->get();
+
+        return view('notificaciones.create', compact('usuarios'));
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'id_usuario' => ['required', 'exists:usuario,id_usuario'],
+            'mensaje'    => ['required', 'string', 'max:5000'],
+            'estado'     => ['required', 'in:pendiente,enviada,leída'],
+        ]);
+
+        $usuario = Usuario::findOrFail($data['id_usuario']);
+
+        $usuario->notify(new NotificacionPersonalizada(
+            $data['mensaje'],
+            $data['estado']
+        ));
+
+        if ($data['estado'] === 'leída') {
+            $usuario->notifications()->latest()->first()?->markAsRead();
+        }
+
+        return redirect()
+            ->route('notificaciones.index')
+            ->with('ok', 'Notificación enviada correctamente.');
+    }
+
     public function show(Request $request, $id)
     {
         $usuario = $this->usuarioActual($request);
@@ -42,7 +74,7 @@ class NotificacionController extends Controller
             ->firstOrFail();
 
         if (is_null($notificacion->read_at)) {
-    $notificacion->markAsRead();
+            $notificacion->markAsRead();
         }
 
 
