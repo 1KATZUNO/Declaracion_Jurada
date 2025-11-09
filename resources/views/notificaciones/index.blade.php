@@ -64,6 +64,7 @@
                             $msg  = $n->data['message'] ?? 'Notificación del sistema';
                             $fecha = $n->created_at ? $n->created_at->format('d/m/Y H:i') : '-';
                             $isRead = !is_null($n->read_at);
+                            $estado = $n->data['estado'] ?? null;
                         @endphp
                         <tr class="{{ $loop->odd ? 'bg-white' : 'bg-gray-50' }}">
                             <td class="px-6 py-3 align-top">
@@ -92,15 +93,20 @@
                                 </div>
                             </td>
                             <td class="px-6 py-3 align-top text-center">
-                                @if($isRead)
-                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] rounded-full bg-green-100 text-green-700">
-                                        Leída
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] rounded-full bg-yellow-100 text-yellow-700">
-                                        No leída
-                                    </span>
-                                @endif
+                                @php
+                                    $label = $estado ?? ($isRead ? 'Leída' : 'No leída');
+                                    $labelLower = strtolower($label);
+                                    if ($labelLower === 'leída') {
+                                        $styles = 'bg-green-100 text-green-700';
+                                    } elseif ($labelLower === 'enviada') {
+                                        $styles = 'bg-blue-100 text-blue-700';
+                                    } else {
+                                        $styles = 'bg-yellow-100 text-yellow-700';
+                                    }
+                                @endphp
+                                <span class="inline-flex items-center px-2 py-0.5 text-[10px] rounded-full {{ $styles }}">
+                                    {{ ucfirst($label) }}
+                                </span>
                             </td>
                             <td class="px-6 py-3 align-top text-center">
                                 <div class="flex items-center justify-center gap-2">
