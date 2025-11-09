@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notifiable;
 
 class Usuario extends Model
 {
-    use Notifiable; // 👈 Permite enviar y recibir notificaciones (correo y base de datos)
+    use Notifiable; // Permite enviar y recibir notificaciones (correo y base de datos)
 
     protected $table = 'usuario';
     protected $primaryKey = 'id_usuario';
@@ -29,6 +29,7 @@ class Usuario extends Model
     {
         return $this->hasMany(Declaracion::class, 'id_usuario');
     }
+    //Con este metodo se utiliza el notification nativo de laravel
     public function routeNotificationForMail()
     {
         return $this->correo;
