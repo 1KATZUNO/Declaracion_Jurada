@@ -43,131 +43,215 @@
                             @endforeach
                         </select>
                     </div>
-
-                    <div>
-                        <label for="id_cargo" class="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
-                        <select name="id_cargo" id="id_cargo"
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
-                            @foreach($cargos as $c)
-                                <option value="{{ $c->id_cargo }}">{{ $c->nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
                 </div>
-            </div>
-            <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Período y horas</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label for="fecha_desde" class="block text-sm font-medium text-gray-700 mb-2">Fecha desde</label>
-                        <input type="date" name="fecha_desde" id="fecha_desde"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
-                    </div>
-
-                    <div>
-                        <label for="fecha_hasta" class="block text-sm font-medium text-gray-700 mb-2">Fecha hasta</label>
-                        <input type="date" name="fecha_hasta" id="fecha_hasta"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
-                    </div>
-
-                    <div>
-                        <label for="horas_totales" class="block text-sm font-medium text-gray-700 mb-2">Horas totales</label>
-                        <input type="number" step="0.1" name="horas_totales" id="horas_totales"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
-                               readonly>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horarios en otras instituciones</h3>
-                <div id="horariosExternos" class="space-y-4">
-                    <div class="fila-horario-externo bg-gray-50 p-4 rounded-lg">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Institución</label>
-                                <input type="text" name="ext_institucion[]" class="mt-1 w-full rounded border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Día</label>
-                                <select name="ext_dia[]" class="mt-1 w-full rounded border-gray-300">
-                                    <option>Lunes</option><option>Martes</option><option>Miércoles</option>
-                                    <option>Jueves</option><option>Viernes</option><option>Sábado</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Inicio</label>
-                                    <input type="time" name="ext_hora_inicio[]" class="mt-1 w-full rounded border-gray-300">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Fin</label>
-                                    <input type="time" name="ext_hora_fin[]" class="mt-1 w-full rounded border-gray-300">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button type="button" id="addHorarioExterno" class="mt-4 px-4 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200">
-                    + Agregar otro horario externo
-                </button>
             </div>
 
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horarios UCR</h3>
                 
-                <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Jornada UCR</label>
-                        <select name="id_jornada" id="id_jornada" required class="mt-1 w-full rounded border-gray-300">
-                            <option value="">Seleccione jornada...</option>
-                            @foreach($jornadas as $j)
-                                <option value="{{ $j->id_jornada }}" data-horas="{{ $j->horas_por_semana }}">
-                                    {{ $j->tipo }} — {{ $j->horas_por_semana }}h
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Estado horas</label>
-                        <div id="contadorHoras" class="mt-1 px-3 py-2 rounded text-sm font-medium bg-gray-50">
-                            Objetivo: <span id="targetHoras">—</span> h · 
-                            Asignadas: <span id="horasAsignadas">0</span> h ·
-                            Restantes: <span id="horasRestantes">—</span> h
-                        </div>
-                    </div>
-                </div>
-
-                <div id="horariosUCR" class="space-y-4">
-                    <!-- Template inicial para horarios UCR -->
-                    <div class="fila-horario bg-gray-50 p-4 rounded-lg">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Contenedor para múltiples cargos UCR -->
+                <div id="cargosUCR" class="space-y-6">
+                    <!-- Template de cargo UCR -->
+                    <div class="cargo-ucr-block border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Día</label>
-                                <select name="ucr_dia[]" class="mt-1 w-full rounded border-gray-300">
-                                    <option>Lunes</option><option>Martes</option><option>Miércoles</option>
-                                    <option>Jueves</option><option>Viernes</option><option>Sábado</option>
+                                <label class="block text-sm font-medium text-gray-700">Cargo UCR</label>
+                                <select name="ucr_cargo[]" class="ucr-cargo-select mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
+                                    <option value="">Seleccione cargo...</option>
+                                    @foreach($cargos as $c)
+                                        <option value="{{ $c->id_cargo }}">{{ $c->nombre }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Hora inicio</label>
-                                <input type="time" name="ucr_hora_inicio[]" class="mt-1 w-full rounded border-gray-300">
+                                <label class="block text-sm font-medium text-gray-700">Jornada de este cargo</label>
+                                <select name="ucr_jornada[]" class="ucr-jornada-select mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
+                                    <option value="">Seleccione jornada...</option>
+                                    @foreach($jornadas as $j)
+                                        <option value="{{ $j->id_jornada }}" data-horas="{{ $j->horas_por_semana }}">
+                                            {{ $j->tipo }} — {{ $j->horas_por_semana }}h
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Hora fin</label>
-                                <input type="time" name="ucr_hora_fin[]" class="mt-1 w-full rounded border-gray-300">
+                                <label class="block text-sm font-medium text-gray-700">Estado horas</label>
+                                <div class="contador-horas-cargo mt-1 px-3 py-2 rounded text-sm font-medium bg-white">
+                                    Obj: <span class="target-horas-ucr">—</span> h · 
+                                    Asig: <span class="horas-asignadas-ucr">0</span> h ·
+                                    Rest: <span class="horas-restantes-ucr">—</span> h
+                                </div>
                             </div>
-                            <div class="flex items-end">
-                                <button type="button" class="btn-remove-ucr px-3 py-2 text-sm text-red-600 hover:text-red-700">
-                                    Eliminar
-                                </button>
+                        </div>
+
+                        <!-- Fechas de vigencia para este cargo -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-3 bg-white rounded-lg border">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha desde</label>
+                                <input type="date" name="ucr_cargo_fecha_desde[]" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
+                                       placeholder="dd/mm/aaaa">
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha hasta</label>
+                                <input type="date" name="ucr_cargo_fecha_hasta[]" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
+                                       placeholder="dd/mm/aaaa">
+                            </div>
+                        </div>
+
+                        <!-- Horarios de este cargo -->
+                        <div class="horarios-cargo space-y-3 mb-3" data-cargo-index="0">
+                            <div class="fila-horario-ucr bg-gray-50 p-3 rounded-lg border">
+                                <!-- Campo oculto para identificar a qué cargo pertenece este horario -->
+                                <input type="hidden" name="ucr_cargo_index[]" value="0" class="cargo-index-field">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Día</label>
+                                        <select name="ucr_dia[]" 
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white">
+                                            <option>Lunes</option><option>Martes</option><option>Miércoles</option>
+                                            <option>Jueves</option><option>Viernes</option><option>Sábado</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Inicio</label>
+                                        <input type="time" name="ucr_hora_inicio[]" 
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Fin</label>
+                                        <input type="time" name="ucr_hora_fin[]" 
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white">
+                                    </div>
+                                    <div class="flex items-end">
+                                        <button type="button" class="btn-remove-horario-ucr px-2 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <button type="button" class="btn-add-horario-cargo px-3 py-1.5 text-sm bg-blue-100 rounded hover:bg-blue-200">
+                                + Agregar horario a este cargo
+                            </button>
+                            <button type="button" class="btn-remove-cargo px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded">
+                                🗑️ Eliminar cargo
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <button type="button" id="addHorarioUCR" class="mt-4 px-4 py-2 text-sm bg-blue-100 rounded hover:bg-blue-200">
-                    + Agregar horario UCR
+                <button type="button" id="addCargoUCR" class="mt-4 px-4 py-2 text-sm font-medium bg-green-100 text-green-700 rounded hover:bg-green-200">
+                    + Agregar otro cargo UCR
+                </button>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horarios en otras instituciones</h3>
+                
+                <!-- Contenedor para múltiples instituciones externas -->
+                <div id="institucionesExternas" class="space-y-6">
+                    <!-- Template de institución externa -->
+                    <div class="institucion-externa-block border-2 border-gray-200 rounded-lg p-4 bg-white">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Institución</label>
+                                <input type="text" name="ext_institucion[]" 
+                                       placeholder="Nombre de la institución"
+                                       class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Cargo en esta institución</label>
+                                <input type="text" name="ext_cargo[]" 
+                                       placeholder="Ej: Profesor, Coordinador..."
+                                       class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Jornada de esta institución</label>
+                                <select name="ext_jornada[]" class="ext-jornada-select mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
+                                    <option value="">Seleccione jornada...</option>
+                                    @foreach($jornadas as $j)
+                                        <option value="{{ $j->id_jornada }}" data-horas="{{ $j->horas_por_semana }}">
+                                            {{ $j->tipo }} — {{ $j->horas_por_semana }}h
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Estado horas</label>
+                                <div class="contador-horas-institucion mt-1 px-3 py-2 rounded text-sm font-medium bg-gray-50">
+                                    Obj: <span class="target-horas">—</span> h · 
+                                    Asig: <span class="horas-asignadas">0</span> h ·
+                                    Rest: <span class="horas-restantes">—</span> h
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fechas de vigencia para esta institución -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha desde</label>
+                                <input type="date" name="ext_inst_fecha_desde[]" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
+                                       placeholder="dd/mm/aaaa">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha hasta</label>
+                                <input type="date" name="ext_inst_fecha_hasta[]" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
+                                       placeholder="dd/mm/aaaa">
+                            </div>
+                        </div>
+
+                        <!-- Horarios de esta institución -->
+                        <div class="horarios-institucion space-y-3 mb-3" data-inst-index="0">
+                            <div class="fila-horario-externo bg-white p-3 rounded-lg border">
+                                <!-- Campo oculto para identificar a qué institución pertenece este horario -->
+                                <input type="hidden" name="ext_inst_index[]" value="0" class="inst-index-field">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Día</label>
+                                        <select name="ext_dia[]" 
+                                                class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white">
+                                            <option>Lunes</option><option>Martes</option><option>Miércoles</option>
+                                            <option>Jueves</option><option>Viernes</option><option>Sábado</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Inicio</label>
+                                        <input type="time" name="ext_hora_inicio[]" 
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Fin</label>
+                                        <input type="time" name="ext_hora_fin[]" 
+                                               class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white">
+                                    </div>
+                                    <div class="flex items-end">
+                                        <button type="button" class="btn-remove-horario-externo px-2 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <button type="button" class="btn-add-horario-institucion px-3 py-1.5 text-sm bg-blue-100 rounded hover:bg-blue-200">
+                                + Agregar horario a esta institución
+                            </button>
+                            <button type="button" class="btn-remove-institucion px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded">
+                                🗑️ Eliminar institución
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="addInstitucionExterna" class="mt-4 px-4 py-2 text-sm font-medium bg-green-100 text-green-700 rounded hover:bg-green-200">
+                    + Agregar otra institución externa
                 </button>
             </div>
 
@@ -186,18 +270,14 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const selJornada = document.getElementById('id_jornada');
-    const horasInput = document.getElementById('horas_totales');
-    const targetHoras = document.getElementById('targetHoras');
-    const horasAsignadas = document.getElementById('horasAsignadas');
-    const horasRestantes = document.getElementById('horasRestantes');
-    const horariosUCR = document.getElementById('horariosUCR');
     const form = document.getElementById('declaracionForm');
 
-    // Template para nuevo horario UCR
-    const addHorarioUCR = document.getElementById('addHorarioUCR');
-    const horariosUCRContainer = document.getElementById('horariosUCR');
-    const templateHorarioUCR = horariosUCRContainer.querySelector('.fila-horario').cloneNode(true);
+    // ========== MÚLTIPLES CARGOS UCR ==========
+    const cargosUCRContainer = document.getElementById('cargosUCR');
+    const addCargoUCR = document.getElementById('addCargoUCR');
+    
+    // Template para nuevo cargo UCR
+    const templateCargoUCR = cargosUCRContainer.querySelector('.cargo-ucr-block').cloneNode(true);
     
     function parseTimeToMinutes(timeStr) {
         if (!timeStr) return 0;
@@ -220,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Recolectar horarios UCR
-        document.querySelectorAll('.fila-horario').forEach(row => {
+        document.querySelectorAll('.fila-horario-ucr').forEach(row => {
             const dia = row.querySelector('select[name="ucr_dia[]"]').value;
             const inicio = row.querySelector('input[name="ucr_hora_inicio[]"]').value;
             const fin = row.querySelector('input[name="ucr_hora_fin[]"]').value;
@@ -263,9 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    function calcularHorasAsignadas() {
+    // Calcular horas asignadas para un cargo UCR específico
+    function calcularHorasCargo(cargoBlock) {
         let totalMinutos = 0;
-        const filas = horariosUCR.querySelectorAll('.fila-horario');
+        const filas = cargoBlock.querySelectorAll('.fila-horario-ucr');
         
         filas.forEach(fila => {
             const inicio = fila.querySelector('input[name="ucr_hora_inicio[]"]').value;
@@ -277,23 +358,125 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        return totalMinutos / 60; // convertir a horas
+        return totalMinutos / 60;
     }
 
-    function actualizarContador() {
-        const jornada = selJornada.options[selJornada.selectedIndex];
-        const horasObjetivo = jornada ? Number(jornada.dataset.horas) : 0;
-
-        // Actualizar horas totales directamente desde la jornada
-        horasInput.value = horasObjetivo;
+    // Actualizar contador de un cargo UCR específico
+    function actualizarContadorCargoUCR(cargoBlock) {
+        const jornadaSelect = cargoBlock.querySelector('.ucr-jornada-select');
+        const jornada = jornadaSelect.options[jornadaSelect.selectedIndex];
+        const horasObjetivo = jornada && jornada.value ? Number(jornada.dataset.horas) : 0;
         
-        const horasAsignadasVal = calcularHorasAsignadas();
+        const horasAsignadasVal = calcularHorasCargo(cargoBlock);
         const horasRestantesVal = horasObjetivo - horasAsignadasVal;
 
-        targetHoras.textContent = horasObjetivo;
+        const targetHoras = cargoBlock.querySelector('.target-horas-ucr');
+        const horasAsignadas = cargoBlock.querySelector('.horas-asignadas-ucr');
+        const horasRestantes = cargoBlock.querySelector('.horas-restantes-ucr');
+
+        targetHoras.textContent = horasObjetivo || '—';
         horasAsignadas.textContent = horasAsignadasVal.toFixed(1);
-        horasRestantes.textContent = horasRestantesVal.toFixed(1);
+        horasRestantes.textContent = horasObjetivo ? horasRestantesVal.toFixed(1) : '—';
     }
+
+    // Agregar nuevo cargo UCR
+    addCargoUCR.addEventListener('click', () => {
+        const nuevo = templateCargoUCR.cloneNode(true);
+        
+        // Obtener el nuevo índice de cargo
+        const cargos = cargosUCRContainer.querySelectorAll('.cargo-ucr-block');
+        const nuevoIndex = cargos.length;
+        
+        // Limpiar valores
+        nuevo.querySelectorAll('input[type="time"]').forEach(i => i.value = '');
+        nuevo.querySelectorAll('input[type="date"]').forEach(i => i.value = '');
+        nuevo.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+        
+        // Mantener solo una fila de horario inicial
+        const horariosContainer = nuevo.querySelector('.horarios-cargo');
+        horariosContainer.dataset.cargoIndex = nuevoIndex;
+        const filas = horariosContainer.querySelectorAll('.fila-horario-ucr');
+        for (let i = 1; i < filas.length; i++) {
+            filas[i].remove();
+        }
+        
+        // Actualizar el índice de cargo en la primera fila
+        const primeraFila = horariosContainer.querySelector('.fila-horario-ucr');
+        const indexField = primeraFila.querySelector('.cargo-index-field');
+        if (indexField) {
+            indexField.value = nuevoIndex;
+        }
+        
+        cargosUCRContainer.appendChild(nuevo);
+        actualizarContadorCargoUCR(nuevo);
+    });
+
+    // Event delegation para todos los cargos UCR
+    cargosUCRContainer.addEventListener('click', (e) => {
+        const cargoBlock = e.target.closest('.cargo-ucr-block');
+        if (!cargoBlock) return;
+
+        // Agregar horario a este cargo
+        if (e.target.matches('.btn-add-horario-cargo')) {
+            const horariosContainer = cargoBlock.querySelector('.horarios-cargo');
+            const templateHorario = horariosContainer.querySelector('.fila-horario-ucr').cloneNode(true);
+            
+            // Obtener el índice de este cargo
+            const cargoIndex = horariosContainer.dataset.cargoIndex || '0';
+            
+            // Limpiar valores
+            templateHorario.querySelectorAll('input[type="time"]').forEach(i => i.value = '');
+            templateHorario.querySelectorAll('input[type="date"]').forEach(i => i.value = '');
+            templateHorario.querySelector('select').selectedIndex = 0;
+            
+            // Actualizar el campo de índice de cargo
+            const indexField = templateHorario.querySelector('.cargo-index-field');
+            if (indexField) {
+                indexField.value = cargoIndex;
+            }
+            
+            horariosContainer.appendChild(templateHorario);
+            actualizarContadorCargoUCR(cargoBlock);
+        }
+
+        // Eliminar horario de este cargo
+        if (e.target.matches('.btn-remove-horario-ucr')) {
+            const horariosContainer = cargoBlock.querySelector('.horarios-cargo');
+            const filas = horariosContainer.querySelectorAll('.fila-horario-ucr');
+            if (filas.length > 1) {
+                e.target.closest('.fila-horario-ucr').remove();
+                actualizarContadorCargoUCR(cargoBlock);
+            } else {
+                alert('Debe mantener al menos un horario por cargo');
+            }
+        }
+
+        // Eliminar cargo completo
+        if (e.target.matches('.btn-remove-cargo')) {
+            const cargos = cargosUCRContainer.querySelectorAll('.cargo-ucr-block');
+            if (cargos.length > 1) {
+                cargoBlock.remove();
+            } else {
+                alert('Debe mantener al menos un cargo UCR');
+            }
+        }
+    });
+
+    // Actualizar contador cuando cambie la jornada o los horarios de un cargo
+    cargosUCRContainer.addEventListener('change', (e) => {
+        const cargoBlock = e.target.closest('.cargo-ucr-block');
+        if (cargoBlock && (e.target.matches('.ucr-jornada-select') || e.target.matches('input[type="time"]'))) {
+            actualizarContadorCargoUCR(cargoBlock);
+        }
+    });
+
+    // Actualizar contador cuando se escribe en los inputs de tiempo
+    cargosUCRContainer.addEventListener('input', (e) => {
+        const cargoBlock = e.target.closest('.cargo-ucr-block');
+        if (cargoBlock && e.target.matches('input[type="time"]')) {
+            actualizarContadorCargoUCR(cargoBlock);
+        }
+    });
 
     // Función para validar horario
     function validarHorario(horaInicio, horaFin) {
@@ -328,72 +511,241 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const jornada = selJornada.options[selJornada.selectedIndex];
-        const horasObjetivo = jornada ? Number(jornada.dataset.horas) : 0;
-        const horasAsignadasVal = calcularHorasAsignadas();
+        // Validar cada cargo UCR individualmente
+        const cargosUCR = cargosUCRContainer.querySelectorAll('.cargo-ucr-block');
+        for (let i = 0; i < cargosUCR.length; i++) {
+            const cargo = cargosUCR[i];
+            const cargoSelect = cargo.querySelector('.ucr-cargo-select');
+            const nombreCargo = cargoSelect.options[cargoSelect.selectedIndex]?.text || `Cargo ${i + 1}`;
+            const jornadaSelect = cargo.querySelector('.ucr-jornada-select');
+            const jornada = jornadaSelect.options[jornadaSelect.selectedIndex];
+            const horasObjetivoCargo = jornada && jornada.value ? Number(jornada.dataset.horas) : 0;
+            const horasAsignadasCargo = calcularHorasCargo(cargo);
 
-        if (horasAsignadasVal === 0) {
-            e.preventDefault();
-            alert('Debe asignar horarios para completar la jornada');
-            return;
-        }
+            // Si hay jornada seleccionada, validar
+            if (horasObjetivoCargo > 0) {
+                if (!cargoSelect.value) {
+                    e.preventDefault();
+                    alert(`Cargo ${i + 1}: Debe seleccionar un cargo UCR`);
+                    return;
+                }
 
-        if (horasAsignadasVal !== horasObjetivo) {
-            e.preventDefault();
-            alert('Las horas asignadas deben coincidir exactamente con las horas de la jornada');
-            return;
-        }
-    });
+                if (horasAsignadasCargo === 0) {
+                    e.preventDefault();
+                    alert(`Cargo "${nombreCargo}":\nHa seleccionado una jornada pero no ha asignado horarios.`);
+                    return;
+                }
 
-    selJornada.addEventListener('change', actualizarContador);
-    horariosUCR.addEventListener('input', (e) => {
-        if (e.target.matches('input[type="time"]')) {
-            actualizarContador();
-        }
-    });
-
-    // Agregar horario UCR
-    addHorarioUCR.addEventListener('click', () => {
-        const nuevo = templateHorarioUCR.cloneNode(true);
-        // Limpiar valores
-        nuevo.querySelectorAll('input[type="time"]').forEach(i => i.value = '');
-        nuevo.querySelector('select').selectedIndex = 0;
-        horariosUCRContainer.appendChild(nuevo);
-        actualizarContador();
-    });
-
-    // Validar horarios al cambiar
-    horariosUCRContainer.addEventListener('change', (e) => {
-        if (e.target.matches('input[type="time"]')) {
-            const fila = e.target.closest('.fila-horario');
-            const inicio = fila.querySelector('input[name="ucr_hora_inicio[]"]').value;
-            const fin = fila.querySelector('input[name="ucr_hora_fin[]"]').value;
-
-            if (inicio && fin) {
-                const error = validarHorario(inicio, fin);
-                if (error) {
-                    alert(error);
-                    e.target.value = ''; // limpiar el campo que causó el error
+                if (horasAsignadasCargo !== horasObjetivoCargo) {
+                    e.preventDefault();
+                    const diferenciaCargo = horasAsignadasCargo - horasObjetivoCargo;
+                    let mensajeCargo = `Cargo UCR "${nombreCargo}":\n`;
+                    if (diferenciaCargo > 0) {
+                        mensajeCargo += `❌ EXCEDE la jornada por ${Math.abs(diferenciaCargo).toFixed(1)} horas\n`;
+                        mensajeCargo += `Asignadas: ${horasAsignadasCargo.toFixed(1)}h | Requeridas: ${horasObjetivoCargo}h`;
+                    } else {
+                        mensajeCargo += `❌ FALTAN ${Math.abs(diferenciaCargo).toFixed(1)} horas para completar la jornada\n`;
+                        mensajeCargo += `Asignadas: ${horasAsignadasCargo.toFixed(1)}h | Requeridas: ${horasObjetivoCargo}h`;
+                    }
+                    alert(mensajeCargo);
                     return;
                 }
             }
-            actualizarContador();
         }
-    });
 
-    // Eliminar horario UCR
-    horariosUCRContainer.addEventListener('click', (e) => {
-        if (e.target.matches('.btn-remove-ucr')) {
-            const filas = horariosUCRContainer.querySelectorAll('.fila-horario');
-            if (filas.length > 1) {
-                e.target.closest('.fila-horario').remove();
-                actualizarContador();
+        // Validar cada institución externa individualmente
+        const instituciones = institucionesExternasContainer.querySelectorAll('.institucion-externa-block');
+        for (let i = 0; i < instituciones.length; i++) {
+            const institucion = instituciones[i];
+            const nombreInstitucion = institucion.querySelector('input[name="ext_institucion[]"]').value;
+            const jornadaSelect = institucion.querySelector('.ext-jornada-select');
+            const jornada = jornadaSelect.options[jornadaSelect.selectedIndex];
+            const horasObjetivoInst = jornada && jornada.value ? Number(jornada.dataset.horas) : 0;
+            const horasAsignadasInst = calcularHorasInstitucion(institucion);
+
+            // Si hay jornada seleccionada, validar
+            if (horasObjetivoInst > 0) {
+                if (!nombreInstitucion || nombreInstitucion.trim() === '') {
+                    e.preventDefault();
+                    alert(`Institución ${i + 1}: Debe especificar el nombre de la institución`);
+                    return;
+                }
+
+                if (horasAsignadasInst === 0) {
+                    e.preventDefault();
+                    alert(`Institución "${nombreInstitucion}":\nHa seleccionado una jornada pero no ha asignado horarios.`);
+                    return;
+                }
+
+                if (horasAsignadasInst !== horasObjetivoInst) {
+                    e.preventDefault();
+                    const diferenciaInst = horasAsignadasInst - horasObjetivoInst;
+                    let mensajeInst = `Institución "${nombreInstitucion}":\n`;
+                    if (diferenciaInst > 0) {
+                        mensajeInst += `❌ EXCEDE la jornada por ${Math.abs(diferenciaInst).toFixed(1)} horas\n`;
+                        mensajeInst += `Asignadas: ${horasAsignadasInst.toFixed(1)}h | Requeridas: ${horasObjetivoInst}h`;
+                    } else {
+                        mensajeInst += `❌ FALTAN ${Math.abs(diferenciaInst).toFixed(1)} horas para completar la jornada\n`;
+                        mensajeInst += `Asignadas: ${horasAsignadasInst.toFixed(1)}h | Requeridas: ${horasObjetivoInst}h`;
+                    }
+                    alert(mensajeInst);
+                    return;
+                }
             }
         }
     });
 
-    // Inicializar contador
-    actualizarContador();
+    // ========== HORARIOS EXTERNOS - MÚLTIPLES INSTITUCIONES ==========
+    const institucionesExternasContainer = document.getElementById('institucionesExternas');
+    const addInstitucionExterna = document.getElementById('addInstitucionExterna');
+    
+    // Template para nueva institución
+    const templateInstitucion = institucionesExternasContainer.querySelector('.institucion-externa-block').cloneNode(true);
+    
+    // Calcular horas asignadas para una institución específica
+    function calcularHorasInstitucion(institucionBlock) {
+        let totalMinutos = 0;
+        const filas = institucionBlock.querySelectorAll('.fila-horario-externo');
+        
+        filas.forEach(fila => {
+            const inicio = fila.querySelector('input[name="ext_hora_inicio[]"]').value;
+            const fin = fila.querySelector('input[name="ext_hora_fin[]"]').value;
+            
+            if (inicio && fin) {
+                const minutos = parseTimeToMinutes(fin) - parseTimeToMinutes(inicio);
+                if (minutos > 0) totalMinutos += minutos;
+            }
+        });
+
+        return totalMinutos / 60;
+    }
+
+    // Actualizar contador de una institución específica
+    function actualizarContadorInstitucion(institucionBlock) {
+        const jornadaSelect = institucionBlock.querySelector('.ext-jornada-select');
+        const jornada = jornadaSelect.options[jornadaSelect.selectedIndex];
+        const horasObjetivo = jornada && jornada.value ? Number(jornada.dataset.horas) : 0;
+        
+        const horasAsignadasVal = calcularHorasInstitucion(institucionBlock);
+        const horasRestantesVal = horasObjetivo - horasAsignadasVal;
+
+        const targetHoras = institucionBlock.querySelector('.target-horas');
+        const horasAsignadas = institucionBlock.querySelector('.horas-asignadas');
+        const horasRestantes = institucionBlock.querySelector('.horas-restantes');
+
+        targetHoras.textContent = horasObjetivo || '—';
+        horasAsignadas.textContent = horasAsignadasVal.toFixed(1);
+        horasRestantes.textContent = horasObjetivo ? horasRestantesVal.toFixed(1) : '—';
+    }
+
+    // Agregar nueva institución externa
+    addInstitucionExterna.addEventListener('click', () => {
+        const nueva = templateInstitucion.cloneNode(true);
+        
+        // Obtener el nuevo índice de institución
+        const instituciones = institucionesExternasContainer.querySelectorAll('.institucion-externa-block');
+        const nuevoIndex = instituciones.length;
+        
+        // Limpiar valores
+        nueva.querySelectorAll('input[type="time"]').forEach(i => i.value = '');
+        nueva.querySelectorAll('input[type="date"]').forEach(i => i.value = '');
+        nueva.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
+        nueva.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+        
+        // Mantener solo una fila de horario inicial
+        const horariosContainer = nueva.querySelector('.horarios-institucion');
+        horariosContainer.dataset.instIndex = nuevoIndex;
+        const filas = horariosContainer.querySelectorAll('.fila-horario-externo');
+        for (let i = 1; i < filas.length; i++) {
+            filas[i].remove();
+        }
+        
+        // Actualizar el índice de institución en la primera fila
+        const primeraFila = horariosContainer.querySelector('.fila-horario-externo');
+        const indexField = primeraFila.querySelector('.inst-index-field');
+        if (indexField) {
+            indexField.value = nuevoIndex;
+        }
+        
+        institucionesExternasContainer.appendChild(nueva);
+        actualizarContadorInstitucion(nueva);
+    });
+
+    // Event delegation para todas las instituciones
+    institucionesExternasContainer.addEventListener('click', (e) => {
+        const institucionBlock = e.target.closest('.institucion-externa-block');
+        if (!institucionBlock) return;
+
+        // Agregar horario a esta institución
+        if (e.target.matches('.btn-add-horario-institucion')) {
+            const horariosContainer = institucionBlock.querySelector('.horarios-institucion');
+            const templateHorario = horariosContainer.querySelector('.fila-horario-externo').cloneNode(true);
+            
+            // Obtener el índice de esta institución
+            const instIndex = horariosContainer.dataset.instIndex || '0';
+            
+            // Limpiar valores
+            templateHorario.querySelectorAll('input[type="time"]').forEach(i => i.value = '');
+            templateHorario.querySelectorAll('input[type="date"]').forEach(i => i.value = '');
+            templateHorario.querySelector('select').selectedIndex = 0;
+            
+            // Actualizar el campo de índice de institución
+            const indexField = templateHorario.querySelector('.inst-index-field');
+            if (indexField) {
+                indexField.value = instIndex;
+            }
+            
+            horariosContainer.appendChild(templateHorario);
+            actualizarContadorInstitucion(institucionBlock);
+        }
+
+        // Eliminar horario de esta institución
+        if (e.target.matches('.btn-remove-horario-externo')) {
+            const horariosContainer = institucionBlock.querySelector('.horarios-institucion');
+            const filas = horariosContainer.querySelectorAll('.fila-horario-externo');
+            if (filas.length > 1) {
+                e.target.closest('.fila-horario-externo').remove();
+                actualizarContadorInstitucion(institucionBlock);
+            } else {
+                alert('Debe mantener al menos un horario por institución');
+            }
+        }
+
+        // Eliminar institución completa
+        if (e.target.matches('.btn-remove-institucion')) {
+            const instituciones = institucionesExternasContainer.querySelectorAll('.institucion-externa-block');
+            if (instituciones.length > 1) {
+                institucionBlock.remove();
+            } else {
+                alert('Debe mantener al menos una institución externa');
+            }
+        }
+    });
+
+    // Actualizar contador cuando cambie la jornada o los horarios de una institución
+    institucionesExternasContainer.addEventListener('change', (e) => {
+        const institucionBlock = e.target.closest('.institucion-externa-block');
+        if (institucionBlock && (e.target.matches('.ext-jornada-select') || e.target.matches('input[type="time"]'))) {
+            actualizarContadorInstitucion(institucionBlock);
+        }
+    });
+
+    // Actualizar contador cuando se escribe en los inputs de tiempo
+    institucionesExternasContainer.addEventListener('input', (e) => {
+        const institucionBlock = e.target.closest('.institucion-externa-block');
+        if (institucionBlock && e.target.matches('input[type="time"]')) {
+            actualizarContadorInstitucion(institucionBlock);
+        }
+    });
+
+    // Inicializar contadores
+    // Inicializar contador de cada cargo UCR
+    const cargosUCRIniciales = cargosUCRContainer.querySelectorAll('.cargo-ucr-block');
+    cargosUCRIniciales.forEach(cargo => actualizarContadorCargoUCR(cargo));
+    
+    // Inicializar contador de cada institución externa
+    const institucionesIniciales = institucionesExternasContainer.querySelectorAll('.institucion-externa-block');
+    institucionesIniciales.forEach(inst => actualizarContadorInstitucion(inst));
 });
 </script>
 @endsection
