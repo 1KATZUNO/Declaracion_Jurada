@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class Usuario extends Model
 {
+    use HasFactory;
     use Notifiable; // Permite enviar y recibir notificaciones (correo y base de datos)
 
     protected $table = 'usuario';
