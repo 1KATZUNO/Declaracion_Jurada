@@ -19,8 +19,19 @@ return new class extends Migration
             }
         });
 
-        // Modificar la columna directamente con SQL para evitar dependencia de doctrine/dbal
-        DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NULL');
+        // Para SQLite, necesitamos recrear la tabla ya que no soporta MODIFY
+        if (DB::getDriverName() === 'sqlite') {
+            // En SQLite, recrear la columna
+            Schema::table('horario', function (Blueprint $table) {
+                $table->dropColumn('id_declaracion');
+            });
+            Schema::table('horario', function (Blueprint $table) {
+                $table->unsignedBigInteger('id_declaracion')->nullable()->after('id_horario');
+            });
+        } else {
+            // Para MySQL
+            DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NULL');
+        }
 
         // Re-crear la FK apuntando a declaracion.id_declaracion
         Schema::table('horario', function (Blueprint $table) {
@@ -43,7 +54,19 @@ return new class extends Migration
             }
         });
 
-        DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NOT NULL');
+        // Para SQLite, necesitamos recrear la tabla ya que no soporta MODIFY
+        if (DB::getDriverName() === 'sqlite') {
+            // En SQLite, recrear la columna
+            Schema::table('horario', function (Blueprint $table) {
+                $table->dropColumn('id_declaracion');
+            });
+            Schema::table('horario', function (Blueprint $table) {
+                $table->unsignedBigInteger('id_declaracion')->after('id_horario'); // NOT NULL
+            });
+        } else {
+            // Para MySQL
+            DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NOT NULL');
+        }
 
         Schema::table('horario', function (Blueprint $table) {
             $table->foreign('id_declaracion')->references('id_declaracion')->on('declaracion')->onDelete('cascade');
