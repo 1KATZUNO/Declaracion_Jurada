@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class Usuario extends Model
 {
+    use Notifiable; // 👈 Permite enviar y recibir notificaciones (correo y base de datos)
+
     protected $table = 'usuario';
     protected $primaryKey = 'id_usuario';
 
@@ -26,25 +29,21 @@ class Usuario extends Model
     {
         return $this->hasMany(Declaracion::class, 'id_usuario');
     }
-
-    public function notificaciones()
+    public function routeNotificationForMail()
     {
-        return $this->hasMany(Notificacion::class, 'id_usuario');
+        return $this->correo;
     }
-
-    // Accessor: devuelve la identificación
     public function getIdentificacionAttribute($value)
     {
         return $value ?? null;
     }
 
-    // Accessor: nombre completo
     public function getNombreCompletoAttribute()
     {
         $nombre = trim(($this->attributes['nombre'] ?? '') . ' ' . ($this->attributes['apellido'] ?? ''));
         return $nombre !== '' ? $nombre : null;
     }
-
+    // CONVERSIÓN A TEXTO
     public function __toString()
     {
         return (string)($this->nombre_completo ?? '');

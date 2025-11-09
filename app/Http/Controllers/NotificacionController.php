@@ -2,33 +2,74 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notificacion;
-use App\Models\Usuario;
 use Illuminate\Http\Request;
+use App\Models\Usuario;
 
 class NotificacionController extends Controller
 {
-    public function index(){
-        $notificaciones = Notificacion::with('usuario')->latest('fecha_envio')->get();
+    private function usuarioActual(Request $request)
+    {
+        if (function_exists('auth') && auth()->check()) {
+            return auth()->user();
+        }
+
+        if ($request->session()->has('usuario_id')) {
+            return Usuario::find($request->session()->get('usuario_id'));
+        }
+
+        return null;
+    }
+
+    public function index(Request $request)
+    {
+        $usuario = $this->usuarioActual($request);
+        if (!$usuario) abort(403);
+
+        $notificaciones = $usuario->notifications()
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
         return view('notificaciones.index', compact('notificaciones'));
     }
 
-    public function create(){
-        return view('notificaciones.create', ['usuarios'=>Usuario::all()]);
+    public function show(Request $request, $id)
+    {
+        $usuario = $this->usuarioActual($request);
+        if (!$usuario) abort(403);
+
+        $notificacion = $usuario->notifications()
+            ->where('id', $id)
+            ->firstOrFail();
+
+        if (is_null($notificacion->read_at)) {
+    $notificacion->markAsRead();
+        }
+
+
+        return view('notificaciones.show', compact('notificacion'));
     }
 
-    public function store(Request $r){
-        $data = $r->validate([
-            'id_usuario'=>'required|exists:usuario,id_usuario',
-            'mensaje'=>'required|string',
-            'estado'=>'required|in:pendiente,enviada,leída',
-        ]);
-        Notificacion::create($data + ['fecha_envio'=>now()]);
-        return redirect()->route('notificaciones.index')->with('ok','Notificación creada');
+    public function destroy(Request $request, $id)
+    {
+        $usuario = $this->usuarioActual($request);
+        if (!$usuario) abort(403);
+
+        $notificacion = $usuario->notifications()
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $notificacion->delete();
+
+        return back()->with('ok', 'Notificación eliminada');
     }
 
-    public function destroy($id){
-        Notificacion::findOrFail($id)->delete();
-        return back()->with('ok','Notificación eliminada');
+    public function marcarTodasLeidas(Request $request)
+    {
+        $usuario = $this->usuarioActual($request);
+        if ($usuario) {
+            $usuario->unreadNotifications->markAsRead();
+        }
+
+        return back()->with('ok', 'Todas las notificaciones marcadas como leídas');
     }
 }
