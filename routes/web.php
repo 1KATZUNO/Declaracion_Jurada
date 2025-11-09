@@ -36,6 +36,10 @@ Route::resource('declaraciones', DeclaracionController::class);
 Route::resource('jornadas', JornadaController::class)->except(['show']);
 Route::resource('documentos', DocumentoController::class)->only(['index','show','destroy']);
 Route::resource('notificaciones', NotificacionController::class);
+// Ruta extra para "Marcar todas como leídas en notificacion
+Route::post('/notificaciones/marcar-todas', [NotificacionController::class, 'marcarTodasLeidas'])
+    ->name('notificaciones.marcar-todas');
+
 
 // Exportación Excel
 Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 'exportar'])
