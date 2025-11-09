@@ -9,7 +9,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Intentar quitar la FK existente (si la hay)
         Schema::table('horario', function (Blueprint $table) {
             try {
                 $table->dropForeign(['id_declaracion']);
@@ -64,8 +63,10 @@ return new class extends Migration
             Schema::rename('horario_temp', 'horario');
             Schema::enableForeignKeyConstraints();
         } else {
-            // Para MySQL u otros drivers
-            DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NULL');
+            // ✅ Solo ejecutar en MySQL (no en SQLite)
+            if ($driver !== 'sqlite') {
+                DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NULL');
+            }
 
             Schema::table('horario', function (Blueprint $table) {
                 if (!Schema::hasColumn('horario', 'id_declaracion')) {
@@ -82,7 +83,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Quitar la FK antes de revertir el cambio
         Schema::table('horario', function (Blueprint $table) {
             try {
                 $table->dropForeign(['id_declaracion']);
@@ -137,8 +137,10 @@ return new class extends Migration
             Schema::rename('horario_temp', 'horario');
             Schema::enableForeignKeyConstraints();
         } else {
-            // Revertir en MySQL
-            DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NOT NULL');
+            // ✅ Solo ejecutar en MySQL (no en SQLite)
+            if ($driver !== 'sqlite') {
+                DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NOT NULL');
+            }
 
             Schema::table('horario', function (Blueprint $table) {
                 $table->foreign('id_declaracion')
