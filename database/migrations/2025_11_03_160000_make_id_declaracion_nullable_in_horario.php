@@ -17,19 +17,7 @@ return new class extends Migration
             }
         });
 
-        // Para SQLite, necesitamos recrear la tabla ya que no soporta MODIFY
-        if (DB::getDriverName() === 'sqlite') {
-            // En SQLite, recrear la columna
-            Schema::table('horario', function (Blueprint $table) {
-                $table->dropColumn('id_declaracion');
-            });
-            Schema::table('horario', function (Blueprint $table) {
-                $table->unsignedBigInteger('id_declaracion')->nullable()->after('id_horario');
-            });
-        } else {
-            // Para MySQL
-            DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NULL');
-        }
+        $driver = DB::getDriverName();
 
         if ($driver === 'sqlite') {
             $tieneJornada = Schema::hasColumn('horario', 'id_jornada');
@@ -103,19 +91,7 @@ return new class extends Migration
             }
         });
 
-        // Para SQLite, necesitamos recrear la tabla ya que no soporta MODIFY
-        if (DB::getDriverName() === 'sqlite') {
-            // En SQLite, recrear la columna
-            Schema::table('horario', function (Blueprint $table) {
-                $table->dropColumn('id_declaracion');
-            });
-            Schema::table('horario', function (Blueprint $table) {
-                $table->unsignedBigInteger('id_declaracion')->after('id_horario'); // NOT NULL
-            });
-        } else {
-            // Para MySQL
-            DB::statement('ALTER TABLE `horario` MODIFY `id_declaracion` BIGINT UNSIGNED NOT NULL');
-        }
+        $driver = DB::getDriverName();
 
         if ($driver === 'sqlite') {
             $tieneJornada = Schema::hasColumn('horario', 'id_jornada');
