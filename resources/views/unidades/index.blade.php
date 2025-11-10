@@ -102,37 +102,61 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($unidades as $u)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="py-4 px-4 text-sm text-gray-900 font-medium">{{ $u->nombre }}</td>
-                                    <td class="py-4 px-4 text-sm text-gray-600">{{ $u->sede->nombre ?? '—' }}</td>
-                                    <td class="py-4 px-4 text-sm">
-                                        <div class="flex items-center gap-2">
-                                            <a href="{{ route('unidades.edit', $u->id_unidad) }}"
-                                               class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded border border-yellow-300 bg-yellow-50 text-yellow-800 hover:bg-yellow-100">
-                                                {{-- icono lápiz --}}
-                                                Editar
-                                            </a>
-                                            <form action="{{ route('unidades.destroy', $u->id_unidad) }}" method="POST"
-                                                  onsubmit="return confirm('¿Eliminar esta unidad académica?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded border border-red-300 bg-red-50 text-red-700 hover:bg-red-100">
-                                                    Eliminar
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="py-12 text-center text-sm text-gray-500">
-                                        No se encontraron unidades con los criterios actuales.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
+    @forelse ($unidades as $u)
+        <tr class="hover:bg-gray-50 transition-colors">
+            {{-- Nombre --}}
+            <td class="py-4 px-4 text-sm text-gray-900 font-medium">
+                {{ $u->nombre }}
+            </td>
+
+            {{-- Sede asociada --}}
+            <td class="py-4 px-4 text-sm text-gray-600">
+                {{ $u->sede->nombre ?? '—' }}
+            </td>
+
+            {{-- Acciones --}}
+            <td class="py-4 px-4 text-sm">
+                <div class="flex items-center gap-2">
+
+                    {{-- Editar --}}
+                    <a href="{{ route('unidades.edit', $u->id_unidad) }}"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded border border-yellow-300 bg-yellow-50 text-yellow-800 hover:bg-yellow-100">
+                        Editar
+                    </a>
+
+                    @if($u->declaraciones_count == 0)
+                        {{-- Eliminar habilitado --}}
+                        <form action="{{ route('unidades.destroy', $u->id_unidad) }}" method="POST"
+                            onsubmit="return confirm('¿Eliminar esta unidad académica?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded border border-red-300 bg-red-50 text-red-700 hover:bg-red-100">
+                                Eliminar
+                            </button>
+                        </form>
+                    @else
+                        {{-- No eliminable --}}
+                        <button type="button"
+                                onclick="alert('No se puede eliminar esta unidad académica porque tiene declaraciones juradas asociadas.')"
+                                class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded border border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed"
+                                title="No se puede eliminar: tiene declaraciones juradas asociadas. Se marcará INACTIVA desde el sistema.">
+                            DJ Asociada
+                        </button>
+                    @endif
+
+                </div>
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="3" class="py-12 text-center text-sm text-gray-500">
+                No se encontraron unidades con los criterios actuales.
+            </td>
+        </tr>
+    @endforelse
+</tbody>
+
                     </table>
                 </div>
 
