@@ -9,20 +9,21 @@ class SedeController extends Controller
 {
     public function index(Request $r)
     {
-        $query = Sede::query();
+    $query = Sede::query()->withCount('unidadesAcademicas');
 
-        if ($r->filled('nombre')) {
-            $query->where('nombre', 'like', '%' . $r->nombre . '%');
-        }
-
-        if ($r->filled('ubicacion')) {
-            $query->where('ubicacion', 'like', '%' . $r->ubicacion . '%');
-        }
-
-        $sedes = $query->orderBy('nombre')->paginate(10)->withQueryString();
-
-        return view('sedes.index', compact('sedes'));
+    if ($r->filled('nombre')) {
+        $query->where('nombre', 'like', '%' . $r->nombre . '%');
     }
+
+    if ($r->filled('ubicacion')) {
+        $query->where('ubicacion', 'like', '%' . $r->ubicacion . '%');
+    }
+
+    $sedes = $query->orderBy('nombre')->paginate(10)->withQueryString();
+
+    return view('sedes.index', compact('sedes'));
+    } 
+
 
     public function create()
     {
@@ -60,9 +61,18 @@ class SedeController extends Controller
 
     public function destroy($id)
     {
-        Sede::findOrFail($id)->delete();
-        return back()->with('ok', 'Sede eliminada correctamente');
+    $sede = Sede::withCount('unidadesAcademicas')->findOrFail($id);
+
+    if ($sede->unidades_academicas_count > 0) {
+        return back()->with('error', 'No se puede eliminar la sede porque tiene unidades académicas asociadas.');
     }
+
+    $sede->delete();
+
+    return back()->with('ok', 'Sede eliminada correctamente');
+    }
+
+
 }
 
 
