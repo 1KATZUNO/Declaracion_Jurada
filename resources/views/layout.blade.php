@@ -150,19 +150,30 @@
         {{-- Derecha: campanita + cerrar sesión + usuario --}}
         <div class="flex items-center gap-4">
 
-            {{-- 🔔 Campanita de notificaciones --}}
-            @if($usuarioActual)
-                <div class="relative">
-                    <button type="button"
-                            id="notif-bell"
-                            class="relative text-white text-xl focus:outline-none">
-                        🔔
-                        @if($unreadNotifications->count() > 0)
-                            <span class="absolute -top-1 -right-1 bg-red-600 text-xs px-1.5 rounded-full">
-                                {{ $unreadNotifications->count() }}
-                            </span>
-                        @endif
-                    </button>
+            {{-- Campanita de notificaciones --}}
+@if($usuarioActual)
+    <div class="relative">
+        <button type="button"
+                id="notif-bell"
+                class="relative text-white hover:text-gray-200 transition-colors duration-200 focus:outline-none
+                       @if($unreadNotifications->count() > 0) animate-bell @endif">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="h-6 w-6"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor"
+                 stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3c0 .386-.146.758-.405 1.055L4 17h5m6 0a3 3 0 11-6 0h6z" />
+            </svg>
+
+            @if($unreadNotifications->count() > 0)
+                <span class="absolute -top-0.5 -right-0.5 bg-white text-blue-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                    {{ $unreadNotifications->count() }}
+                </span>
+            @endif
+        </button>
+
 
                     <div id="notif-dropdown"
                          class="hidden absolute right-0 mt-2 w-80 bg-white text-gray-900 rounded-lg shadow-lg z-50">
