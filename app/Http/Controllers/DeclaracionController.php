@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\{Declaracion, Usuario, UnidadAcademica, Cargo, Formulario, Horario};
 use Illuminate\Http\Request;
 use App\Notifications\DeclaracionGenerada;
+use Illuminate\Support\Facades\Log;
 
 class DeclaracionController extends Controller
 {
@@ -198,7 +199,7 @@ class DeclaracionController extends Controller
         }
 
         // Guardar horarios externos
-        if ($r->has('ext_dia')) {
+        if ($r->has('ext_dia') && $r->has('ext_inst_index')) {
             foreach ($r->ext_dia as $i => $dia) {
                 if (empty($dia)) continue;
 
