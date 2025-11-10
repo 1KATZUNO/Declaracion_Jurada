@@ -20,13 +20,14 @@ class Horario extends Model
     protected $fillable = [
         'id_declaracion',
         'id_jornada',     // <--- NUEVO: FK a jornada
+        'id_cargo',       // <--- FK a cargo (para horarios UCR)
         'tipo',           // ucr | externo
         'dia',
         'hora_inicio',
         'hora_fin',
         // opcionales para "otras instituciones"
         'lugar',
-        'cargo',
+        'cargo',          // texto libre para cargo en otras instituciones
         'jornada',        // (texto/porcentaje histórico; puedes retirarlo cuando dejes solo la FK)
         'desde',
         'hasta',
@@ -43,6 +44,11 @@ class Horario extends Model
     public function jornada()
     {
         return $this->belongsTo(Jornada::class, 'id_jornada', 'id_jornada');
+    }
+
+    public function cargo()
+    {
+        return $this->belongsTo(Cargo::class, 'id_cargo', 'id_cargo');
     }
 
     // Nueva relación: detalles (intervalos) asociados al horario padre
