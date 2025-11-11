@@ -296,17 +296,35 @@ class DeclaracionController extends Controller
             }
         }
 
-        // Crear la declaración
-        $declaracion = Declaracion::create([
-            'id_usuario' => $data['id_usuario'],
-            'id_formulario' => $data['id_formulario'],
-            'id_unidad' => $data['id_unidad'],
-            'id_cargo' => $cargoPrincipal,
-            'fecha_desde' => $data['fecha_desde'] ?? null,
-            'fecha_hasta' => $data['fecha_hasta'] ?? null,
-            'horas_totales' => $horasTotales, // Suma de todas las jornadas UCR
-            'fecha_envio' => \Carbon\Carbon::now('America/Costa_Rica'),
-        ]);
+// Determinar las fechas mínimas y máximas de los cargos UCR
+$fechaDesdeGlobal = null;
+$fechaHastaGlobal = null;
+
+if ($r->has('ucr_cargo_fecha_desde') && $r->has('ucr_cargo_fecha_hasta')) {
+    // Filtrar solo las fechas válidas (no vacías)
+    $fechasDesde = array_filter($r->ucr_cargo_fecha_desde, fn($f) => !empty($f));
+    $fechasHasta = array_filter($r->ucr_cargo_fecha_hasta, fn($f) => !empty($f));
+
+    if (count($fechasDesde) > 0) {
+        $fechaDesdeGlobal = min($fechasDesde);
+    }
+    if (count($fechasHasta) > 0) {
+        $fechaHastaGlobal = max($fechasHasta);
+    }
+}
+
+// Crear la declaración principal
+$declaracion = Declaracion::create([
+    'id_usuario' => $data['id_usuario'],
+    'id_formulario' => $data['id_formulario'],
+    'id_unidad' => $data['id_unidad'],
+    'id_cargo' => $cargoPrincipal,
+    'fecha_desde' => $fechaDesdeGlobal,
+    'fecha_hasta' => $fechaHastaGlobal,
+    'horas_totales' => $horasTotales, 
+    'fecha_envio' => \Carbon\Carbon::now('America/Costa_Rica'),
+]);
+
 
         // Guardar horarios UCR
         if ($r->has('ucr_dia')) {
@@ -366,10 +384,10 @@ class DeclaracionController extends Controller
             }
         }
 
-        // 🔔 Notificación: correo + panel (Laravel Notifications)
+        //🔔 Notificación: correo + panel (Laravel Notifications)
         // Temporalmente deshabilitado para evitar errores de SMTP
-        // if ($declaracion->usuario) {
-        //     $declaracion->usuario->notify(new DeclaracionGenerada($declaracion));
+        //  if ($declaracion && $declaracion->usuario) {
+        //   $declaracion->usuario->notify(new DeclaracionGenerada($declaracion));   
         // }
 
         return redirect()

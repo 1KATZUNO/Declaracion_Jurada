@@ -13,7 +13,7 @@ class EnviarRecordatorioDeclaraciones extends Command
 {
     protected $signature = 'declaraciones:recordatorio {--dias=7 : Días de anticipación para avisar que la declaración vence}';
 
-    protected $description = 'Envía recordatorios a los funcionarios que deben presentar su Declaración Jurada.';
+    protected $description = 'Envía recordatorios por cada Declaración Jurada próxima a vencer.';
 
     public function handle(): int
     {
@@ -27,19 +27,26 @@ class EnviarRecordatorioDeclaraciones extends Command
             ->orderBy('id_usuario')
             ->chunkById(100, function (Collection $usuarios) use ($limite) {
                 $usuarios->each(function (Usuario $usuario) use ($limite) {
-                    $ultimaDeclaracion = $usuario->declaraciones->first();
-                    $fechaLimite = $this->obtenerFechaLimite($ultimaDeclaracion);
 
-                    if (! $this->debeNotificarse($fechaLimite, $limite)) {
-                        return;
+                    foreach ($usuario->declaraciones as $declaracion) {
+                        $fechaLimite = $this->obtenerFechaLimite($declaracion);
+
+                        // Omitir si no tiene fecha o si no está dentro del rango
+                        if (! $this->debeNotificarse($fechaLimite, $limite)) {
+                            continue;
+                        }
+
+                        // Evitar duplicados recientes para esta misma declaración
+                        if ($this->notificadoRecientemente($usuario, $fechaLimite, $declaracion->id_declaracion)) {
+                            continue;
+                        }
+
+                        // Enviar notificación individual por esta declaración
+                        $usuario->notify(new RecordatorioPresentarDeclaracion($fechaLimite, $declaracion));
+
+                        $this->info("Notificación enviada por la declaración #{$declaracion->id_declaracion} del usuario {$usuario->nombre_completo}");
                     }
 
-                    if ($this->notificadoRecientemente($usuario, $fechaLimite)) {
-                        return;
-                    }
-
-                    $usuario->notify(new RecordatorioPresentarDeclaracion($fechaLimite));
-                    $this->info("Notificación enviada a {$usuario->nombre_completo}");
                 });
             }, 'id_usuario');
 
@@ -58,21 +65,26 @@ class EnviarRecordatorioDeclaraciones extends Command
     protected function debeNotificarse(?Carbon $fechaLimite, Carbon $limite): bool
     {
         if (! $fechaLimite) {
-            return true;
+            return false;
         }
 
         return $fechaLimite->lessThanOrEqualTo($limite);
     }
 
-    protected function notificadoRecientemente(Usuario $usuario, ?Carbon $fechaLimite): bool
+    protected function notificadoRecientemente(Usuario $usuario, ?Carbon $fechaLimite, ?int $idDeclaracion = null): bool
     {
-        return $usuario->notifications()
+        $query = $usuario->notifications()
             ->where('type', RecordatorioPresentarDeclaracion::class)
-            ->when($fechaLimite, function ($query) use ($fechaLimite) {
-                $query->whereJsonContains('data->fecha_limite', $fechaLimite->toDateString());
-            })
-            ->where('created_at', '>=', Carbon::now()->subDay())
-            ->exists();
+            ->where('created_at', '>=', Carbon::now()->subDay());
+
+        if ($fechaLimite) {
+            $query->whereJsonContains('data->fecha_limite', $fechaLimite->toDateString());
+        }
+
+        if ($idDeclaracion) {
+            $query->whereJsonContains('data->declaracion_id', $idDeclaracion);
+        }
+
+        return $query->exists();
     }
 }
-
