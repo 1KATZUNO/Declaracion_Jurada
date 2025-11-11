@@ -44,34 +44,134 @@ class DeclaracionController extends Controller
     public function store(Request $r)
     {
         $data = $r->validate([
-            'id_usuario'         => 'required|exists:usuario,id_usuario',
-            'id_formulario'      => 'required|exists:formulario,id_formulario',
-            'id_unidad'          => 'required|exists:unidad_academica,id_unidad',
-            'id_cargo'           => 'required|exists:cargo,id_cargo',
-            'fecha_desde'        => 'required|date',
-            'fecha_hasta'        => 'required|date|after_or_equal:fecha_desde',
-            'horas_totales'      => 'required|numeric|min:0',
-            'ucr_dia.*'          => 'required|string',
-            'ucr_hora_inicio.*'  => 'required',
-            'ucr_hora_fin.*'     => 'required',
-            'ext_institucion.*'  => 'nullable|string',
-            'ext_dia.*'          => 'nullable|string',
-            'ext_hora_inicio.*'  => 'nullable',
-            'ext_hora_fin.*'     => 'nullable',
+            'id_usuario' => 'required|exists:usuario,id_usuario',
+            'id_formulario' => 'required|exists:formulario,id_formulario',
+            'id_unidad' => 'required|exists:unidad_academica,id_unidad',
+            'fecha_desde' => 'nullable|date',
+            'fecha_hasta' => 'nullable|date|after_or_equal:fecha_desde',
+            'horas_totales' => 'nullable|numeric|min:0',
+            'id_jornada_externo' => 'nullable|exists:jornada,id_jornada',
+            // Validación de horarios
+            'ucr_dia.*' => 'required|string',
+            'ucr_hora_inicio.*' => 'required',
+            'ucr_hora_fin.*' => 'required',
+            'ext_institucion.*' => 'nullable|string',
+            'ext_dia.*' => 'nullable|string',
+            'ext_hora_inicio.*' => 'nullable',
+            'ext_hora_fin.*' => 'nullable',
+            'ext_fecha_desde.*' => 'nullable|date',
+            'ext_fecha_hasta.*' => 'nullable|date',
         ]);
 
-        // Validar jornada
-        $jornada = \App\Models\Jornada::find($r->id_jornada);
-        if (!$jornada) {
-            return back()->withInput()->withErrors([
-                'jornada' => 'Debe seleccionar una jornada válida',
-            ]);
+        // Validar cada cargo UCR individualmente
+        if ($r->has('ucr_jornada') && $r->has('ucr_cargo_index')) {
+            // Agrupar datos por cargo UCR
+            $cargosPorIndex = [];
+            
+            // Agrupar ucr_cargo y ucr_jornada por índice
+            foreach ($r->ucr_jornada as $idx => $jornadaId) {
+                if (empty($jornadaId)) continue;
+                
+                $cargoId = isset($r->ucr_cargo[$idx]) ? $r->ucr_cargo[$idx] : null;
+                $cargo = $cargoId ? \App\Models\Cargo::find($cargoId) : null;
+                $nombreCargo = $cargo ? $cargo->nombre : "Cargo " . ($idx + 1);
+                
+                if (!isset($cargosPorIndex[$idx])) {
+                    $cargosPorIndex[$idx] = [
+                        'nombre' => $nombreCargo,
+                        'cargo_id' => $cargoId,
+                        'jornada_id' => $jornadaId,
+                        'horas' => 0
+                    ];
+                }
+            }
+            
+            // Sumar las horas de cada horario a su cargo correspondiente
+            foreach ($r->ucr_cargo_index as $i => $cargoIndex) {
+                if (!isset($cargosPorIndex[$cargoIndex])) continue;
+                
+                $inicio = $r->ucr_hora_inicio[$i] ?? null;
+                $fin = $r->ucr_hora_fin[$i] ?? null;
+                
+                if (!empty($inicio) && !empty($fin)) {
+                    $inicioTime = strtotime($inicio);
+                    $finTime = strtotime($fin);
+                    $cargosPorIndex[$cargoIndex]['horas'] += ($finTime - $inicioTime) / 3600;
+                }
+            }
+            
+            // Validar cada cargo
+            foreach ($cargosPorIndex as $idx => $cargoData) {
+                $jornadaUCR = \App\Models\Jornada::find($cargoData['jornada_id']);
+                if (!$jornadaUCR) continue;
+                
+                $horasCargo = round($cargoData['horas'], 1);
+                $horasRequeridas = $jornadaUCR->horas_por_semana;
+                
+                if ($horasCargo != $horasRequeridas) {
+                    $diferenciaCargo = $horasCargo - $horasRequeridas;
+                    if ($diferenciaCargo > 0) {
+                        $mensaje = "Cargo UCR \"" . $cargoData['nombre'] . "\": EXCEDE la jornada por " . abs($diferenciaCargo) . " horas. Asignadas: " . $horasCargo . "h | Requeridas: " . $horasRequeridas . "h";
+                    } else {
+                        $mensaje = "Cargo UCR \"" . $cargoData['nombre'] . "\": FALTAN " . abs($diferenciaCargo) . " horas para completar la jornada. Asignadas: " . $horasCargo . "h | Requeridas: " . $horasRequeridas . "h";
+                    }
+                    return back()->withInput()->withErrors(['horas_ucr' => $mensaje]);
+                }
+            }
         }
 
-        if ($data['horas_totales'] != $jornada->horas_por_semana) {
-            return back()->withInput()->withErrors([
-                'horas' => 'Las horas totales deben coincidir con la jornada seleccionada',
-            ]);
+        // Validar cada institución externa individualmente
+        if ($r->has('ext_jornada') && $r->has('ext_inst_index')) {
+            // Primero, agrupar datos por institución
+            $institucionesPorIndex = [];
+            
+            // Agrupar ext_institucion y ext_jornada por índice
+            foreach ($r->ext_jornada as $idx => $jornadaId) {
+                if (empty($jornadaId)) continue;
+                
+                $nombreInstitucion = isset($r->ext_institucion[$idx]) ? $r->ext_institucion[$idx] : "Institución " . ($idx + 1);
+                
+                if (!isset($institucionesPorIndex[$idx])) {
+                    $institucionesPorIndex[$idx] = [
+                        'nombre' => $nombreInstitucion,
+                        'jornada_id' => $jornadaId,
+                        'horas' => 0
+                    ];
+                }
+            }
+            
+            // Ahora sumar las horas de cada horario a su institución correspondiente
+            foreach ($r->ext_inst_index as $i => $instIndex) {
+                if (!isset($institucionesPorIndex[$instIndex])) continue;
+                
+                $inicio = $r->ext_hora_inicio[$i] ?? null;
+                $fin = $r->ext_hora_fin[$i] ?? null;
+                
+                if (!empty($inicio) && !empty($fin)) {
+                    $inicioTime = strtotime($inicio);
+                    $finTime = strtotime($fin);
+                    $institucionesPorIndex[$instIndex]['horas'] += ($finTime - $inicioTime) / 3600;
+                }
+            }
+            
+            // Validar cada institución
+            foreach ($institucionesPorIndex as $idx => $instData) {
+                $jornadaExterno = \App\Models\Jornada::find($instData['jornada_id']);
+                if (!$jornadaExterno) continue;
+                
+                $horasInstitucion = round($instData['horas'], 1);
+                $horasRequeridas = $jornadaExterno->horas_por_semana;
+                
+                if ($horasInstitucion != $horasRequeridas) {
+                    $diferenciaExt = $horasInstitucion - $horasRequeridas;
+                    if ($diferenciaExt > 0) {
+                        $mensajeExt = "Institución \"" . $instData['nombre'] . "\": EXCEDE la jornada por " . abs($diferenciaExt) . " horas. Asignadas: " . $horasInstitucion . "h | Requeridas: " . $horasRequeridas . "h";
+                    } else {
+                        $mensajeExt = "Institución \"" . $instData['nombre'] . "\": FALTAN " . abs($diferenciaExt) . " horas para completar la jornada. Asignadas: " . $horasInstitucion . "h | Requeridas: " . $horasRequeridas . "h";
+                    }
+                    return back()->withInput()->withErrors(['horas_externas' => $mensajeExt]);
+                }
+            }
         }
 
         // Construir arreglo de horarios para validar conflictos
@@ -171,29 +271,65 @@ class DeclaracionController extends Controller
             }
         }
 
-        // Crear declaración
+        // Si todo está bien, crear la declaración y sus horarios
+        // Calcular horas totales de todos los cargos UCR
+        $horasTotales = 0;
+        if ($r->has('ucr_jornada')) {
+            foreach ($r->ucr_jornada as $jornadaId) {
+                if (!empty($jornadaId)) {
+                    $jornadaUCR = \App\Models\Jornada::find($jornadaId);
+                    if ($jornadaUCR) {
+                        $horasTotales += $jornadaUCR->horas_por_semana;
+                    }
+                }
+            }
+        }
+        
+        // Obtener el primer cargo UCR como cargo principal de la declaración
+        $cargoPrincipal = null;
+        if ($r->has('ucr_cargo')) {
+            foreach ($r->ucr_cargo as $cargoId) {
+                if (!empty($cargoId)) {
+                    $cargoPrincipal = $cargoId;
+                    break;
+                }
+            }
+        }
+
+        // Crear la declaración
         $declaracion = Declaracion::create([
-            'id_usuario'    => $data['id_usuario'],
+            'id_usuario' => $data['id_usuario'],
             'id_formulario' => $data['id_formulario'],
-            'id_unidad'     => $data['id_unidad'],
-            'id_cargo'      => $data['id_cargo'],
-            'fecha_desde'   => $data['fecha_desde'],
-            'fecha_hasta'   => $data['fecha_hasta'],
-            'horas_totales' => $data['horas_totales'],
-            'fecha_envio'   => now(),
+            'id_unidad' => $data['id_unidad'],
+            'id_cargo' => $cargoPrincipal,
+            'fecha_desde' => $data['fecha_desde'] ?? null,
+            'fecha_hasta' => $data['fecha_hasta'] ?? null,
+            'horas_totales' => $horasTotales, // Suma de todas las jornadas UCR
+            'fecha_envio' => \Carbon\Carbon::now('America/Costa_Rica'),
         ]);
 
         // Guardar horarios UCR
         if ($r->has('ucr_dia')) {
             foreach ($r->ucr_dia as $i => $dia) {
                 if (empty($dia)) continue;
-
+                
+                // Obtener el índice del cargo para este horario
+                $cargoIndex = isset($r->ucr_cargo_index[$i]) ? $r->ucr_cargo_index[$i] : 0;
+                $cargoId = isset($r->ucr_cargo[$cargoIndex]) && !empty($r->ucr_cargo[$cargoIndex]) ? $r->ucr_cargo[$cargoIndex] : null;
+                
+                // Obtener fechas del cargo (fijas para todo el cargo)
+                $fechaDesde = isset($r->ucr_cargo_fecha_desde[$cargoIndex]) ? $r->ucr_cargo_fecha_desde[$cargoIndex] : null;
+                $fechaHasta = isset($r->ucr_cargo_fecha_hasta[$cargoIndex]) ? $r->ucr_cargo_fecha_hasta[$cargoIndex] : null;
+                
                 Horario::create([
                     'id_declaracion' => $declaracion->id_declaracion,
-                    'tipo'           => 'ucr',
-                    'dia'            => $dia,
-                    'hora_inicio'    => $r->ucr_hora_inicio[$i],
-                    'hora_fin'       => $r->ucr_hora_fin[$i],
+                    'id_cargo' => $cargoId,
+                    'tipo' => 'ucr',
+                    'dia' => $dia,
+                    'hora_inicio' => $r->ucr_hora_inicio[$i],
+                    'hora_fin' => $r->ucr_hora_fin[$i],
+                    'desde' => $fechaDesde,
+                    'hasta' => $fechaHasta,
                 ]);
             }
         }
@@ -202,22 +338,39 @@ class DeclaracionController extends Controller
         if ($r->has('ext_dia') && $r->has('ext_inst_index')) {
             foreach ($r->ext_dia as $i => $dia) {
                 if (empty($dia)) continue;
-
+                
+                // Obtener el índice de institución para este horario
+                $instIndex = $r->ext_inst_index[$i];
+                
+                // Obtener el id_jornada, nombre de institución y cargo del índice correspondiente
+                $jornadaId = isset($r->ext_jornada[$instIndex]) ? $r->ext_jornada[$instIndex] : null;
+                $nombreInstitucion = isset($r->ext_institucion[$instIndex]) ? $r->ext_institucion[$instIndex] : null;
+                $cargoExterno = isset($r->ext_cargo[$instIndex]) ? $r->ext_cargo[$instIndex] : null;
+                
+                // Obtener fechas de la institución (fijas para toda la institución)
+                $fechaDesde = isset($r->ext_inst_fecha_desde[$instIndex]) ? $r->ext_inst_fecha_desde[$instIndex] : null;
+                $fechaHasta = isset($r->ext_inst_fecha_hasta[$instIndex]) ? $r->ext_inst_fecha_hasta[$instIndex] : null;
+                
                 Horario::create([
                     'id_declaracion' => $declaracion->id_declaracion,
-                    'tipo'           => 'externo',
-                    'dia'            => $dia,
-                    'hora_inicio'    => $r->ext_hora_inicio[$i],
-                    'hora_fin'       => $r->ext_hora_fin[$i],
-                    'lugar'          => $r->ext_institucion[$i] ?? null,
+                    'id_jornada' => $jornadaId,
+                    'tipo' => 'externo',
+                    'dia' => $dia,
+                    'hora_inicio' => $r->ext_hora_inicio[$i],
+                    'hora_fin' => $r->ext_hora_fin[$i],
+                    'lugar' => $nombreInstitucion,
+                    'cargo' => $cargoExterno,
+                    'desde' => $fechaDesde,
+                    'hasta' => $fechaHasta,
                 ]);
             }
         }
 
         // 🔔 Notificación: correo + panel (Laravel Notifications)
-        if ($declaracion->usuario) {
-            $declaracion->usuario->notify(new DeclaracionGenerada($declaracion));
-        }
+        // Temporalmente deshabilitado para evitar errores de SMTP
+        // if ($declaracion->usuario) {
+        //     $declaracion->usuario->notify(new DeclaracionGenerada($declaracion));
+        // }
 
         return redirect()
             ->route('declaraciones.show', $declaracion->id_declaracion)
@@ -240,21 +393,40 @@ class DeclaracionController extends Controller
 
     public function edit($id)
     {
-        $d = Declaracion::with('horarios')->findOrFail($id);
+        $d = Declaracion::with(['horarios.jornada', 'cargo'])->findOrFail($id);
+
+        // Obtener la jornada del primer horario UCR si existe
+        $horarioUCR = $d->horarios->where('tipo', 'ucr')->first();
+        $jornadaActual = null;
+
+        if ($horarioUCR && $horarioUCR->id_jornada) {
+            // Si el horario tiene jornada asignada, usarla
+            $jornadaActual = $horarioUCR->jornada;
+        } else {
+            // Si no tiene jornada asignada, intentar deducir por las horas totales
+            $horasTotales = $d->horas_totales;
+            if ($horasTotales) {
+                $jornadas = \App\Models\Jornada::all();
+                $jornadaActual = $jornadas->sortBy(function($jornada) use ($horasTotales) {
+                    return abs($jornada->horas_por_semana - $horasTotales);
+                })->first();
+            }
+        }
+
+
 
         return view('declaraciones.edit', [
-            'd'          => $d,
-            'usuarios'   => Usuario::all(),
-            'unidades'   => UnidadAcademica::with('sede')->get(),
-            'cargos'     => Cargo::all(),
-            'formularios'=> Formulario::all(),
-            'horarios'   => Horario::where(function ($q) use ($d) {
-                                $q->whereNull('id_declaracion')
-                                  ->orWhere('id_declaracion', $d->id_declaracion);
-                            })
-                            ->where('tipo', 'ucr')
-                            ->with('jornada')
-                            ->get(),
+            'd'                => $d,
+            'jornadaActual'    => $jornadaActual,
+            'usuarios'         => Usuario::all(),
+            'unidades'         => UnidadAcademica::with('sede')->get(),
+            'cargos'           => Cargo::all(),
+            'formularios'      => Formulario::all(),
+            'jornadas'         => \App\Models\Jornada::orderBy('tipo')->get(),
+            'horarios'         => Horario::whereNull('id_declaracion')
+                                    ->where('tipo', 'ucr')
+                                    ->with('jornada')
+                                    ->get(),
         ]);
     }
 
@@ -263,41 +435,121 @@ class DeclaracionController extends Controller
         $d = Declaracion::findOrFail($id);
 
         $data = $r->validate([
-            'id_usuario'   => 'required|exists:usuario,id_usuario',
-            'id_formulario'=> 'required|exists:formulario,id_formulario',
-            'id_unidad'    => 'required|exists:unidad_academica,id_unidad',
-            'id_cargo'     => 'required|exists:cargo,id_cargo',
-            'fecha_desde'  => 'required|date',
-            'fecha_hasta'  => 'required|date|after_or_equal:fecha_desde',
-            'horas_totales'=> 'nullable|numeric|min:0',
-            'id_horario'   => 'nullable|exists:horario,id_horario',
+            'id_usuario' => 'required|exists:usuario,id_usuario',
+            'id_formulario' => 'required|exists:formulario,id_formulario',
+            'id_unidad' => 'required|exists:unidad_academica,id_unidad',
+            'fecha_desde' => 'nullable|date',
+            'fecha_hasta' => 'nullable|date|after_or_equal:fecha_desde',
+            'horas_totales' => 'nullable|numeric|min:0',
+            // Validación de horarios
+            'ucr_dia.*' => 'required|string',
+            'ucr_hora_inicio.*' => 'required',
+            'ucr_hora_fin.*' => 'required',
+            'ext_institucion.*' => 'nullable|string',
+            'ext_dia.*' => 'nullable|string',
+            'ext_hora_inicio.*' => 'nullable',
+            'ext_hora_fin.*' => 'nullable',
         ]);
 
-        // Ajustar horas_totales según jornada del horario seleccionado (si aplica)
-        if (!empty($data['id_horario'])) {
-            $hor = Horario::with('jornada')->find($data['id_horario']);
-            if ($hor && $hor->jornada) {
-                $data['horas_totales'] = $hor->jornada->horas_por_semana;
+        // Calcular horas totales de todos los cargos UCR
+        $horasTotales = 0;
+        if ($r->has('ucr_jornada')) {
+            foreach ($r->ucr_jornada as $jornadaId) {
+                if (!empty($jornadaId)) {
+                    $jornadaUCR = \App\Models\Jornada::find($jornadaId);
+                    if ($jornadaUCR) {
+                        $horasTotales += $jornadaUCR->horas_por_semana;
+                    }
+                }
             }
         }
 
-        $d->update($data);
+        // Obtener el primer cargo UCR como cargo principal de la declaración
+        $cargoPrincipal = null;
+        if ($r->has('ucr_cargo')) {
+            foreach ($r->ucr_cargo as $cargoId) {
+                if (!empty($cargoId)) {
+                    $cargoPrincipal = $cargoId;
+                    break;
+                }
+            }
+        }
 
-        // Manejo del horario asociado
-        if (array_key_exists('id_horario', $data)) {
-            Horario::where('id_declaracion', $d->id_declaracion)
-                ->where('id_horario', '<>', $data['id_horario'] ?? 0)
-                ->update(['id_declaracion' => null]);
+        // Actualizar la declaración
+        $d->update([
+            'id_usuario' => $data['id_usuario'],
+            'id_formulario' => $data['id_formulario'],
+            'id_unidad' => $data['id_unidad'],
+            'id_cargo' => $cargoPrincipal,
+            'fecha_desde' => $data['fecha_desde'] ?? null,
+            'fecha_hasta' => $data['fecha_hasta'] ?? null,
+            'horas_totales' => $horasTotales,
+        ]);
 
-            if (!empty($data['id_horario']) && isset($hor)) {
-                $hor->id_declaracion = $d->id_declaracion;
-                $hor->save();
+        // Eliminar horarios existentes y crear nuevos
+        $d->horarios()->delete();
+
+        // Guardar horarios UCR
+        if ($r->has('ucr_dia')) {
+            foreach ($r->ucr_dia as $i => $dia) {
+                if (empty($dia)) continue;
+                
+                // Obtener el índice del cargo para este horario
+                $cargoIndex = isset($r->ucr_cargo_index[$i]) ? $r->ucr_cargo_index[$i] : 0;
+                $cargoId = isset($r->ucr_cargo[$cargoIndex]) && !empty($r->ucr_cargo[$cargoIndex]) ? $r->ucr_cargo[$cargoIndex] : null;
+                
+                // Obtener fechas del cargo (fijas para todo el cargo)
+                $fechaDesde = isset($r->ucr_cargo_fecha_desde[$cargoIndex]) ? $r->ucr_cargo_fecha_desde[$cargoIndex] : null;
+                $fechaHasta = isset($r->ucr_cargo_fecha_hasta[$cargoIndex]) ? $r->ucr_cargo_fecha_hasta[$cargoIndex] : null;
+                
+                Horario::create([
+                    'id_declaracion' => $d->id_declaracion,
+                    'id_cargo' => $cargoId,
+                    'tipo' => 'ucr',
+                    'dia' => $dia,
+                    'hora_inicio' => $r->ucr_hora_inicio[$i],
+                    'hora_fin' => $r->ucr_hora_fin[$i],
+                    'desde' => $fechaDesde,
+                    'hasta' => $fechaHasta,
+                ]);
+            }
+        }
+
+        // Guardar horarios externos
+        if ($r->has('ext_dia') && $r->has('ext_inst_index')) {
+            foreach ($r->ext_dia as $i => $dia) {
+                if (empty($dia)) continue;
+                
+                // Obtener el índice de institución para este horario
+                $instIndex = $r->ext_inst_index[$i];
+                
+                // Obtener el id_jornada, nombre de institución y cargo del índice correspondiente
+                $jornadaId = isset($r->ext_jornada[$instIndex]) ? $r->ext_jornada[$instIndex] : null;
+                $nombreInstitucion = isset($r->ext_institucion[$instIndex]) ? $r->ext_institucion[$instIndex] : null;
+                $cargoExterno = isset($r->ext_cargo[$instIndex]) ? $r->ext_cargo[$instIndex] : null;
+                
+                // Obtener fechas de la institución (fijas para toda la institución)
+                $fechaDesde = isset($r->ext_inst_fecha_desde[$instIndex]) ? $r->ext_inst_fecha_desde[$instIndex] : null;
+                $fechaHasta = isset($r->ext_inst_fecha_hasta[$instIndex]) ? $r->ext_inst_fecha_hasta[$instIndex] : null;
+                
+                Horario::create([
+                    'id_declaracion' => $d->id_declaracion,
+                    'id_jornada' => $jornadaId,
+                    'tipo' => 'externo',
+                    'dia' => $dia,
+                    'hora_inicio' => $r->ext_hora_inicio[$i],
+                    'hora_fin' => $r->ext_hora_fin[$i],
+                    'lugar' => $nombreInstitucion,
+                    'cargo' => $cargoExterno,
+                    'desde' => $fechaDesde,
+                    'hasta' => $fechaHasta,
+                ]);
             }
         }
 
         return redirect()
-            ->route('declaraciones.index')
-            ->with('ok', 'Declaración actualizada');
+            ->route('declaraciones.show', $d->id_declaracion)
+            ->with('ok', 'Declaración actualizada correctamente');
     }
  // --- Opción B (si quieres sincronizar horarios al editar) ---
     // public function update(Request $r,$id){

@@ -15,6 +15,7 @@ class Declaracion extends Model
         'id_usuario',
         'id_formulario',
         'id_unidad',
+        'id_cargo',
         'fecha_desde',
         'fecha_hasta',
         'horas_totales',
