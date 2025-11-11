@@ -55,8 +55,8 @@
                     <div class="cargo-ucr-block border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Cargo UCR</label>
-                                <select name="ucr_cargo[]" class="ucr-cargo-select mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
+                                <label class="block text-sm font-medium text-gray-700">Cargo UCR *</label>
+                                <select name="ucr_cargo[]" class="ucr-cargo-select mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" required>
                                     <option value="">Seleccione cargo...</option>
                                     @foreach($cargos as $c)
                                         <option value="{{ $c->id_cargo }}">{{ $c->nombre }}</option>
@@ -64,8 +64,8 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Jornada de este cargo</label>
-                                <select name="ucr_jornada[]" class="ucr-jornada-select mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
+                                <label class="block text-sm font-medium text-gray-700">Jornada de trabajo *</label>
+                                <select name="ucr_jornada[]" class="ucr-jornada-select mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" required>
                                     <option value="">Seleccione jornada...</option>
                                     @foreach($jornadas as $j)
                                         <option value="{{ $j->id_jornada }}" data-horas="{{ $j->horas_por_semana }}">
@@ -87,16 +87,16 @@
                         <!-- Fechas de vigencia para este cargo -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-3 bg-white rounded-lg border">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha desde</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha desde *</label>
                                 <input type="date" name="ucr_cargo_fecha_desde[]" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
-                                       placeholder="dd/mm/aaaa">
+                                       placeholder="dd/mm/aaaa" required>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha hasta</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha hasta *</label>
                                 <input type="date" name="ucr_cargo_fecha_hasta[]" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
-                                       placeholder="dd/mm/aaaa">
+                                       placeholder="dd/mm/aaaa" required>
                             </div>
                         </div>
 

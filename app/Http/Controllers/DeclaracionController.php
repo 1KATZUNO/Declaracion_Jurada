@@ -2,37 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Declaracion,Usuario,UnidadAcademica,Cargo,Formulario,Horario};
+use App\Models\{Declaracion, Usuario, UnidadAcademica, Cargo, Formulario, Horario};
 use Illuminate\Http\Request;
+use App\Notifications\DeclaracionGenerada;
 use Illuminate\Support\Facades\Log;
 
 class DeclaracionController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         try {
-            $declaraciones = Declaracion::with(['usuario','unidad','cargo','formulario'])->latest()->get();
+            $declaraciones = Declaracion::with(['usuario', 'unidad', 'cargo', 'formulario'])
+                ->latest()
+                ->get();
+
             return view('declaraciones.index', compact('declaraciones'));
         } catch (\Exception $e) {
-            Log::error('Error en DeclaracionController@index: ' . $e->getMessage());
-            
-            // Retornar vista con colección vacía en caso de error
+            \Log::error('Error en DeclaracionController@index: ' . $e->getMessage());
+
             return view('declaraciones.index', [
-                'declaraciones' => collect([])
+                'declaraciones' => collect([]),
             ]);
         }
     }
 
-    public function create(){
+    public function create()
+    {
         return view('declaraciones.create', [
-            'usuarios' => Usuario::all(),
-            'unidades' => UnidadAcademica::with('sede')->get(),
-            'cargos' => Cargo::all(),
-            'formularios' => Formulario::all(),
-            'jornadas' => \App\Models\Jornada::orderBy('tipo')->get(), // <-- AÑADIDO
-            'horarios' => \App\Models\Horario::whereNull('id_declaracion')
-                        ->where('tipo','ucr')
-                        ->with('jornada')
-                        ->get(),
+            'usuarios'   => Usuario::all(),
+            'unidades'   => UnidadAcademica::with('sede')->get(),
+            'cargos'     => Cargo::all(),
+            'formularios'=> Formulario::all(),
+            'jornadas'   => \App\Models\Jornada::orderBy('tipo')->get(),
+            'horarios'   => Horario::whereNull('id_declaracion')
+                                ->where('tipo', 'ucr')
+                                ->with('jornada')
+                                ->get(),
         ]);
     }
 
@@ -169,81 +174,99 @@ class DeclaracionController extends Controller
             }
         }
 
-        // Validar conflictos de horarios
+        // Construir arreglo de horarios para validar conflictos
         $horarios = [];
-        
-        // Recolectar horarios externos
+
+        // Horarios externos
         if ($r->has('ext_dia')) {
             foreach ($r->ext_dia as $i => $dia) {
                 if (empty($dia)) continue;
+
                 $horarios[] = [
-                    'tipo' => 'externo',
-                    'dia' => $dia,
+                    'tipo'   => 'externo',
+                    'dia'    => $dia,
                     'inicio' => strtotime($r->ext_hora_inicio[$i]),
-                    'fin' => strtotime($r->ext_hora_fin[$i])
+                    'fin'    => strtotime($r->ext_hora_fin[$i]),
                 ];
             }
         }
 
-        // Recolectar horarios UCR
+        // Horarios UCR
         if ($r->has('ucr_dia')) {
             foreach ($r->ucr_dia as $i => $dia) {
                 if (empty($dia)) continue;
+
                 $horarios[] = [
-                    'tipo' => 'ucr',
-                    'dia' => $dia,
+                    'tipo'   => 'ucr',
+                    'dia'    => $dia,
                     'inicio' => strtotime($r->ucr_hora_inicio[$i]),
-                    'fin' => strtotime($r->ucr_hora_fin[$i])
+                    'fin'    => strtotime($r->ucr_hora_fin[$i]),
                 ];
             }
         }
 
-        // Verificar conflictos
+        // Validar solapamientos y separación entre UCR/externo
         for ($i = 0; $i < count($horarios); $i++) {
             for ($j = $i + 1; $j < count($horarios); $j++) {
                 $h1 = $horarios[$i];
                 $h2 = $horarios[$j];
 
-                if ($h1['dia'] !== $h2['dia']) continue;
-
-                // Verificar solapamiento
-                if ($h1['inicio'] < $h2['fin'] && $h1['fin'] > $h2['inicio']) {
-                    return back()->withInput()->withErrors(['horarios' => "Conflicto detectado en {$h1['dia']}: los horarios se solapan"]);
+                if ($h1['dia'] !== $h2['dia']) {
+                    continue;
                 }
 
-                // Si uno es UCR y otro externo, verificar hora de diferencia
+                // Solapamiento
+                if ($h1['inicio'] < $h2['fin'] && $h1['fin'] > $h2['inicio']) {
+                    return back()->withInput()->withErrors([
+                        'horarios' => "Conflicto detectado en {$h1['dia']}: los horarios se solapan",
+                    ]);
+                }
+
+                // Diferencia mínima 1h entre UCR y externo
                 if ($h1['tipo'] !== $h2['tipo']) {
                     $minDiff = min(
                         abs($h1['fin'] - $h2['inicio']),
                         abs($h2['fin'] - $h1['inicio'])
                     );
-                    if ($minDiff < 3600) { // 3600 segundos = 1 hora
-                        return back()->withInput()->withErrors(['horarios' => "Debe haber al menos 1 hora entre horario UCR y externo en {$h1['dia']}"]);
+
+                    if ($minDiff < 3600) { // 3600 seg = 1h
+                        return back()->withInput()->withErrors([
+                            'horarios' => "Debe haber al menos 1 hora entre horario UCR y externo en {$h1['dia']}",
+                        ]);
                     }
                 }
             }
         }
 
-        // Validar horas permitidas para cada horario UCR
+        // Validar rango de horas UCR y hora de almuerzo
         if ($r->has('ucr_dia')) {
             foreach ($r->ucr_hora_inicio as $i => $inicio) {
                 if (empty($inicio) || empty($r->ucr_hora_fin[$i])) continue;
-                
-                $inicioMinutos = $this->horaAMinutos($inicio);
-                $finMinutos = $this->horaAMinutos($r->ucr_hora_fin[$i]);
 
-                // Validar rango general (7:00 - 21:00)
-                if ($inicioMinutos < 420) { // 7:00 = 7*60
-                    return back()->withInput()->withErrors(['horarios' => 'No se pueden programar clases antes de las 7:00 AM']);
-                }
-                if ($finMinutos > 1260) { // 21:00 = 21*60
-                    return back()->withInput()->withErrors(['horarios' => 'No se pueden programar clases después de las 21:00 (9:00 PM)']);
+                $inicioMin = $this->horaAMinutos($inicio);
+                $finMin    = $this->horaAMinutos($r->ucr_hora_fin[$i]);
+
+                // 7:00 (420) a 21:00 (1260)
+                if ($inicioMin < 420) {
+                    return back()->withInput()->withErrors([
+                        'horarios' => 'No se pueden programar clases antes de las 7:00 AM',
+                    ]);
                 }
 
-                // Validar hora de almuerzo (12:00 - 13:00)
-                if (($inicioMinutos >= 720 && $inicioMinutos < 780) || // 12:00-13:00
-                    ($finMinutos > 720 && $finMinutos <= 780)) {
-                    return back()->withInput()->withErrors(['horarios' => 'No se pueden programar clases entre 12:00 PM y 1:00 PM (hora de almuerzo)']);
+                if ($finMin > 1260) {
+                    return back()->withInput()->withErrors([
+                        'horarios' => 'No se pueden programar clases después de las 21:00 (9:00 PM)',
+                    ]);
+                }
+
+                // Bloque 12:00 - 13:00
+                if (
+                    ($inicioMin >= 720 && $inicioMin < 780) ||
+                    ($finMin > 720 && $finMin <= 780)
+                ) {
+                    return back()->withInput()->withErrors([
+                        'horarios' => 'No se pueden programar clases entre 12:00 PM y 1:00 PM (hora de almuerzo)',
+                    ]);
                 }
             }
         }
@@ -331,73 +354,180 @@ class DeclaracionController extends Controller
             }
         }
 
+        // 🔔 Notificación: correo + panel (Laravel Notifications)
+        // Temporalmente deshabilitado para evitar errores de SMTP
+        // if ($declaracion->usuario) {
+        //     $declaracion->usuario->notify(new DeclaracionGenerada($declaracion));
+        // }
+
         return redirect()
             ->route('declaraciones.show', $declaracion->id_declaracion)
             ->with('ok', 'Declaración creada correctamente');
     }
 
-    public function show($id){
-        $declaracion = Declaracion::with(['usuario','unidad.sede','formulario','horarios.cargo','horarios.jornada'])->findOrFail($id);
+    public function show($id)
+    {
+        $declaracion = Declaracion::with([
+                'usuario',
+                'unidad.sede',
+                'cargo',
+                'formulario',
+                'horarios',
+            ])
+            ->findOrFail($id);
+
         return view('declaraciones.show', compact('declaracion'));
     }
 
-    public function edit($id){
-        $d = Declaracion::with('horarios')->findOrFail($id);
+    public function edit($id)
+    {
+        $d = Declaracion::with(['horarios.jornada', 'cargo'])->findOrFail($id);
+
+        // Obtener la jornada del primer horario UCR si existe
+        $horarioUCR = $d->horarios->where('tipo', 'ucr')->first();
+        $jornadaActual = null;
+
+        if ($horarioUCR && $horarioUCR->id_jornada) {
+            // Si el horario tiene jornada asignada, usarla
+            $jornadaActual = $horarioUCR->jornada;
+        } else {
+            // Si no tiene jornada asignada, intentar deducir por las horas totales
+            $horasTotales = $d->horas_totales;
+            if ($horasTotales) {
+                $jornadas = \App\Models\Jornada::all();
+                $jornadaActual = $jornadas->sortBy(function($jornada) use ($horasTotales) {
+                    return abs($jornada->horas_por_semana - $horasTotales);
+                })->first();
+            }
+        }
+
+
+
         return view('declaraciones.edit', [
-            'd'=>$d,
-            'usuarios'=>Usuario::all(),
-            'unidades'=>UnidadAcademica::with('sede')->get(),
-            'cargos'=>Cargo::all(),
-            'formularios'=>Formulario::all(),
-            // incluir horarios disponibles + permitir seleccionar el que ya está asignado (si existe)
-            'horarios'=> \App\Models\Horario::where(function($q) use ($d){
-                $q->whereNull('id_declaracion')->orWhere('id_declaracion', $d->id_declaracion);
-            })->where('tipo','ucr')->with('jornada')->get(),
+            'd'                => $d,
+            'jornadaActual'    => $jornadaActual,
+            'usuarios'         => Usuario::all(),
+            'unidades'         => UnidadAcademica::with('sede')->get(),
+            'cargos'           => Cargo::all(),
+            'formularios'      => Formulario::all(),
+            'jornadas'         => \App\Models\Jornada::orderBy('tipo')->get(),
+            'horarios'         => Horario::whereNull('id_declaracion')
+                                    ->where('tipo', 'ucr')
+                                    ->with('jornada')
+                                    ->get(),
         ]);
     }
 
-    // Opción A: actualizar solo los campos de la declaración
-    public function update(Request $r,$id){
+    public function update(Request $r, $id)
+    {
         $d = Declaracion::findOrFail($id);
+
         $data = $r->validate([
-            'id_usuario'=>'required|exists:usuario,id_usuario',
-            'id_formulario'=>'required|exists:formulario,id_formulario',
-            'id_unidad'=>'required|exists:unidad_academica,id_unidad',
-            'id_cargo'=>'required|exists:cargo,id_cargo',
-            'fecha_desde'=>'required|date',
-            'fecha_hasta'=>'required|date|after_or_equal:fecha_desde',
-            'horas_totales'=>'nullable|numeric|min:0',
-            'id_horario' => 'nullable|exists:horario,id_horario',
+            'id_usuario' => 'required|exists:usuario,id_usuario',
+            'id_formulario' => 'required|exists:formulario,id_formulario',
+            'id_unidad' => 'required|exists:unidad_academica,id_unidad',
+            'fecha_desde' => 'nullable|date',
+            'fecha_hasta' => 'nullable|date|after_or_equal:fecha_desde',
+            'horas_totales' => 'nullable|numeric|min:0',
+            // Validación de horarios
+            'ucr_dia.*' => 'required|string',
+            'ucr_hora_inicio.*' => 'required',
+            'ucr_hora_fin.*' => 'required',
+            'ext_institucion.*' => 'nullable|string',
+            'ext_dia.*' => 'nullable|string',
+            'ext_hora_inicio.*' => 'nullable',
+            'ext_hora_fin.*' => 'nullable',
         ]);
 
-        // Si seleccionó un horario, fijar horas desde la jornada asociada
-        if (!empty($data['id_horario'])) {
-            $hor = Horario::with('jornada')->find($data['id_horario']);
-            if ($hor && $hor->jornada) {
-                $data['horas_totales'] = $hor->jornada->horas_por_semana;
+        // Calcular horas totales de todos los cargos UCR
+        $horasTotales = 0;
+        if ($r->has('ucr_jornada')) {
+            foreach ($r->ucr_jornada as $jornadaId) {
+                if (!empty($jornadaId)) {
+                    $jornadaUCR = \App\Models\Jornada::find($jornadaId);
+                    if ($jornadaUCR) {
+                        $horasTotales += $jornadaUCR->horas_por_semana;
+                    }
+                }
             }
         }
 
-        // Actualizar datos generales
-        $d->update($data);
+        // Actualizar la declaración
+        $d->update([
+            'id_usuario' => $data['id_usuario'],
+            'id_formulario' => $data['id_formulario'],
+            'id_unidad' => $data['id_unidad'],
+            'fecha_desde' => $data['fecha_desde'] ?? null,
+            'fecha_hasta' => $data['fecha_hasta'] ?? null,
+            'horas_totales' => $horasTotales,
+        ]);
 
-        // Asociar/desasociar horarios si se seleccionó uno
-        if (array_key_exists('id_horario', $data)) {
-            // desasignar otros horarios actualmente vinculados a esta declaración
-            \App\Models\Horario::where('id_declaracion', $d->id_declaracion)
-                ->where('id_horario', '<>', $data['id_horario'] ?? 0)
-                ->update(['id_declaracion' => null]);
+        // Eliminar horarios existentes y crear nuevos
+        $d->horarios()->delete();
 
-            if (!empty($data['id_horario'])) {
-                $hor->id_declaracion = $d->id_declaracion;
-                $hor->save();
+        // Guardar horarios UCR
+        if ($r->has('ucr_dia')) {
+            foreach ($r->ucr_dia as $i => $dia) {
+                if (empty($dia)) continue;
+                
+                // Obtener el índice del cargo para este horario
+                $cargoIndex = isset($r->ucr_cargo_index[$i]) ? $r->ucr_cargo_index[$i] : 0;
+                $cargoId = isset($r->ucr_cargo[$cargoIndex]) && !empty($r->ucr_cargo[$cargoIndex]) ? $r->ucr_cargo[$cargoIndex] : null;
+                
+                // Obtener fechas del cargo (fijas para todo el cargo)
+                $fechaDesde = isset($r->ucr_cargo_fecha_desde[$cargoIndex]) ? $r->ucr_cargo_fecha_desde[$cargoIndex] : null;
+                $fechaHasta = isset($r->ucr_cargo_fecha_hasta[$cargoIndex]) ? $r->ucr_cargo_fecha_hasta[$cargoIndex] : null;
+                
+                Horario::create([
+                    'id_declaracion' => $d->id_declaracion,
+                    'id_cargo' => $cargoId,
+                    'tipo' => 'ucr',
+                    'dia' => $dia,
+                    'hora_inicio' => $r->ucr_hora_inicio[$i],
+                    'hora_fin' => $r->ucr_hora_fin[$i],
+                    'desde' => $fechaDesde,
+                    'hasta' => $fechaHasta,
+                ]);
             }
         }
 
-        return redirect()->route('declaraciones.index')->with('ok','Declaración actualizada');
+        // Guardar horarios externos
+        if ($r->has('ext_dia') && $r->has('ext_inst_index')) {
+            foreach ($r->ext_dia as $i => $dia) {
+                if (empty($dia)) continue;
+                
+                // Obtener el índice de institución para este horario
+                $instIndex = $r->ext_inst_index[$i];
+                
+                // Obtener el id_jornada, nombre de institución y cargo del índice correspondiente
+                $jornadaId = isset($r->ext_jornada[$instIndex]) ? $r->ext_jornada[$instIndex] : null;
+                $nombreInstitucion = isset($r->ext_institucion[$instIndex]) ? $r->ext_institucion[$instIndex] : null;
+                $cargoExterno = isset($r->ext_cargo[$instIndex]) ? $r->ext_cargo[$instIndex] : null;
+                
+                // Obtener fechas de la institución (fijas para toda la institución)
+                $fechaDesde = isset($r->ext_inst_fecha_desde[$instIndex]) ? $r->ext_inst_fecha_desde[$instIndex] : null;
+                $fechaHasta = isset($r->ext_inst_fecha_hasta[$instIndex]) ? $r->ext_inst_fecha_hasta[$instIndex] : null;
+                
+                Horario::create([
+                    'id_declaracion' => $d->id_declaracion,
+                    'id_jornada' => $jornadaId,
+                    'tipo' => 'externo',
+                    'dia' => $dia,
+                    'hora_inicio' => $r->ext_hora_inicio[$i],
+                    'hora_fin' => $r->ext_hora_fin[$i],
+                    'lugar' => $nombreInstitucion,
+                    'cargo' => $cargoExterno,
+                    'desde' => $fechaDesde,
+                    'hasta' => $fechaHasta,
+                ]);
+            }
+        }
+
+        return redirect()
+            ->route('declaraciones.show', $d->id_declaracion)
+            ->with('ok', 'Declaración actualizada correctamente');
     }
-
-    // --- Opción B (si quieres sincronizar horarios al editar) ---
+ // --- Opción B (si quieres sincronizar horarios al editar) ---
     // public function update(Request $r,$id){
     //     $d = Declaracion::findOrFail($id);
     //     $data = $r->validate([
@@ -432,16 +562,17 @@ class DeclaracionController extends Controller
 
     //     return redirect()->route('declaraciones.index')->with('ok','Declaración + horarios actualizados');
     // }
-
-    public function destroy($id){
+    public function destroy($id)
+    {
         Declaracion::findOrFail($id)->delete();
-        return back()->with('ok','Declaración eliminada');
+
+        return back()->with('ok', 'Declaración eliminada');
     }
 
-    // Helper para convertir hora en formato HH:mm a minutos
-    private function horaAMinutos($hora) {
-        list($h, $m) = explode(':', $hora);
+    // Helper: HH:mm a minutos
+    private function horaAMinutos($hora)
+    {
+        [$h, $m] = explode(':', $hora);
         return intval($h) * 60 + intval($m);
     }
 }
-
