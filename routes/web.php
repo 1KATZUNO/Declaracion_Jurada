@@ -44,6 +44,11 @@ Route::post('/notificaciones/marcar-todas', [NotificacionController::class, 'mar
 // Exportación Excel
 Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 'exportar'])
      ->name('declaraciones.exportar');
+
+// Exportación PDF
+Route::get('/declaraciones/{id}/pdf', [DeclaracionExportController::class, 'exportarPdf'])
+     ->name('declaraciones.pdf');
+
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 
 // Formulario de cambio de contraseña

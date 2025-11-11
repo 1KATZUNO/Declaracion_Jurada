@@ -289,6 +289,13 @@
                 @endforeach
             </div>
             @endif
+            <!-- ...otras secciones... -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Observaciones adicionales</h3>
+                <div class="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-800">
+                    {{ $declaracion->observaciones_adicionales ?? 'Sin observaciones adicionales.' }}
+                </div>
+            </div>
             <hr class="my-8 border-gray-300">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-10 text-center mt-10">
                 <div>
@@ -310,6 +317,10 @@
                 <a href="{{ route('declaraciones.exportar', $declaracion->id_declaracion) }}"
                    class="px-6 py-2.5 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-sm transition-colors">
                    Exportar a Excel
+                </a>
+                <a href="{{ route('declaraciones.pdf', $declaracion->id_declaracion) }}"
+                   class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-colors">
+                   Exportar a PDF
                 </a>
             </div>
         </div>
