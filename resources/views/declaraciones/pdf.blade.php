@@ -170,7 +170,7 @@
             <td style="width: 15%;">{{ $identificacion ?? '' }}</td>
         </tr>
         <tr>
-            <td class="info-label">Unidad Académica o Administrativa: {{ $declaracion->unidad->sede->nombre ?? 'Sede Guanacaste' }}</td>
+            <td class="info-label">Unidad Académica o Administrativa: {{ $declaracion->unidad->nombre ?? '' }}</td>
             <td colspan="2" class="info-label">Correo electrónico:</td>
             <td>{{ $correo ?? '' }}</td>
         </tr>
@@ -277,7 +277,7 @@
                 @for($i = 0; $i < $maxLines; $i++)
                     <tr>
                         @if($i === 0)
-                            <td class="col-lugar">{{ $declaracion->unidad->nombre ?? '' }}</td>
+                            <td class="col-lugar">{{ $declaracion->unidad->sede->nombre ?? '' }}</td>
                             <td class="col-cargo">{{ $declaracion->cargo->nombre ?? '' }}</td>
                             <td class="col-jornada">{{ $jornadaTexto }}</td>
                             <td class="col-vigencia">{{ $fechaDesde }}</td>

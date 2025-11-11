@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Declaracion, Usuario, UnidadAcademica, Cargo, Formulario, Horario};
+use App\Models\{Declaracion, Usuario, UnidadAcademica, Cargo, Formulario, Horario, Sede};
 use Illuminate\Http\Request;
 use App\Notifications\DeclaracionGenerada;
 use Illuminate\Support\Facades\Log;
@@ -26,10 +26,27 @@ class DeclaracionController extends Controller
         }
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        // Obtener usuario actual (mismo enfoque que layout.blade.php)
+        $usuarioActual = null;
+        if (function_exists('auth') && auth()->check()) {
+            $usuarioActual = auth()->user();
+        } elseif ($request->session()->has('usuario_id')) {
+            $usuarioActual = Usuario::find($request->session()->get('usuario_id'));
+        }
+
+        // Obtener nombre del usuario (prioridad a sesión como en layout)
+        $nombreUsuario = session('usuario_nombre')
+            ?? ($usuarioActual
+                ? trim(($usuarioActual->nombre ?? '') . ' ' . ($usuarioActual->apellido ?? ''))
+                : 'Usuario no identificado');
+
         return view('declaraciones.create', [
             'usuarios'   => Usuario::all(),
+            'usuarioActual' => $usuarioActual,
+            'nombreUsuario' => $nombreUsuario,
+            'sedes'      => Sede::orderBy('nombre')->get(),
             'unidades'   => UnidadAcademica::with('sede')->get(),
             'cargos'     => Cargo::all(),
             'formularios'=> Formulario::all(),
@@ -296,46 +313,35 @@ class DeclaracionController extends Controller
             }
         }
 
+        // Determinar las fechas mínimas y máximas de los cargos UCR
+        $fechaDesdeGlobal = null;
+        $fechaHastaGlobal = null;
+
+        if ($r->has('ucr_cargo_fecha_desde') && $r->has('ucr_cargo_fecha_hasta')) {
+            // Filtrar solo las fechas válidas (no vacías)
+            $fechasDesde = array_filter($r->ucr_cargo_fecha_desde, fn($f) => !empty($f));
+            $fechasHasta = array_filter($r->ucr_cargo_fecha_hasta, fn($f) => !empty($f));
+
+            if (count($fechasDesde) > 0) {
+                $fechaDesdeGlobal = min($fechasDesde);
+            }
+            if (count($fechasHasta) > 0) {
+                $fechaHastaGlobal = max($fechasHasta);
+            }
+        }
+
         // Crear la declaración
         $declaracion = Declaracion::create([
             'id_usuario' => $data['id_usuario'],
             'id_formulario' => $data['id_formulario'],
             'id_unidad' => $data['id_unidad'],
             'id_cargo' => $cargoPrincipal,
-            'fecha_desde' => $data['fecha_desde'] ?? null,
-            'fecha_hasta' => $data['fecha_hasta'] ?? null,
-            'horas_totales' => $horasTotales, // Suma de todas las jornadas UCR
+            'fecha_desde' => $fechaDesdeGlobal,
+            'fecha_hasta' => $fechaHastaGlobal,
+            'horas_totales' => $horasTotales,
             'fecha_envio' => \Carbon\Carbon::now('America/Costa_Rica'),
             'observaciones_adicionales' => $r->observaciones_adicionales ?? null,
         ]);
-// Determinar las fechas mínimas y máximas de los cargos UCR
-$fechaDesdeGlobal = null;
-$fechaHastaGlobal = null;
-
-if ($r->has('ucr_cargo_fecha_desde') && $r->has('ucr_cargo_fecha_hasta')) {
-    // Filtrar solo las fechas válidas (no vacías)
-    $fechasDesde = array_filter($r->ucr_cargo_fecha_desde, fn($f) => !empty($f));
-    $fechasHasta = array_filter($r->ucr_cargo_fecha_hasta, fn($f) => !empty($f));
-
-    if (count($fechasDesde) > 0) {
-        $fechaDesdeGlobal = min($fechasDesde);
-    }
-    if (count($fechasHasta) > 0) {
-        $fechaHastaGlobal = max($fechasHasta);
-    }
-}
-
-// Crear la declaración principal
-$declaracion = Declaracion::create([
-    'id_usuario' => $data['id_usuario'],
-    'id_formulario' => $data['id_formulario'],
-    'id_unidad' => $data['id_unidad'],
-    'id_cargo' => $cargoPrincipal,
-    'fecha_desde' => $fechaDesdeGlobal,
-    'fecha_hasta' => $fechaHastaGlobal,
-    'horas_totales' => $horasTotales, 
-    'fecha_envio' => \Carbon\Carbon::now('America/Costa_Rica'),
-]);
 
 
         // Guardar horarios UCR
@@ -425,9 +431,25 @@ $declaracion = Declaracion::create([
         return view('declaraciones.show', compact('declaracion'));
     }
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         $d = Declaracion::with(['horarios.jornada', 'cargo'])->findOrFail($id);
+
+        // Obtener usuario actual
+        $usuarioActual = null;
+        if (function_exists('auth') && auth()->check()) {
+            $usuarioActual = auth()->user();
+        } elseif ($request->session()->has('usuario_id')) {
+            $usuarioActual = Usuario::find($request->session()->get('usuario_id'));
+        }
+        
+        // Obtener el nombre del usuario para mostrar en el formulario
+        $nombreUsuario = '';
+        if ($request->session()->has('usuario_nombre') && !empty($request->session()->get('usuario_nombre'))) {
+            $nombreUsuario = $request->session()->get('usuario_nombre');
+        } elseif ($usuarioActual && !empty($usuarioActual->nombre)) {
+            $nombreUsuario = $usuarioActual->nombre;
+        }
 
         // Obtener la jornada del primer horario UCR si existe
         $horarioUCR = $d->horarios->where('tipo', 'ucr')->first();
@@ -453,6 +475,9 @@ $declaracion = Declaracion::create([
             'd'                => $d,
             'jornadaActual'    => $jornadaActual,
             'usuarios'         => Usuario::all(),
+            'usuarioActual'    => $usuarioActual,
+            'nombreUsuario'    => $nombreUsuario,
+            'sedes'            => Sede::orderBy('nombre')->get(),
             'unidades'         => UnidadAcademica::with('sede')->get(),
             'cargos'           => Cargo::all(),
             'formularios'      => Formulario::all(),
@@ -630,6 +655,34 @@ $declaracion = Declaracion::create([
         Declaracion::findOrFail($id)->delete();
 
         return back()->with('ok', 'Declaración eliminada');
+    }
+
+    /**
+     * API: Obtener unidades académicas por sede
+     */
+    public function getUnidadesPorSede($id_sede)
+    {
+        try {
+            // Verificar que la sede existe
+            $sede = Sede::find($id_sede);
+            if (!$sede) {
+                return response()->json(['error' => 'Sede no encontrada'], 404);
+            }
+
+            // Obtener unidades activas de la sede
+            $unidades = UnidadAcademica::where('id_sede', $id_sede)
+                ->where('estado', 'ACTIVA')
+                ->orderBy('nombre')
+                ->get(['id_unidad', 'nombre']);
+            
+            \Log::info("API: Sede {$id_sede} tiene " . $unidades->count() . " unidades activas");
+            
+            return response()->json($unidades);
+            
+        } catch (\Exception $e) {
+            \Log::error("Error en getUnidadesPorSede: " . $e->getMessage());
+            return response()->json(['error' => 'Error interno del servidor'], 500);
+        }
     }
 
     // Helper: HH:mm a minutos

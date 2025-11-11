@@ -49,6 +49,10 @@ Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 
 Route::get('/declaraciones/{id}/pdf', [DeclaracionExportController::class, 'exportarPdf'])
      ->name('declaraciones.pdf');
 
+// API Routes
+Route::get('/api/unidades-por-sede/{id_sede}', [DeclaracionController::class, 'getUnidadesPorSede'])
+     ->name('api.unidades-por-sede');
+
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 
 // Formulario de cambio de contraseña
