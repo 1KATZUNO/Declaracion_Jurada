@@ -306,6 +306,7 @@ class DeclaracionController extends Controller
             'fecha_hasta' => $data['fecha_hasta'] ?? null,
             'horas_totales' => $horasTotales, // Suma de todas las jornadas UCR
             'fecha_envio' => \Carbon\Carbon::now('America/Costa_Rica'),
+            'observaciones_adicionales' => $r->observaciones_adicionales ?? null,
         ]);
 
         // Guardar horarios UCR
@@ -488,6 +489,7 @@ class DeclaracionController extends Controller
             'fecha_desde' => $data['fecha_desde'] ?? null,
             'fecha_hasta' => $data['fecha_hasta'] ?? null,
             'horas_totales' => $horasTotales,
+            'observaciones_adicionales' => $r->observaciones_adicionales ?? null,
         ]);
 
         // Eliminar horarios existentes y crear nuevos

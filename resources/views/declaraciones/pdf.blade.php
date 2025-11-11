@@ -236,24 +236,19 @@
                         if (!empty($horariosDia)) {
                             $primerHorario = $horariosDia[0];
                             
-                            // Intentar obtener jornada - PRIMERO del campo texto
-                            if (!$jornadaTexto && isset($primerHorario->jornada) && is_string($primerHorario->jornada)) {
-                                $jornadaTexto = $primerHorario->jornada;
-                            }
-                            
-                            // Luego intentar de la relación con tabla jornada
-                            if (!$jornadaTexto && isset($primerHorario->jornada) && is_object($primerHorario->jornada)) {
+                            // Intentar obtener jornada de la relación con tabla jornada
+                            if (!$jornadaTexto && $primerHorario->jornada) {
                                 $tipo = $primerHorario->jornada->tipo ?? '';
                                 $horas = $primerHorario->jornada->horas_por_semana ?? '';
                                 if ($tipo && $horas) {
-                                    $jornadaTexto = $tipo . ' (' . $horas . 'h semanales)';
+                                    $jornadaTexto = $tipo . ' - ' . $horas . ' horas semanales';
                                 } elseif ($tipo) {
                                     $jornadaTexto = $tipo;
                                 }
                             }
                             
                             // Si el horario tiene cargo, intentar obtener jornada del cargo
-                            if (!$jornadaTexto && isset($primerHorario->cargo) && $primerHorario->cargo) {
+                            if (!$jornadaTexto && $primerHorario->cargo) {
                                 $jornadaTexto = $primerHorario->cargo->jornada ?? '';
                             }
                             
@@ -403,11 +398,7 @@
 
     <div class="observaciones">
         <strong>Observaciones:</strong><br>
-        {{ $declaracion->observaciones ?? 'Sin observaciones.' }}
-    </div>
-    <div class="observaciones">
-        <strong>Observaciones adicionales:</strong><br>
-        {{ $declaracion->observaciones_adicionales ?? 'Sin observaciones adicionales.' }}
+        {{ $declaracion->observaciones_adicionales ?? 'Sin observaciones.' }}
     </div>
     </div>
 
