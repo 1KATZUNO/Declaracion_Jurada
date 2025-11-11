@@ -10,5 +10,5 @@ class Sede extends Model
     protected $primaryKey = 'id_sede';
     protected $fillable = ['nombre','ubicacion'];
 
-    public function unidades() { return $this->hasMany(UnidadAcademica::class, 'id_sede'); }
+    public function unidadesAcademicas(){ return $this->hasMany(UnidadAcademica::class, 'id_sede');}
 }

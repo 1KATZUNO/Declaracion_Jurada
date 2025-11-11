@@ -9,22 +9,24 @@ use Illuminate\Http\Request;
 class UnidadAcademicaController extends Controller
 {
     public function index(Request $r) {
-        $q = UnidadAcademica::with('sede')
-            ->when($r->filled('search'), fn($qq) =>
-                $qq->where('nombre', 'like', '%'.$r->search.'%'))
-            ->when($r->filled('sede_id'), fn($qq) =>
-                $qq->where('id_sede', $r->sede_id))
-            ->when($r->filled('estado'), fn($qq) =>
-                $qq->where('estado', $r->estado))
-            ->orderBy('nombre');
+    $q = UnidadAcademica::with('sede')
+        ->withCount('declaraciones')
+        ->when($r->filled('search'), fn($qq) =>
+            $qq->where('nombre', 'like', '%'.$r->search.'%'))
+        ->when($r->filled('sede_id'), fn($qq) =>
+            $qq->where('id_sede', $r->sede_id))
+        ->when($r->filled('estado'), fn($qq) =>
+            $qq->where('estado', $r->estado))
+        ->orderBy('nombre');
 
-        $unidades = $q->paginate(10)->withQueryString();
+    $unidades = $q->paginate(10)->withQueryString();
 
-        $sedes   = Sede::orderBy('nombre')->get(['id_sede','nombre']);
-        $estados = ['ACTIVA','INACTIVA'];
+    $sedes   = Sede::orderBy('nombre')->get(['id_sede','nombre']);
+    $estados = ['ACTIVA','INACTIVA'];
 
-        return view('unidades.index', compact('unidades','sedes','estados'));
-    }
+    return view('unidades.index', compact('unidades','sedes','estados'));
+}
+
 
     public function create() {
         $sedes = Sede::orderBy('nombre')->get(['id_sede','nombre']);
@@ -71,7 +73,7 @@ class UnidadAcademicaController extends Controller
         // Si tiene declaraciones, NO borrar; inactivar para guardar historial
         if ($unidad->declaraciones_count > 0) {
             $unidad->update(['estado' => 'INACTIVA']);
-            return back()->with('ok','Unidad inactivada (tenía declaraciones asociadas).');
+            return back()->with('ok','⚠ No se pudo eliminar la unidad porque tiene declaraciones juradas asociadas. El sistema la marcó como INACTIVA.');
         }
 
         $unidad->delete(); // soft delete

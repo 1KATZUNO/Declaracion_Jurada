@@ -9,13 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
- public function up(): void
+    public function up(): void
     {
         Schema::create('unidad_academica', function (Blueprint $table) {
             $table->id('id_unidad'); // Clave primaria
             $table->string('nombre', 100);
-            // CORRECCIÓN: constrained('tabla', 'nombre_de_la_id_en_esa_tabla')
-            $table->foreignId('id_sede')->constrained('sede', 'id_sede')->onDelete('cascade');
+
+            // Relación con sede (tabla 'sede', PK 'id_sede')
+            $table->foreignId('id_sede')
+                ->constrained('sede', 'id_sede')
+                ->restrictOnDelete();
+
+            // Estado funcional de la unidad
+            $table->enum('estado', ['ACTIVA', 'INACTIVA'])
+                ->default('ACTIVA');
+
             $table->timestamps();
         });
     }

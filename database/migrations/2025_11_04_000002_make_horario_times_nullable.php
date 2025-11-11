@@ -9,17 +9,45 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Modificar columnas para aceptar NULL (se usa SQL directo para evitar dependencia de doctrine/dbal)
-        DB::statement("ALTER TABLE `horario` MODIFY `dia` ENUM('Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo') NULL");
-        DB::statement("ALTER TABLE `horario` MODIFY `hora_inicio` TIME NULL");
-        DB::statement("ALTER TABLE `horario` MODIFY `hora_fin` TIME NULL");
+        if (DB::getDriverName() === 'sqlite') {
+            // SQLite no soporta MODIFY ni ENUM, usar recreación de columnas
+            Schema::table('horario', function (Blueprint $table) {
+                // Eliminar columnas existentes
+                $table->dropColumn(['dia', 'hora_inicio', 'hora_fin']);
+            });
+            
+            Schema::table('horario', function (Blueprint $table) {
+                // Recrear columnas como nullable
+                $table->string('dia')->nullable(); // SQLite no soporta ENUM
+                $table->time('hora_inicio')->nullable();
+                $table->time('hora_fin')->nullable();
+            });
+        } else {
+            // Para MySQL - usar las sentencias originales
+            DB::statement("ALTER TABLE `horario` MODIFY `dia` ENUM('Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo') NULL");
+            DB::statement("ALTER TABLE `horario` MODIFY `hora_inicio` TIME NULL");
+            DB::statement("ALTER TABLE `horario` MODIFY `hora_fin` TIME NULL");
+        }
     }
 
     public function down(): void
     {
-        // Volver a NOT NULL (si tu entorno tiene datos, revisar antes)
-        DB::statement("ALTER TABLE `horario` MODIFY `dia` ENUM('Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo') NOT NULL");
-        DB::statement("ALTER TABLE `horario` MODIFY `hora_inicio` TIME NOT NULL");
-        DB::statement("ALTER TABLE `horario` MODIFY `hora_fin` TIME NOT NULL");
+        if (DB::getDriverName() === 'sqlite') {
+            // SQLite: recrear columnas como NOT NULL
+            Schema::table('horario', function (Blueprint $table) {
+                $table->dropColumn(['dia', 'hora_inicio', 'hora_fin']);
+            });
+            
+            Schema::table('horario', function (Blueprint $table) {
+                $table->string('dia'); // No nullable
+                $table->time('hora_inicio');
+                $table->time('hora_fin');
+            });
+        } else {
+            // Para MySQL
+            DB::statement("ALTER TABLE `horario` MODIFY `dia` ENUM('Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo') NOT NULL");
+            DB::statement("ALTER TABLE `horario` MODIFY `hora_inicio` TIME NOT NULL");
+            DB::statement("ALTER TABLE `horario` MODIFY `hora_fin` TIME NOT NULL");
+        }
     }
 };
