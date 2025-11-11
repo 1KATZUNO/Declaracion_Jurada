@@ -296,6 +296,18 @@ class DeclaracionController extends Controller
             }
         }
 
+        // Crear la declaración
+        $declaracion = Declaracion::create([
+            'id_usuario' => $data['id_usuario'],
+            'id_formulario' => $data['id_formulario'],
+            'id_unidad' => $data['id_unidad'],
+            'id_cargo' => $cargoPrincipal,
+            'fecha_desde' => $data['fecha_desde'] ?? null,
+            'fecha_hasta' => $data['fecha_hasta'] ?? null,
+            'horas_totales' => $horasTotales, // Suma de todas las jornadas UCR
+            'fecha_envio' => \Carbon\Carbon::now('America/Costa_Rica'),
+            'observaciones_adicionales' => $r->observaciones_adicionales ?? null,
+        ]);
 // Determinar las fechas mínimas y máximas de los cargos UCR
 $fechaDesdeGlobal = null;
 $fechaHastaGlobal = null;
@@ -335,6 +347,9 @@ $declaracion = Declaracion::create([
                 $cargoIndex = isset($r->ucr_cargo_index[$i]) ? $r->ucr_cargo_index[$i] : 0;
                 $cargoId = isset($r->ucr_cargo[$cargoIndex]) && !empty($r->ucr_cargo[$cargoIndex]) ? $r->ucr_cargo[$cargoIndex] : null;
                 
+                // Obtener jornada del cargo
+                $jornadaId = isset($r->ucr_jornada[$cargoIndex]) && !empty($r->ucr_jornada[$cargoIndex]) ? $r->ucr_jornada[$cargoIndex] : null;
+                
                 // Obtener fechas del cargo (fijas para todo el cargo)
                 $fechaDesde = isset($r->ucr_cargo_fecha_desde[$cargoIndex]) ? $r->ucr_cargo_fecha_desde[$cargoIndex] : null;
                 $fechaHasta = isset($r->ucr_cargo_fecha_hasta[$cargoIndex]) ? $r->ucr_cargo_fecha_hasta[$cargoIndex] : null;
@@ -342,6 +357,7 @@ $declaracion = Declaracion::create([
                 Horario::create([
                     'id_declaracion' => $declaracion->id_declaracion,
                     'id_cargo' => $cargoId,
+                    'id_jornada' => $jornadaId,
                     'tipo' => 'ucr',
                     'dia' => $dia,
                     'hora_inicio' => $r->ucr_hora_inicio[$i],
@@ -502,6 +518,7 @@ $declaracion = Declaracion::create([
             'fecha_desde' => $data['fecha_desde'] ?? null,
             'fecha_hasta' => $data['fecha_hasta'] ?? null,
             'horas_totales' => $horasTotales,
+            'observaciones_adicionales' => $r->observaciones_adicionales ?? null,
         ]);
 
         // Eliminar horarios existentes y crear nuevos
@@ -516,6 +533,9 @@ $declaracion = Declaracion::create([
                 $cargoIndex = isset($r->ucr_cargo_index[$i]) ? $r->ucr_cargo_index[$i] : 0;
                 $cargoId = isset($r->ucr_cargo[$cargoIndex]) && !empty($r->ucr_cargo[$cargoIndex]) ? $r->ucr_cargo[$cargoIndex] : null;
                 
+                // Obtener jornada del cargo
+                $jornadaId = isset($r->ucr_jornada[$cargoIndex]) && !empty($r->ucr_jornada[$cargoIndex]) ? $r->ucr_jornada[$cargoIndex] : null;
+                
                 // Obtener fechas del cargo (fijas para todo el cargo)
                 $fechaDesde = isset($r->ucr_cargo_fecha_desde[$cargoIndex]) ? $r->ucr_cargo_fecha_desde[$cargoIndex] : null;
                 $fechaHasta = isset($r->ucr_cargo_fecha_hasta[$cargoIndex]) ? $r->ucr_cargo_fecha_hasta[$cargoIndex] : null;
@@ -523,6 +543,7 @@ $declaracion = Declaracion::create([
                 Horario::create([
                     'id_declaracion' => $d->id_declaracion,
                     'id_cargo' => $cargoId,
+                    'id_jornada' => $jornadaId,
                     'tipo' => 'ucr',
                     'dia' => $dia,
                     'hora_inicio' => $r->ucr_hora_inicio[$i],

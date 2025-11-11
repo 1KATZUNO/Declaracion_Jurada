@@ -20,6 +20,7 @@ class Declaracion extends Model
         'fecha_hasta',
         'horas_totales',
         'fecha_envio',
+        'observaciones_adicionales',
     ];
 
     public function usuario()

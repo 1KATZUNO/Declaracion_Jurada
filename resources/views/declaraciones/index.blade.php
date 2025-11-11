@@ -61,6 +61,10 @@
                                            class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-300 rounded hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors">
                                            Excel
                                         </a>
+                                        <a href="{{ route('declaraciones.pdf', $d->id_declaracion) }}"
+                                           class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                                           PDF
+                                        </a>
                                         <form action="{{ route('declaraciones.destroy', $d->id_declaracion) }}" method="POST"
                                               class="inline" onsubmit="return confirm('¿Eliminar esta declaración?')">
                                             @csrf
