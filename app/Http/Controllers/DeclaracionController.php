@@ -317,6 +317,9 @@ class DeclaracionController extends Controller
                 $cargoIndex = isset($r->ucr_cargo_index[$i]) ? $r->ucr_cargo_index[$i] : 0;
                 $cargoId = isset($r->ucr_cargo[$cargoIndex]) && !empty($r->ucr_cargo[$cargoIndex]) ? $r->ucr_cargo[$cargoIndex] : null;
                 
+                // Obtener jornada del cargo
+                $jornadaId = isset($r->ucr_jornada[$cargoIndex]) && !empty($r->ucr_jornada[$cargoIndex]) ? $r->ucr_jornada[$cargoIndex] : null;
+                
                 // Obtener fechas del cargo (fijas para todo el cargo)
                 $fechaDesde = isset($r->ucr_cargo_fecha_desde[$cargoIndex]) ? $r->ucr_cargo_fecha_desde[$cargoIndex] : null;
                 $fechaHasta = isset($r->ucr_cargo_fecha_hasta[$cargoIndex]) ? $r->ucr_cargo_fecha_hasta[$cargoIndex] : null;
@@ -324,6 +327,7 @@ class DeclaracionController extends Controller
                 Horario::create([
                     'id_declaracion' => $declaracion->id_declaracion,
                     'id_cargo' => $cargoId,
+                    'id_jornada' => $jornadaId,
                     'tipo' => 'ucr',
                     'dia' => $dia,
                     'hora_inicio' => $r->ucr_hora_inicio[$i],
@@ -498,6 +502,9 @@ class DeclaracionController extends Controller
                 $cargoIndex = isset($r->ucr_cargo_index[$i]) ? $r->ucr_cargo_index[$i] : 0;
                 $cargoId = isset($r->ucr_cargo[$cargoIndex]) && !empty($r->ucr_cargo[$cargoIndex]) ? $r->ucr_cargo[$cargoIndex] : null;
                 
+                // Obtener jornada del cargo
+                $jornadaId = isset($r->ucr_jornada[$cargoIndex]) && !empty($r->ucr_jornada[$cargoIndex]) ? $r->ucr_jornada[$cargoIndex] : null;
+                
                 // Obtener fechas del cargo (fijas para todo el cargo)
                 $fechaDesde = isset($r->ucr_cargo_fecha_desde[$cargoIndex]) ? $r->ucr_cargo_fecha_desde[$cargoIndex] : null;
                 $fechaHasta = isset($r->ucr_cargo_fecha_hasta[$cargoIndex]) ? $r->ucr_cargo_fecha_hasta[$cargoIndex] : null;
@@ -505,6 +512,7 @@ class DeclaracionController extends Controller
                 Horario::create([
                     'id_declaracion' => $d->id_declaracion,
                     'id_cargo' => $cargoId,
+                    'id_jornada' => $jornadaId,
                     'tipo' => 'ucr',
                     'dia' => $dia,
                     'hora_inicio' => $r->ucr_hora_inicio[$i],

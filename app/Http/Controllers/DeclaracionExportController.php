@@ -7,9 +7,99 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DeclaracionExportController extends Controller
 {
+    public function exportarPdf($id)
+    {
+        $d = Declaracion::with(['usuario','unidad.sede','cargo','horarios.jornada','horarios.cargo','formulario'])->findOrFail($id);
+
+        // Obtener identificación
+        $identificacion = null;
+        if ($d->usuario) {
+            $attrs = $d->usuario->getAttributes();
+            foreach (['identificacion','cedula','numero_identificacion','numero_cedula','dni','ci'] as $key) {
+                if (!empty($attrs[$key])) { $identificacion = trim($attrs[$key]); break; }
+            }
+            if (empty($identificacion)) {
+                foreach (['identificacion','cedula','numero_identificacion','numero_cedula','dni','ci'] as $key) {
+                    $val = $d->usuario->{$key} ?? null;
+                    if (!empty($val)) { $identificacion = trim($val); break; }
+                }
+            }
+        }
+
+        $correo = $d->usuario->correo ?? $d->usuario->email ?? '';
+
+        // Agrupar horarios UCR por día
+        $horariosUCR = $d->horarios->where('tipo', 'ucr');
+        $byDayUCR = [];
+        foreach ($horariosUCR as $h) {
+            if (empty($h->dia)) continue;
+            $byDayUCR[$h->dia][] = $h;
+        }
+
+        // Agrupar horarios externos por lugar
+        $horariosExternos = $d->horarios->where('tipo', 'externo');
+        $grouped = [];
+        foreach ($horariosExternos as $h) {
+            $key = $h->lugar ?? ('_ext_' . $h->id_horario);
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'lugar' => $h->lugar ?? '',
+                    'cargo' => $h->cargo ?? '',
+                    'jornada' => $h->jornada ?? '',
+                    'desde' => $h->desde ?? '',
+                    'hasta' => $h->hasta ?? '',
+                    'horarios' => [],
+                ];
+            }
+            $grouped[$key]['horarios'][] = $h;
+        }
+
+        // Agrupar horarios externos por día dentro de cada grupo
+        foreach ($grouped as &$grp) {
+            $byDayExt = [];
+            foreach ($grp['horarios'] as $h) {
+                if (empty($h->dia)) continue;
+                $byDayExt[$h->dia][] = $h;
+            }
+            $grp['byDay'] = $byDayExt;
+        }
+
+        $pdf = Pdf::loadView('declaraciones.pdf', [
+            'declaracion' => $d,
+            'identificacion' => $identificacion,
+            'correo' => $correo,
+            'byDayUCR' => $byDayUCR,
+            'groupedExternos' => $grouped,
+        ]);
+
+        $nombre = 'Declaracion_' . Str::slug(($d->usuario->nombre ?? '') . ' ' . ($d->usuario->apellido ?? '')) . '_' . $d->id_declaracion . '.pdf';
+        
+        // Guardar en storage
+        $dir = storage_path('app/public');
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $ruta = $dir . DIRECTORY_SEPARATOR . $nombre;
+        $pdf->save($ruta);
+
+        // Registrar documento
+        Documento::create([
+            'id_declaracion' => $d->id_declaracion,
+            'archivo' => "public/{$nombre}",
+            'formato' => 'PDF',
+            'fecha_generacion' => now(),
+        ]);
+
+        // Generar el PDF y forzar descarga con diálogo "Guardar como"
+        return response($pdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $nombre . '"');
+    }
+
     public function exportar($id)
     {
         $d = Declaracion::with(['usuario','unidad.sede','cargo','horarios','formulario'])->findOrFail($id);

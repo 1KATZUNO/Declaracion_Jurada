@@ -1,5 +1,4 @@
 @extends('layout')
- @csrf
 @section('content')
 <div class="container mx-auto w-full max-w-6xl px-2 sm:px-4 md:px-8 py-8">
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
@@ -11,6 +10,7 @@
         <form action="{{ route('declaraciones.store') }}" method="POST" id="declaracionForm" class="p-2 sm:p-4 md:p-8">
             @csrf
 
+            <!-- ========== INFORMACIÓN GENERAL ========== -->
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Información general</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -46,6 +46,7 @@
                 </div>
             </div>
 
+            <!-- ========== HORARIOS UCR ========== -->
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horarios UCR</h3>
                 
@@ -149,6 +150,7 @@
                 </button>
             </div>
 
+            <!-- ========== HORARIOS EN OTRAS INSTITUCIONES ========== -->
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Horarios en otras instituciones</h3>
                 
@@ -255,6 +257,10 @@
                 </button>
             </div>
 
+
+
+            <!-- ========== BOTONES FINALES ========== -->
+>>>>>>> f16c3d2 (G5 - EXPORTAR EN PDF)
             <div class="flex flex-col md:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
                 <a href="{{ route('declaraciones.index') }}"
                    class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
@@ -268,6 +274,7 @@
         </form>
     </div>
 </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('declaracionForm');
@@ -478,123 +485,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Función para validar horario
-    function validarHorario(horaInicio, horaFin) {
-        const inicio = horaInicio.split(':').map(Number);
-        const fin = horaFin.split(':').map(Number);
-        const inicioMinutos = inicio[0] * 60 + inicio[1];
-        const finMinutos = fin[0] * 60 + fin[1];
-
-        // Validar rango general (7:00 - 21:00)
-        if (inicioMinutos < 7 * 60) {
-            return 'No se pueden programar clases antes de las 7:00 AM';
-        }
-        if (finMinutos > 21 * 60) {
-            return 'No se pueden programar clases después de las 21:00 (9:00 PM)';
-        }
-
-        // Validar hora de almuerzo (12:00 - 13:00)
-        if ((inicioMinutos >= 12 * 60 && inicioMinutos < 13 * 60) || 
-            (finMinutos > 12 * 60 && finMinutos <= 13 * 60)) {
-            return 'No se pueden programar clases entre 12:00 PM y 1:00 PM (hora de almuerzo)';
-        }
-
-        return null; // null significa que no hay error
-    }
-
-    // Event Listeners
-    form.addEventListener('submit', (e) => {
-        const conflicto = verificarConflictos();
-        if (conflicto) {
-            e.preventDefault();
-            alert(conflicto);
-            return;
-        }
-
-        // Validar cada cargo UCR individualmente
-        const cargosUCR = cargosUCRContainer.querySelectorAll('.cargo-ucr-block');
-        for (let i = 0; i < cargosUCR.length; i++) {
-            const cargo = cargosUCR[i];
-            const cargoSelect = cargo.querySelector('.ucr-cargo-select');
-            const nombreCargo = cargoSelect.options[cargoSelect.selectedIndex]?.text || `Cargo ${i + 1}`;
-            const jornadaSelect = cargo.querySelector('.ucr-jornada-select');
-            const jornada = jornadaSelect.options[jornadaSelect.selectedIndex];
-            const horasObjetivoCargo = jornada && jornada.value ? Number(jornada.dataset.horas) : 0;
-            const horasAsignadasCargo = calcularHorasCargo(cargo);
-
-            // Si hay jornada seleccionada, validar
-            if (horasObjetivoCargo > 0) {
-                if (!cargoSelect.value) {
-                    e.preventDefault();
-                    alert(`Cargo ${i + 1}: Debe seleccionar un cargo UCR`);
-                    return;
-                }
-
-                if (horasAsignadasCargo === 0) {
-                    e.preventDefault();
-                    alert(`Cargo "${nombreCargo}":\nHa seleccionado una jornada pero no ha asignado horarios.`);
-                    return;
-                }
-
-                if (horasAsignadasCargo !== horasObjetivoCargo) {
-                    e.preventDefault();
-                    const diferenciaCargo = horasAsignadasCargo - horasObjetivoCargo;
-                    let mensajeCargo = `Cargo UCR "${nombreCargo}":\n`;
-                    if (diferenciaCargo > 0) {
-                        mensajeCargo += `❌ EXCEDE la jornada por ${Math.abs(diferenciaCargo).toFixed(1)} horas\n`;
-                        mensajeCargo += `Asignadas: ${horasAsignadasCargo.toFixed(1)}h | Requeridas: ${horasObjetivoCargo}h`;
-                    } else {
-                        mensajeCargo += `❌ FALTAN ${Math.abs(diferenciaCargo).toFixed(1)} horas para completar la jornada\n`;
-                        mensajeCargo += `Asignadas: ${horasAsignadasCargo.toFixed(1)}h | Requeridas: ${horasObjetivoCargo}h`;
-                    }
-                    alert(mensajeCargo);
-                    return;
-                }
-            }
-        }
-
-        // Validar cada institución externa individualmente
-        const instituciones = institucionesExternasContainer.querySelectorAll('.institucion-externa-block');
-        for (let i = 0; i < instituciones.length; i++) {
-            const institucion = instituciones[i];
-            const nombreInstitucion = institucion.querySelector('input[name="ext_institucion[]"]').value;
-            const jornadaSelect = institucion.querySelector('.ext-jornada-select');
-            const jornada = jornadaSelect.options[jornadaSelect.selectedIndex];
-            const horasObjetivoInst = jornada && jornada.value ? Number(jornada.dataset.horas) : 0;
-            const horasAsignadasInst = calcularHorasInstitucion(institucion);
-
-            // Si hay jornada seleccionada, validar
-            if (horasObjetivoInst > 0) {
-                if (!nombreInstitucion || nombreInstitucion.trim() === '') {
-                    e.preventDefault();
-                    alert(`Institución ${i + 1}: Debe especificar el nombre de la institución`);
-                    return;
-                }
-
-                if (horasAsignadasInst === 0) {
-                    e.preventDefault();
-                    alert(`Institución "${nombreInstitucion}":\nHa seleccionado una jornada pero no ha asignado horarios.`);
-                    return;
-                }
-
-                if (horasAsignadasInst !== horasObjetivoInst) {
-                    e.preventDefault();
-                    const diferenciaInst = horasAsignadasInst - horasObjetivoInst;
-                    let mensajeInst = `Institución "${nombreInstitucion}":\n`;
-                    if (diferenciaInst > 0) {
-                        mensajeInst += `❌ EXCEDE la jornada por ${Math.abs(diferenciaInst).toFixed(1)} horas\n`;
-                        mensajeInst += `Asignadas: ${horasAsignadasInst.toFixed(1)}h | Requeridas: ${horasObjetivoInst}h`;
-                    } else {
-                        mensajeInst += `❌ FALTAN ${Math.abs(diferenciaInst).toFixed(1)} horas para completar la jornada\n`;
-                        mensajeInst += `Asignadas: ${horasAsignadasInst.toFixed(1)}h | Requeridas: ${horasObjetivoInst}h`;
-                    }
-                    alert(mensajeInst);
-                    return;
-                }
-            }
-        }
-    });
-
     // ========== HORARIOS EXTERNOS - MÚLTIPLES INSTITUCIONES ==========
     const institucionesExternasContainer = document.getElementById('institucionesExternas');
     const addInstitucionExterna = document.getElementById('addInstitucionExterna');
@@ -738,7 +628,100 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Inicializar contadores
+    // ========== VALIDACIÓN DEL FORMULARIO ==========
+    form.addEventListener('submit', (e) => {
+        const conflicto = verificarConflictos();
+        if (conflicto) {
+            e.preventDefault();
+            alert(conflicto);
+            return;
+        }
+
+        // Validar cada cargo UCR individualmente
+        const cargosUCR = cargosUCRContainer.querySelectorAll('.cargo-ucr-block');
+        for (let i = 0; i < cargosUCR.length; i++) {
+            const cargo = cargosUCR[i];
+            const cargoSelect = cargo.querySelector('.ucr-cargo-select');
+            const nombreCargo = cargoSelect.options[cargoSelect.selectedIndex]?.text || `Cargo ${i + 1}`;
+            const jornadaSelect = cargo.querySelector('.ucr-jornada-select');
+            const jornada = jornadaSelect.options[jornadaSelect.selectedIndex];
+            const horasObjetivoCargo = jornada && jornada.value ? Number(jornada.dataset.horas) : 0;
+            const horasAsignadasCargo = calcularHorasCargo(cargo);
+
+            // Si hay jornada seleccionada, validar
+            if (horasObjetivoCargo > 0) {
+                if (!cargoSelect.value) {
+                    e.preventDefault();
+                    alert(`Cargo ${i + 1}: Debe seleccionar un cargo UCR`);
+                    return;
+                }
+
+                if (horasAsignadasCargo === 0) {
+                    e.preventDefault();
+                    alert(`Cargo "${nombreCargo}":\nHa seleccionado una jornada pero no ha asignado horarios.`);
+                    return;
+                }
+
+                if (horasAsignadasCargo !== horasObjetivoCargo) {
+                    e.preventDefault();
+                    const diferenciaCargo = horasAsignadasCargo - horasObjetivoCargo;
+                    let mensajeCargo = `Cargo UCR "${nombreCargo}":\n`;
+                    if (diferenciaCargo > 0) {
+                        mensajeCargo += `❌ EXCEDE la jornada por ${Math.abs(diferenciaCargo).toFixed(1)} horas\n`;
+                        mensajeCargo += `Asignadas: ${horasAsignadasCargo.toFixed(1)}h | Requeridas: ${horasObjetivoCargo}h`;
+                    } else {
+                        mensajeCargo += `❌ FALTAN ${Math.abs(diferenciaCargo).toFixed(1)} horas para completar la jornada\n`;
+                        mensajeCargo += `Asignadas: ${horasAsignadasCargo.toFixed(1)}h | Requeridas: ${horasObjetivoCargo}h`;
+                    }
+                    alert(mensajeCargo);
+                    return;
+                }
+            }
+        }
+
+        // Validar cada institución externa individualmente
+        const instituciones = institucionesExternasContainer.querySelectorAll('.institucion-externa-block');
+        for (let i = 0; i < instituciones.length; i++) {
+            const institucion = instituciones[i];
+            const nombreInstitucion = institucion.querySelector('input[name="ext_institucion[]"]').value;
+            const jornadaSelect = institucion.querySelector('.ext-jornada-select');
+            const jornada = jornadaSelect.options[jornadaSelect.selectedIndex];
+            const horasObjetivoInst = jornada && jornada.value ? Number(jornada.dataset.horas) : 0;
+            const horasAsignadasInst = calcularHorasInstitucion(institucion);
+
+            // Si hay jornada seleccionada, validar
+            if (horasObjetivoInst > 0) {
+                if (!nombreInstitucion || nombreInstitucion.trim() === '') {
+                    e.preventDefault();
+                    alert(`Institución ${i + 1}: Debe especificar el nombre de la institución`);
+                    return;
+                }
+
+                if (horasAsignadasInst === 0) {
+                    e.preventDefault();
+                    alert(`Institución "${nombreInstitucion}":\nHa seleccionado una jornada pero no ha asignado horarios.`);
+                    return;
+                }
+
+                if (horasAsignadasInst !== horasObjetivoInst) {
+                    e.preventDefault();
+                    const diferenciaInst = horasAsignadasInst - horasObjetivoInst;
+                    let mensajeInst = `Institución "${nombreInstitucion}":\n`;
+                    if (diferenciaInst > 0) {
+                        mensajeInst += `❌ EXCEDE la jornada por ${Math.abs(diferenciaInst).toFixed(1)} horas\n`;
+                        mensajeInst += `Asignadas: ${horasAsignadasInst.toFixed(1)}h | Requeridas: ${horasObjetivoInst}h`;
+                    } else {
+                        mensajeInst += `❌ FALTAN ${Math.abs(diferenciaInst).toFixed(1)} horas para completar la jornada\n`;
+                        mensajeInst += `Asignadas: ${horasAsignadasInst.toFixed(1)}h | Requeridas: ${horasObjetivoInst}h`;
+                    }
+                    alert(mensajeInst);
+                    return;
+                }
+            }
+        }
+    });
+
+    // ========== INICIALIZAR CONTADORES ==========
     // Inicializar contador de cada cargo UCR
     const cargosUCRIniciales = cargosUCRContainer.querySelectorAll('.cargo-ucr-block');
     cargosUCRIniciales.forEach(cargo => actualizarContadorCargoUCR(cargo));
