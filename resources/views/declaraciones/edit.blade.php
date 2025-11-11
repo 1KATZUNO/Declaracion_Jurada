@@ -52,6 +52,8 @@
             @php
                 $horariosUCR = $d->horarios->where('tipo', 'ucr');
                 $horariosExternos = $d->horarios->where('tipo', 'externo');
+                // Obtener el primer horario UCR para usar sus datos
+                $primerHorarioUCR = $horariosUCR->first();
             @endphp
 
             <div class="mb-8">
@@ -66,8 +68,12 @@
                                 <label class="block text-sm font-medium text-gray-700">Cargo UCR *</label>
                                 <select name="ucr_cargo[]" class="ucr-cargo-select mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" required>
                                     <option value="">Seleccione cargo...</option>
+                                    @php
+                                        // Usar el cargo del primer horario UCR (ya declarado arriba)
+                                        $cargoActual = $primerHorarioUCR ? $primerHorarioUCR->id_cargo : $d->id_cargo;
+                                    @endphp
                                     @foreach($cargos as $c)
-                                        <option value="{{ $c->id_cargo }}" {{ $c->id_cargo == $d->id_cargo ? 'selected' : '' }}>{{ $c->nombre }}</option>
+                                        <option value="{{ $c->id_cargo }}" {{ $c->id_cargo == $cargoActual ? 'selected' : '' }}>{{ $c->nombre }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -75,9 +81,18 @@
                                 <label class="block text-sm font-medium text-gray-700">Jornada de trabajo *</label>
                                 <select name="ucr_jornada[]" class="ucr-jornada-select mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" required>
                                     <option value="">Seleccione jornada...</option>
+                                    @php
+                                        // Usar la jornada del primer horario UCR si existe, sino usar jornadaActual
+                                        $jornadaSeleccionada = null;
+                                        if ($primerHorarioUCR && $primerHorarioUCR->id_jornada) {
+                                            $jornadaSeleccionada = $primerHorarioUCR->id_jornada;
+                                        } elseif ($jornadaActual) {
+                                            $jornadaSeleccionada = $jornadaActual->id_jornada;
+                                        }
+                                    @endphp
                                     @foreach($jornadas as $j)
                                         <option value="{{ $j->id_jornada }}" data-horas="{{ $j->horas_por_semana }}"
-                                                {{ $jornadaActual && $jornadaActual->id_jornada == $j->id_jornada ? 'selected' : '' }}>
+                                                {{ $j->id_jornada == $jornadaSeleccionada ? 'selected' : '' }}>
                                             {{ $j->tipo }} — {{ $j->horas_por_semana }}h
                                         </option>
                                     @endforeach
@@ -95,17 +110,22 @@
 
                         <!-- Fechas de vigencia para este cargo -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-3 bg-white rounded-lg border">
+                            @php
+                                // Usar las fechas del primer horario UCR (ya declarado arriba)
+                                $fechaDesde = $primerHorarioUCR ? $primerHorarioUCR->desde : ($d->fecha_desde ?? '');
+                                $fechaHasta = $primerHorarioUCR ? $primerHorarioUCR->hasta : ($d->fecha_hasta ?? '');
+                            @endphp
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Fecha desde *</label>
                                 <input type="date" name="ucr_cargo_fecha_desde[]" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
-                                       placeholder="dd/mm/aaaa" required value="{{ $d->fecha_desde }}">
+                                       placeholder="dd/mm/aaaa" required value="{{ $fechaDesde }}">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Fecha hasta *</label>
                                 <input type="date" name="ucr_cargo_fecha_hasta[]" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
-                                       placeholder="dd/mm/aaaa" required value="{{ $d->fecha_hasta }}">
+                                       placeholder="dd/mm/aaaa" required value="{{ $fechaHasta }}">
                             </div>
                         </div>
 

@@ -285,15 +285,27 @@ class DeclaracionController extends Controller
             }
         }
         
+        // Obtener el primer cargo UCR como cargo principal de la declaración
+        $cargoPrincipal = null;
+        if ($r->has('ucr_cargo')) {
+            foreach ($r->ucr_cargo as $cargoId) {
+                if (!empty($cargoId)) {
+                    $cargoPrincipal = $cargoId;
+                    break;
+                }
+            }
+        }
+
         // Crear la declaración
         $declaracion = Declaracion::create([
             'id_usuario' => $data['id_usuario'],
             'id_formulario' => $data['id_formulario'],
             'id_unidad' => $data['id_unidad'],
+            'id_cargo' => $cargoPrincipal,
             'fecha_desde' => $data['fecha_desde'] ?? null,
             'fecha_hasta' => $data['fecha_hasta'] ?? null,
             'horas_totales' => $horasTotales, // Suma de todas las jornadas UCR
-            'fecha_envio' => now(),
+            'fecha_envio' => \Carbon\Carbon::now('America/Costa_Rica'),
         ]);
 
         // Guardar horarios UCR
@@ -452,11 +464,23 @@ class DeclaracionController extends Controller
             }
         }
 
+        // Obtener el primer cargo UCR como cargo principal de la declaración
+        $cargoPrincipal = null;
+        if ($r->has('ucr_cargo')) {
+            foreach ($r->ucr_cargo as $cargoId) {
+                if (!empty($cargoId)) {
+                    $cargoPrincipal = $cargoId;
+                    break;
+                }
+            }
+        }
+
         // Actualizar la declaración
         $d->update([
             'id_usuario' => $data['id_usuario'],
             'id_formulario' => $data['id_formulario'],
             'id_unidad' => $data['id_unidad'],
+            'id_cargo' => $cargoPrincipal,
             'fecha_desde' => $data['fecha_desde'] ?? null,
             'fecha_hasta' => $data['fecha_hasta'] ?? null,
             'horas_totales' => $horasTotales,
