@@ -10,13 +10,17 @@ class NotificacionPersonalizada extends Notification
 {
     use Queueable;
 
+    protected string $titulo;
     protected string $mensaje;
-    protected string $estado;
+    protected string $tipo;
+    protected ?int $declaracionId;
 
-    public function __construct(string $mensaje, string $estado = 'pendiente')
+    public function __construct(string $titulo, string $mensaje, string $tipo, ?int $declaracionId = null)
     {
+        $this->titulo = $titulo;
         $this->mensaje = $mensaje;
-        $this->estado = $estado;
+        $this->tipo = $tipo;
+        $this->declaracionId = $declaracionId;
     }
 
     public function via($notifiable): array
@@ -28,18 +32,28 @@ class NotificacionPersonalizada extends Notification
     {
         $nombre = $notifiable->nombre ?? $notifiable->nombre_completo ?? 'usuario/a';
 
-        return (new MailMessage)
-            ->subject('Nueva notificación del sistema')
+        $mailMessage = (new MailMessage)
+            ->subject($this->titulo . ' - Declaraciones Juradas UCR')
             ->greeting('Hola, ' . $nombre . ':')
-            ->line($this->mensaje)
-            ->line('Este es un aviso enviado automáticamente por la plataforma de Declaración Jurada.');
+            ->line($this->mensaje);
+
+        // Agregar acción si hay declaración asociada
+        if ($this->declaracionId && $this->tipo !== 'eliminar') {
+            $mailMessage->action('Ver Declaración', url("/declaraciones/{$this->declaracionId}"));
+        }
+
+        $mailMessage->line('Este es un aviso enviado automáticamente por la plataforma de Declaración Jurada UCR.');
+
+        return $mailMessage;
     }
 
     public function toArray($notifiable): array
     {
         return [
-            'message' => $this->mensaje,
-            'estado'  => $this->estado,
+            'titulo' => $this->titulo,
+            'mensaje' => $this->mensaje,
+            'tipo' => $this->tipo,
+            'id_declaracion' => $this->declaracionId,
         ];
     }
 }

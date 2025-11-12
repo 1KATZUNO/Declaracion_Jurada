@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use App\Services\NotificacionService;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -107,6 +108,10 @@ class DeclaracionExportController extends Controller
             'formato' => 'PDF',
             'fecha_generacion' => now(),
         ]);
+
+        //🔔 Notificación: Export PDF
+        $notificacionService = new NotificacionService();
+        $notificacionService->notificarExportarDeclaracion($d, 'PDF');
 
         // Generar el PDF y forzar descarga con diálogo "Guardar como"
         return response($pdf->output(), 200)
@@ -509,6 +514,10 @@ class DeclaracionExportController extends Controller
             'formato' => 'EXCEL',
             'fecha_generacion' => now(),
         ]);
+
+        //🔔 Notificación: Export Excel
+        $notificacionService = new NotificacionService();
+        $notificacionService->notificarExportarDeclaracion($d, 'Excel');
 
         // No eliminar el archivo tras el envío para que el registro Documento apunte a un archivo existente.
         return response()->download($ruta, $nombre)->deleteFileAfterSend(false);

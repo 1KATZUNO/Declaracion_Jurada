@@ -39,6 +39,9 @@ Route::resource('notificaciones', NotificacionController::class);
 // Ruta extra para "Marcar todas como leídas en notificacion
 Route::post('/notificaciones/marcar-todas', [NotificacionController::class, 'marcarTodasLeidas'])
     ->name('notificaciones.marcar-todas');
+// Ruta para obtener notificaciones no leídas vía AJAX
+Route::get('/notificaciones-unread', [NotificacionController::class, 'getUnread'])
+    ->name('notificaciones.unread');
 
 
 // Exportación Excel

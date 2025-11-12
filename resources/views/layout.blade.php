@@ -4,6 +4,7 @@
     @csrf
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('titulo', 'Declaraciones UCR')</title>
 
     {{-- Tipografía --}}
@@ -83,6 +84,31 @@
                 display:block;
             }
         }
+
+        /* Animación campanita */
+        @keyframes bell-shake {
+            0%, 50%, 100% { transform: rotate(0deg); }
+            10%, 30% { transform: rotate(-10deg); }
+            20%, 40% { transform: rotate(10deg); }
+        }
+        .animate-bell {
+            animation: bell-shake 1s ease-in-out infinite;
+        }
+
+        /* Estilos para notificaciones */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Hover suave para notificaciones */
+        .notification-item:hover {
+            background-color: #f8fafc;
+            transform: translateX(2px);
+            transition: all 0.2s ease;
+        }
     </style>
 
     @vite(['resources/css/app.css'])
@@ -119,9 +145,13 @@
         $avatarSrc = asset($avatarSrc);
     }
 
-    // Notificaciones no leídas (Laravel Notifications)
+    // Notificaciones no leídas (Sistema personalizado)
     $unreadNotifications = $usuarioActual
-        ? $usuarioActual->unreadNotifications()->take(5)->get()
+        ? \App\Models\Notificacion::where('id_usuario', $usuarioActual->id_usuario)
+            ->where('leida', false)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get()
         : collect();
 @endphp
 
@@ -155,8 +185,7 @@
     <div class="relative">
         <button type="button"
                 id="notif-bell"
-                class="relative text-white hover:text-gray-200 transition-colors duration-200 focus:outline-none
-                       @if($unreadNotifications->count() > 0) animate-bell @endif">
+                class="relative text-white hover:text-gray-200 transition-colors duration-200 focus:outline-none">
             <svg xmlns="http://www.w3.org/2000/svg"
                  class="h-6 w-6"
                  fill="none"
@@ -166,67 +195,13 @@
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3c0 .386-.146.758-.405 1.055L4 17h5m6 0a3 3 0 11-6 0h6z" />
             </svg>
-
-            @if($unreadNotifications->count() > 0)
-                <span class="absolute -top-0.5 -right-0.5 bg-white text-blue-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm">
-                    {{ $unreadNotifications->count() }}
-                </span>
-            @endif
+            {{-- El badge será añadido por JavaScript --}}
         </button>
 
 
                     <div id="notif-dropdown"
                          class="hidden absolute right-0 mt-2 w-80 bg-white text-gray-900 rounded-lg shadow-lg z-50">
-                        <div class="px-3 py-2 border-b text-sm font-semibold">
-                            Notificaciones
-                        </div>
-
-                        @forelse($unreadNotifications as $n)
-                            @php
-                                $msg = $n->data['message'] ?? 'Nueva notificación';
-                                $url = $n->data['url'] ?? null;
-                            @endphp
-
-                            @if($url)
-                                <a href="{{ $url }}"
-                                   class="block px-3 py-2 text-sm hover:bg-gray-100">
-                                    {{ $msg }}<br>
-                                    <span class="text-xs text-gray-500">
-                                        {{ $n->created_at->diffForHumans() }}
-                                    </span>
-                                </a>
-                            @else
-                                <a href="{{ route('notificaciones.show', $n->id) }}"
-                                   class="block px-3 py-2 text-sm hover:bg-gray-100">
-                                    {{ $msg }}<br>
-                                    <span class="text-xs text-gray-500">
-                                        {{ $n->created_at->diffForHumans() }}
-                                    </span>
-                                </a>
-                            @endif
-                        @empty
-                            <div class="px-3 py-2 text-sm text-gray-500">
-                                No hay notificaciones nuevas
-                            </div>
-                        @endforelse
-
-                        <div class="px-3 py-2 border-t text-xs flex justify-between items-center">
-                            <a href="{{ route('notificaciones.index') }}"
-                               class="text-blue-600 hover:underline">
-                                Ver todas
-                            </a>
-
-                            @if($unreadNotifications->count() > 0)
-                                <form method="POST"
-                                      action="{{ route('notificaciones.marcar-todas') }}">
-                                    @csrf
-                                    <button type="submit"
-                                            class="text-gray-500 hover:text-blue-600">
-                                        Marcar todas como leídas
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
+                        {{-- Contenido será llenado por JavaScript --}}
                     </div>
                 </div>
             @endif
@@ -479,9 +454,168 @@ document.addEventListener('click', function(e) {
         if (bellBtn.contains(e.target)) {
             e.stopPropagation();
             bellDd.classList.toggle('hidden');
+            // Actualizar notificaciones al abrir el dropdown
+            if (!bellDd.classList.contains('hidden')) {
+                updateNotifications();
+            }
         } else if (!bellDd.contains(e.target)) {
             bellDd.classList.add('hidden');
         }
+    }
+});
+
+// Sistema de notificaciones en tiempo real
+let notificationUpdateInterval;
+
+function updateNotifications() {
+    const bellBtn = document.getElementById('notif-bell');
+    const bellDd = document.getElementById('notif-dropdown');
+    
+    if (!bellBtn || !bellDd) return;
+    
+    console.log('🔔 Actualizando notificaciones...', new Date().toLocaleTimeString());
+
+
+
+    fetch('{{ route("notificaciones.unread") }}', {
+        method: 'GET',
+        credentials: 'same-origin', // ⚡ CLAVE: Incluir cookies de sesión
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        console.log('📡 Respuesta:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Datos:', data);
+        // Actualizar badge de conteo
+        const badge = bellBtn.querySelector('span');
+        if (data.count > 0) {
+            if (!badge) {
+                const newBadge = document.createElement('span');
+                newBadge.className = 'absolute -top-0.5 -right-0.5 bg-white text-blue-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm';
+                newBadge.textContent = data.count;
+                bellBtn.appendChild(newBadge);
+            } else {
+                badge.textContent = data.count;
+            }
+            // Agregar animación
+            bellBtn.classList.add('animate-bell');
+        } else {
+            if (badge) badge.remove();
+            bellBtn.classList.remove('animate-bell');
+        }
+
+        // Actualizar contenido del dropdown
+        updateDropdownContent(data.notifications, data.count);
+    })
+    .catch(error => {
+        // Si hay error de autenticación, limpiar badge
+        if (error.message.includes('401')) {
+            const badge = bellBtn.querySelector('span');
+            if (badge) badge.remove();
+            bellBtn.classList.remove('animate-bell');
+        }
+    });
+}
+
+function updateDropdownContent(notifications, count) {
+    const bellDd = document.getElementById('notif-dropdown');
+    if (!bellDd) return;
+
+    // Construir el nuevo contenido
+    let content = `
+        <div class="px-3 py-2 border-b text-sm font-semibold">
+            Notificaciones
+        </div>
+    `;
+
+    if (notifications.length > 0) {
+        notifications.forEach(n => {
+            content += `
+                <a href="${n.url}" class="block px-3 py-2 text-sm hover:bg-gray-100 border-b border-gray-100">
+                    <div class="flex items-start gap-2">
+                        <span class="text-lg">${n.icon}</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-gray-900 truncate">${n.titulo}</div>
+                            <div class="text-xs text-gray-600 line-clamp-2">${n.mensaje}</div>
+                            <div class="text-xs text-gray-400 mt-1">
+                                ${n.created_at}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            `;
+        });
+    } else {
+        content += `
+            <div class="px-3 py-2 text-sm text-gray-500">
+                No hay notificaciones nuevas
+            </div>
+        `;
+    }
+
+    // Footer del dropdown
+    content += `
+        <div class="px-3 py-2 border-t text-xs flex justify-between items-center">
+            <a href="{{ route('notificaciones.index') }}" class="text-blue-600 hover:underline">
+                Ver todas
+            </a>
+    `;
+
+    if (count > 0) {
+        content += `
+            <form method="POST" action="{{ route('notificaciones.marcar-todas') }}" style="display: inline;">
+                <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')}">
+                <button type="submit" class="text-gray-500 hover:text-blue-600">
+                    Marcar todas como leídas
+                </button>
+            </form>
+        `;
+    }
+
+    content += `
+        </div>
+    `;
+
+    bellDd.innerHTML = content;
+}
+
+// Actualizar notificaciones cada segundo para respuesta inmediata
+function startNotificationPolling() {
+    updateNotifications(); // Actualización inicial
+    notificationUpdateInterval = setInterval(updateNotifications, 1000); // Cada 1 segundo
+}
+
+// Iniciar polling cuando la página esté lista
+document.addEventListener('DOMContentLoaded', function() {
+    const notifBell = document.getElementById('notif-bell');
+    if (notifBell) {
+        // Verificar si hay usuario autenticado
+        @if($usuarioActual)
+            startNotificationPolling();
+            
+            // Si hay señal de actualizar notificaciones (después de crear/editar)
+            @if(session('refresh_notifications'))
+                setTimeout(() => {
+                    updateNotifications();
+                }, 1000); // Esperar 1 segundo para que se procese la notificación
+            @endif
+        @endif
+    }
+});
+
+// Detener polling al cambiar de página
+window.addEventListener('beforeunload', function() {
+    if (notificationUpdateInterval) {
+        clearInterval(notificationUpdateInterval);
     }
 });
 

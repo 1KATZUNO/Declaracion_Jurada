@@ -23,9 +23,11 @@
         </div>
 
         @php
-            $user = $notificacion->notifiable;
-            $msg  = $notificacion->data['message'] ?? 'Notificación del sistema';
-            $url  = $notificacion->data['url'] ?? null;
+            // Usar nuestro modelo personalizado
+            $user = $notificacion->usuario ?? null;
+            $titulo = $notificacion->titulo ?? 'Notificación del sistema';
+            $mensaje = $notificacion->mensaje ?? 'Sin mensaje';
+            $tipo = $notificacion->tipo ?? 'general';
         @endphp
 
         {{-- Contenido --}}
@@ -34,10 +36,21 @@
                 <div>
                     <p class="text-xs text-gray-500 uppercase mb-1">Usuario destinatario</p>
                     <p class="text-sm font-semibold text-gray-900">
-                        {{ $user?->nombre_completo ?? 'Usuario' }}
+                        @if($user)
+                            {{ $user->nombre_completo ?? ($user->nombre . ' ' . $user->apellido) }}
+                        @else
+                            Usuario no disponible
+                        @endif
                     </p>
                     @if($user?->correo)
-                        <p class="text-xs text-gray-500">{{ $user->correo }}</p>
+                        <p class="text-xs text-gray-500">
+                            <i class="fas fa-envelope mr-1"></i>{{ $user->correo }}
+                        </p>
+                    @endif
+                    @if($user?->telefono)
+                        <p class="text-xs text-gray-500">
+                            <i class="fas fa-phone mr-1"></i>{{ $user->telefono }}
+                        </p>
                     @endif
                 </div>
 
@@ -54,19 +67,54 @@
                 </div>
             </div>
 
-            <div class="border-t border-gray-100 pt-4">
-                <p class="text-xs text-gray-500 uppercase mb-2">Mensaje</p>
-                <p class="text-sm text-gray-800 leading-relaxed">
-                    {{ $msg }}
-                </p>
+            <div class="border-t border-gray-100 pt-4 space-y-3">
+                <div>
+                    <p class="text-xs text-gray-500 uppercase mb-2">Título</p>
+                    <p class="text-base font-semibold text-gray-900">
+                        {{ $titulo }}
+                    </p>
+                </div>
+                
+                <div>
+                    <p class="text-xs text-gray-500 uppercase mb-2">Mensaje descriptivo</p>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-800 leading-relaxed">
+                            {{ $mensaje }}
+                        </p>
+                    </div>
+                </div>
+                
+                <div>
+                    <p class="text-xs text-gray-500 uppercase mb-1">Tipo de notificación</p>
+                    <span class="inline-flex items-center px-2 py-1 text-xs rounded-full 
+                        {{ $tipo === 'crear' ? 'bg-green-100 text-green-700' : '' }}
+                        {{ $tipo === 'editar' ? 'bg-blue-100 text-blue-700' : '' }}
+                        {{ $tipo === 'eliminar' ? 'bg-red-100 text-red-700' : '' }}
+                        {{ $tipo === 'exportar' ? 'bg-purple-100 text-purple-700' : '' }}
+                    ">
+                        <i class="fas 
+                            {{ $tipo === 'crear' ? 'fa-plus' : '' }}
+                            {{ $tipo === 'editar' ? 'fa-edit' : '' }}
+                            {{ $tipo === 'eliminar' ? 'fa-trash' : '' }}
+                            {{ $tipo === 'exportar' ? 'fa-download' : '' }}
+                            mr-1
+                        "></i>
+                        {{ ucfirst($tipo) }}
+                    </span>
+                </div>
             </div>
 
             <div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
                 <div>
                     <p class="text-xs text-gray-500 uppercase mb-1">Estado</p>
-                    @if($notificacion->read_at)
+                    @if($notificacion->leida)
                         <span class="inline-flex items-center px-2 py-0.5 text-[10px] rounded-full bg-green-100 text-green-700">
-                            Leída el {{ $notificacion->read_at->format('d/m/Y H:i') }}
+                            Leída
+                            @if($notificacion->fecha_lectura)
+                                el {{ $notificacion->fecha_lectura->format('d/m/Y H:i') }}
+                            @else
+                                recientemente
+                            @endif
                         </span>
                     @else
                         <span class="inline-flex items-center px-2 py-0.5 text-[10px] rounded-full bg-yellow-100 text-yellow-700">
@@ -76,14 +124,15 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    @if($url)
-                        <a href="{{ $url }}"
+                    @if($notificacion->id_declaracion)
+                        <a href="{{ route('declaraciones.show', $notificacion->id_declaracion) }}"
                            class="px-4 py-2 text-xs bg-blue-600 text-white rounded-xl hover:bg-blue-700">
-                            Ir al recurso relacionado
+                            <i class="fas fa-external-link-alt mr-1"></i>
+                            Ver declaración relacionada
                         </a>
                     @endif
 
-                    <form action="{{ route('notificaciones.destroy', $notificacion->id) }}"
+                    <form action="{{ route('notificaciones.destroy', $notificacion->id_notificacion) }}"
                           method="POST"
                           onsubmit="return confirm('¿Eliminar esta notificación?');">
                         @csrf

@@ -26,7 +26,8 @@ class NotificacionController extends Controller
         $usuario = $this->usuarioActual($request);
         if (!$usuario) abort(403);
 
-        $notificaciones = $usuario->notifications()
+        // Usar nuestro modelo personalizado de notificaciones
+        $notificaciones = \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -69,16 +70,38 @@ class NotificacionController extends Controller
         $usuario = $this->usuarioActual($request);
         if (!$usuario) abort(403);
 
-        $notificacion = $usuario->notifications()
-            ->where('id', $id)
+        // Usar nuestro modelo personalizado
+        $notificacion = \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
+            ->where('id_notificacion', $id)
             ->firstOrFail();
 
-        if (is_null($notificacion->read_at)) {
-            $notificacion->markAsRead();
+        // Marcar como leída
+        if (!$notificacion->leida) {
+            $notificacion->update([
+                'leida' => true,
+                'fecha_lectura' => now()
+            ]);
         }
 
-
         return view('notificaciones.show', compact('notificacion'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $usuario = $this->usuarioActual($request);
+        if (!$usuario) abort(403);
+
+        // Usar nuestro modelo personalizado
+        $notificacion = \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
+            ->where('id_notificacion', $id)
+            ->firstOrFail();
+
+        $notificacion->update([
+            'leida' => true,
+            'fecha_lectura' => now()
+        ]);
+
+        return back()->with('ok', 'Notificación marcada como leída');
     }
 
     public function destroy(Request $request, $id)
@@ -86,8 +109,9 @@ class NotificacionController extends Controller
         $usuario = $this->usuarioActual($request);
         if (!$usuario) abort(403);
 
-        $notificacion = $usuario->notifications()
-            ->where('id', $id)
+        // Usar nuestro modelo personalizado
+        $notificacion = \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
+            ->where('id_notificacion', $id)
             ->firstOrFail();
 
         $notificacion->delete();
@@ -99,9 +123,77 @@ class NotificacionController extends Controller
     {
         $usuario = $this->usuarioActual($request);
         if ($usuario) {
+            // Marcar nuestras notificaciones personalizadas como leídas
+            \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
+                ->where('leida', false)
+                ->update([
+                    'leida' => true,
+                    'fecha_lectura' => now()
+                ]);
+
+            // También marcar las notificaciones de Laravel por compatibilidad
             $usuario->unreadNotifications->markAsRead();
         }
 
         return back()->with('ok', 'Todas las notificaciones marcadas como leídas');
+    }
+
+    /**
+     * Obtener notificaciones no leídas vía AJAX
+     */
+    public function getUnread(Request $request)
+    {
+        $usuario = $this->usuarioActual($request);
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        // Contar TODAS las notificaciones no leídas
+        $totalUnread = \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
+            ->where('leida', false)
+            ->count();
+
+        // Obtener solo las últimas 5 para mostrar en el dropdown
+        $unreadNotifications = \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
+            ->where('leida', false)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+        
+        $notificaciones = $unreadNotifications->map(function ($n) {
+            // Icono según el tipo
+            $icon = '';
+            switch($n->tipo) {
+                case 'crear': $icon = '✅'; break;
+                case 'editar': $icon = '✏️'; break;
+                case 'eliminar': $icon = '🗑️'; break;
+                case 'exportar': $icon = '📄'; break;
+                case 'vencimiento': $icon = '⚠️'; break;
+                default: $icon = '🔔'; break;
+            }
+
+            // URL según el tipo de notificación
+            if ($n->id_declaracion) {
+                $url = route('declaraciones.show', $n->id_declaracion);
+            } else {
+                $url = route('notificaciones.index');
+            }
+
+            return [
+                'id' => $n->id_notificacion,
+                'titulo' => $n->titulo ?? 'Notificación del Sistema',
+                'mensaje' => \Str::limit($n->mensaje ?? '', 80),
+                'tipo' => $n->tipo,
+                'icon' => $icon,
+                'url' => $url,
+                'created_at' => $n->created_at->diffForHumans(),
+                'created_at_iso' => $n->created_at->toISOString(),
+            ];
+        });
+
+        return response()->json([
+            'count' => $totalUnread, // Usar el contador total, no solo las 5 mostradas
+            'notifications' => $notificaciones,
+        ]);
     }
 }

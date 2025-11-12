@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\{Declaracion, Usuario, UnidadAcademica, Cargo, Formulario, Horario, Sede};
 use Illuminate\Http\Request;
 use App\Notifications\DeclaracionGenerada;
+use App\Services\NotificacionService;
 use Illuminate\Support\Facades\Log;
 
 class DeclaracionController extends Controller
@@ -406,15 +407,14 @@ class DeclaracionController extends Controller
             }
         }
 
-        //🔔 Notificación: correo + panel (Laravel Notifications)
-        // Temporalmente deshabilitado para evitar errores de SMTP
-        //  if ($declaracion && $declaracion->usuario) {
-        //   $declaracion->usuario->notify(new DeclaracionGenerada($declaracion));   
-        // }
+        //🔔 Notificación: Sistema completo (BD + Email)
+        $notificacionService = new NotificacionService();
+        $notificacionService->notificarCrearDeclaracion($declaracion);
 
         return redirect()
             ->route('declaraciones.show', $declaracion->id_declaracion)
-            ->with('ok', 'Declaración creada correctamente');
+            ->with('ok', 'Declaración creada correctamente')
+            ->with('refresh_notifications', true);
     }
 
     public function show($id)
@@ -611,6 +611,10 @@ class DeclaracionController extends Controller
             }
         }
 
+        //🔔 Notificación: Sistema completo (BD + Email)
+        $notificacionService = new NotificacionService();
+        $notificacionService->notificarEditarDeclaracion($d);
+
         return redirect()
             ->route('declaraciones.show', $d->id_declaracion)
             ->with('ok', 'Declaración actualizada correctamente');
@@ -652,7 +656,13 @@ class DeclaracionController extends Controller
     // }
     public function destroy($id)
     {
-        Declaracion::findOrFail($id)->delete();
+        $declaracion = Declaracion::findOrFail($id);
+
+        //🔔 Notificación: Enviar antes de eliminar
+        $notificacionService = new NotificacionService();
+        $notificacionService->notificarEliminarDeclaracion($declaracion);
+
+        $declaracion->delete();
 
         return back()->with('ok', 'Declaración eliminada');
     }

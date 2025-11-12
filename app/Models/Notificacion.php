@@ -8,8 +8,57 @@ class Notificacion extends Model
 {
     protected $table = 'notificacion';
     protected $primaryKey = 'id_notificacion';
-    protected $fillable = ['id_usuario','mensaje','fecha_envio','estado'];
+    protected $fillable = [
+        'id_usuario', 
+        'titulo',
+        'mensaje', 
+        'tipo',
+        'id_declaracion',
+        'fecha_envio', 
+        'estado',
+        'leida',
+        'fecha_lectura'
+    ];
 
-    public function usuario() { return $this->belongsTo(Usuario::class, 'id_usuario'); }
+    protected $casts = [
+        'fecha_envio' => 'datetime',
+        'fecha_lectura' => 'datetime',
+        'leida' => 'boolean',
+    ];
+
+    // Constantes para tipos de notificación
+    const TIPO_CREAR = 'crear';
+    const TIPO_EDITAR = 'editar';
+    const TIPO_ELIMINAR = 'eliminar';
+    const TIPO_EXPORTAR = 'exportar';
+    const TIPO_VENCIMIENTO = 'vencimiento';
+
+    // Relaciones
+    public function usuario() 
+    { 
+        return $this->belongsTo(Usuario::class, 'id_usuario'); 
+    }
+
+    public function declaracion() 
+    { 
+        return $this->belongsTo(Declaracion::class, 'id_declaracion'); 
+    }
+
+    // Scopes
+    public function scopeNoLeidas($query)
+    {
+        return $query->where('leida', false);
+    }
+
+    public function scopePorTipo($query, $tipo)
+    {
+        return $query->where('tipo', $tipo);
+    }
+
+    // Métodos de utilidad
+    public function marcarComoLeida()
+    {
+        $this->update(['leida' => true]);
+    }
 }
 
