@@ -164,15 +164,20 @@
     <div class="content-wrapper">
     <table class="info-grid">
         <tr>
-            <td class="info-label" style="width: 20%;">Nombre de la persona funcionaria:</td>
-            <td style="width: 50%;">{{ $declaracion->usuario->nombre ?? '' }} {{ $declaracion->usuario->apellido ?? '' }}</td>
+            <td class="info-label" style="width: 25%;">Nombre de la persona funcionaria:</td>
+            <td style="width: 40%;">{{ $declaracion->usuario->nombre ?? '' }} {{ $declaracion->usuario->apellido ?? '' }}</td>
             <td class="info-label" style="width: 15%;">Identificación:</td>
-            <td style="width: 15%;">{{ $identificacion ?? '' }}</td>
+            <td style="width: 20%;">{{ $identificacion ?? '' }}</td>
         </tr>
         <tr>
-            <td class="info-label">Unidad Académica o Administrativa: {{ $declaracion->unidad->sede->nombre ?? 'Sede Guanacaste' }}</td>
-            <td colspan="2" class="info-label">Correo electrónico:</td>
-            <td>{{ $correo ?? '' }}</td>
+            <td class="info-label">Unidad Académica o Administrativa:</td>
+            <td>{{ $declaracion->unidad->nombre ?? '' }}</td>
+            <td class="info-label">Teléfono:</td>
+            <td>{{ $declaracion->usuario->telefono ?? '' }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Correo electrónico:</td>
+            <td colspan="3">{{ $correo ?? '' }}</td>
         </tr>
     </table>
 
@@ -277,7 +282,7 @@
                 @for($i = 0; $i < $maxLines; $i++)
                     <tr>
                         @if($i === 0)
-                            <td class="col-lugar">{{ $declaracion->unidad->nombre ?? '' }}</td>
+                            <td class="col-lugar">{{ $declaracion->unidad->sede->nombre ?? '' }}</td>
                             <td class="col-cargo">{{ $declaracion->cargo->nombre ?? '' }}</td>
                             <td class="col-jornada">{{ $jornadaTexto }}</td>
                             <td class="col-vigencia">{{ $fechaDesde }}</td>

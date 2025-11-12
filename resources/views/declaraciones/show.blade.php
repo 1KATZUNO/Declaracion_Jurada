@@ -21,6 +21,10 @@
                         <p class="text-sm text-gray-900">{{ $declaracion->usuario->identificacion }}</p>
                     </div>
                     <div>
+                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Sede</label>
+                        <p class="text-sm text-gray-900">{{ $declaracion->unidad->sede->nombre }}</p>
+                    </div>
+                    <div>
                         <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Unidad académica</label>
                         <p class="text-sm text-gray-900">{{ $declaracion->unidad->nombre }}</p>
                     </div>

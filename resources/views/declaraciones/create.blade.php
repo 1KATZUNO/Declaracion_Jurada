@@ -15,13 +15,12 @@
                 <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">Información general</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="id_usuario" class="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
-                        <select name="id_usuario" id="id_usuario" required
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white">
-                            @foreach($usuarios as $u)
-                                <option value="{{ $u->id_usuario }}">{{ $u->nombre }} {{ $u->apellido }}</option>
-                            @endforeach
-                        </select>
+                        <label for="usuario_display" class="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+                        <input type="text" 
+                               value="{{ $nombreUsuario ?: 'Usuario no identificado' }}" 
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-700" 
+                               readonly>
+                        <input type="hidden" name="id_usuario" value="{{ $usuarioActual ? $usuarioActual->id_usuario : '' }}">
                     </div>
 
                     <div>
@@ -35,12 +34,21 @@
                     </div>
 
                     <div>
+                        <label for="id_sede" class="block text-sm font-medium text-gray-700 mb-2">Sede</label>
+                        <select name="id_sede" id="id_sede"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
+                            <option value="">Seleccione una sede...</option>
+                            @foreach($sedes as $s)
+                                <option value="{{ $s->id_sede }}">{{ $s->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
                         <label for="id_unidad" class="block text-sm font-medium text-gray-700 mb-2">Unidad académica</label>
                         <select name="id_unidad" id="id_unidad"
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white" required>
-                            @foreach($unidades as $u)
-                                <option value="{{ $u->id_unidad }}">{{ $u->nombre }}</option>
-                            @endforeach
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-100" disabled required>
+                            <option value="">Primero seleccione una sede</option>
                         </select>
                     </div>
                 </div>
@@ -752,6 +760,60 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializar contador de cada institución externa
     const institucionesIniciales = institucionesExternasContainer.querySelectorAll('.institucion-externa-block');
     institucionesIniciales.forEach(inst => actualizarContadorInstitucion(inst));
+
+    // ========== MANEJO DE SEDE Y UNIDAD ACADÉMICA ==========
+    const sedeSelect = document.getElementById('id_sede');
+    const unidadSelect = document.getElementById('id_unidad');
+
+    sedeSelect.addEventListener('change', function() {
+        const sedeId = this.value;
+        
+        console.log('Sede seleccionada:', sedeId); // Debug
+        
+        // Limpiar unidades
+        unidadSelect.innerHTML = '<option value="">Cargando unidades...</option>';
+        unidadSelect.disabled = true;
+        
+        if (sedeId) {
+            // Hacer petición AJAX para obtener unidades de la sede
+            const url = `/api/unidades-por-sede/${sedeId}`;
+            console.log('Haciendo petición a:', url); // Debug
+            
+            fetch(url)
+                .then(response => {
+                    console.log('Respuesta recibida:', response.status); // Debug
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(unidades => {
+                    console.log('Unidades recibidas:', unidades); // Debug
+                    unidadSelect.innerHTML = '<option value="">Seleccione una unidad académica...</option>';
+                    
+                    if (unidades && unidades.length > 0) {
+                        unidades.forEach(unidad => {
+                            const option = document.createElement('option');
+                            option.value = unidad.id_unidad;
+                            option.textContent = unidad.nombre;
+                            unidadSelect.appendChild(option);
+                        });
+                    } else {
+                        unidadSelect.innerHTML = '<option value="">No hay unidades disponibles para esta sede</option>';
+                    }
+                    
+                    unidadSelect.disabled = false;
+                    unidadSelect.className = unidadSelect.className.replace('bg-gray-100', 'bg-gray-50 hover:bg-white');
+                })
+                .catch(error => {
+                    console.error('Error al cargar unidades:', error);
+                    unidadSelect.innerHTML = '<option value="">Error al cargar unidades</option>';
+                });
+        } else {
+            unidadSelect.innerHTML = '<option value="">Primero seleccione una sede</option>';
+            unidadSelect.disabled = true;
+        }
+    });
 });
 </script>
 @endsection

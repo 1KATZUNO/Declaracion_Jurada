@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\{Declaracion, Documento};
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -134,12 +136,29 @@ class DeclaracionExportController extends Controller
         }
 
         $correo = $d->usuario->correo ?? $d->usuario->email ?? '';
+        $telefono = $d->usuario->telefono ?? '';
+
+        // Debug para verificar los valores
+        // dd(['nombre' => $nombreCompleto, 'id' => $identificacion, 'tel' => $telefono, 'correo' => $correo]);
 
         $tpl = storage_path('app/plantillas/declaracion_jurada.xlsx');
         if (!file_exists($tpl)) abort(500,'No se encontró la plantilla declaracion_jurada.xlsx');
 
         $spreadsheet = IOFactory::load($tpl);
         $sheet = $spreadsheet->getActiveSheet();
+
+        // ======= CONFIGURACIÓN DE COLUMNAS =======
+        // Ajustar anchos de columnas para mejor visualización
+        $sheet->getColumnDimension('A')->setWidth(25);
+        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(25);
+        $sheet->getColumnDimension('E')->setWidth(12);
+        $sheet->getColumnDimension('F')->setWidth(12);
+        // Columnas de días de la semana
+        foreach(['G','H','I','J','K','L','M','N','O','P','Q','R'] as $col) {
+            $sheet->getColumnDimension($col)->setWidth(10);
+        }
 
         // ======= ESTILO GENERAL =======
         $spreadsheet->getDefaultStyle()
@@ -148,33 +167,29 @@ class DeclaracionExportController extends Controller
             ->setSize(11)
             ->getColor()->setRGB('000000');
 
-        // ======= CABECERA (FILA 3) =======
-        // Nombre de la persona (B3:K3 ya fusionado en plantilla)
-        $sheet->setCellValue('B3', 'Nombre de la persona funcionaria: ' . ($d->usuario->nombre ?? '') . ' ' . ($d->usuario->apellido ?? ''));
+        // ======= LLENAR SOLO LOS VALORES EN LA PLANTILLA EXISTENTE =======
         
-        // Identificación en P3:R3 (la plantilla tiene "Identificación:" en L3:O3)
-        $sheet->setCellValue('P3', $identificacion ?? '');
+        // La plantilla YA tiene los textos, solo necesitamos llenar los valores en las celdas específicas
+        
+        $nombreCompleto = ($d->usuario->nombre ?? '') . ' ' . ($d->usuario->apellido ?? '');
+        
+        // Llenar según las posiciones exactas especificadas
+        
+        // Fila 3: Primera fila de datos
+        $sheet->setCellValue('B3', 'Nombre de la persona funcionaria: ' . $nombreCompleto);
+        $sheet->setCellValue('L3', 'Identificación: ' . ($identificacion ?? ''));
+        $sheet->setCellValue('P3', 'Teléfono: ' . ($telefono ?? ''));
 
-        $sheet->getStyle('B3:R3')->getFont()->setBold(true)->setSize(9);
-        $sheet->getStyle('B3:R3')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-
-        // ======= FILA 4 =======
-        // Unidad (B4:K4 ya fusionado en plantilla)
+        // Fila 4: Segunda fila de datos  
         $sheet->setCellValue('B4', 'Unidad Académica o Administrativa: ' . ($d->unidad->nombre ?? ''));
-        
-        // Correo (L4:R4 ya fusionado en plantilla)
         $sheet->setCellValue('L4', 'Correo electrónico: ' . ($correo ?? ''));
-        
-        $sheet->getStyle('B4:R4')->getFont()->setBold(true)->setSize(9);
-        $sheet->getStyle('B4:R4')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
-        // ======= FILA 5 =======
-        // B5:R5 ya debe estar fusionado en la plantilla
-        $sheet->setCellValue('B5', 'A continuación declaro los horarios y jornadas convenidos con:');
-        $sheet->getStyle('B5')->getFont()->setBold(true)->setSize(9);
-        $sheet->getStyle('B5')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        // Ajustar altura para las filas de datos
+        $sheet->getRowDimension('3')->setRowHeight(20);  // Fila de datos personales
+        $sheet->getRowDimension('4')->setRowHeight(20);  // Fila de datos institucionales
+        $sheet->getRowDimension('5')->setRowHeight(20);  // Fila "A continuación declaro..."
 
-        // Map de columnas por día (inicio/fin pares)
+        // Map de columnas por día (inicio/fin pares) - versión que funcionaba
         $cols = [
             'Lunes' => ['G','H'],
             'Martes' => ['I','J'],
@@ -184,9 +199,9 @@ class DeclaracionExportController extends Controller
             'Sábado' => ['Q','R'],
         ];
 
-        // ======= HORARIOS UNIVERSIDAD (una o varias filas según intervalos) =======
-        // La plantilla tiene datos de ejemplo en fila 9, vamos a empezar desde fila 10
-        $baseFila = 10;
+        // ======= HORARIOS UNIVERSIDAD =======
+        // Basándome en la imagen, los datos UCR van en la primera fila de datos de la tabla UCR
+        $baseFila = 9;  // Ajustar según la tabla UCR de la plantilla
         $horariosUCR = $d->horarios->where('tipo', 'ucr');
 
         if ($horariosUCR->isNotEmpty()) {
@@ -223,15 +238,29 @@ class DeclaracionExportController extends Controller
                 }
             }
             
-            // Si no hay jornada en horarios, usar la del cargo
-            if (!$jornadaTexto) {
-                $jornadaTexto = $d->cargo->jornada ?? '';
+            // Si no hay jornada en horarios, usar la del cargo - asegurar que sea texto
+            if (!$jornadaTexto && $d->cargo) {
+                if ($d->cargo->jornada) {
+                    // Si jornada es un objeto, obtener el texto correcto
+                    if (is_object($d->cargo->jornada)) {
+                        $tipo = $d->cargo->jornada->tipo ?? '';
+                        $horas = $d->cargo->jornada->horas_por_semana ?? '';
+                        if ($tipo && $horas) {
+                            $jornadaTexto = $tipo . ' - ' . $horas . ' horas semanales';
+                        } elseif ($tipo) {
+                            $jornadaTexto = $tipo;
+                        }
+                    } else {
+                        $jornadaTexto = (string) $d->cargo->jornada;
+                    }
+                }
             }
 
             // escribir fila por fila: la primera fila incluye B-F, las siguientes dejan B-F vacíos
             for ($i = 0; $i < $maxLines; $i++) {
                 $fila = $baseFila + $i;
                 if ($i === 0) {
+                    // Volver a la estructura que funcionaba
                     $sheet->setCellValue("B{$fila}", $d->unidad->sede->nombre ?? '');
                     $sheet->setCellValue("C{$fila}", $d->cargo->nombre ?? '');
                     $sheet->setCellValue("D{$fila}", $jornadaTexto);
@@ -259,7 +288,7 @@ class DeclaracionExportController extends Controller
                         }
                     }
                     
-                    // Escribir en E10 y F10 para UCR
+                    // Escribir en E y F para UCR (como estaba funcionando)
                     $sheet->setCellValue("E{$fila}", $fechaDesde);
                     $sheet->setCellValue("F{$fila}", $fechaHasta);
                     
@@ -269,7 +298,7 @@ class DeclaracionExportController extends Controller
                         ->setVertical(Alignment::VERTICAL_CENTER);
                     $sheet->getStyle("E{$fila}:F{$fila}")->getFont()->setSize(9);
                 } else {
-                    // limpiar B-F para filas secundarias (asegura que no se muestre nada)
+                    // limpiar B-F para filas secundarias (como estaba funcionando)
                     $sheet->setCellValue("B{$fila}", '');
                     $sheet->setCellValue("C{$fila}", '');
                     $sheet->setCellValue("D{$fila}", '');
@@ -294,8 +323,8 @@ class DeclaracionExportController extends Controller
                     $sheet->getStyle($endCell)->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
                 }
 
-                // ajustar alto de fila (multiplicador probado)
-                $sheet->getRowDimension($fila)->setRowHeight(18);
+                // Ajustar altura automáticamente para que el texto sea visible
+                $sheet->getRowDimension($fila)->setRowHeight(-1); // Auto height
             }
 
             // mover el puntero de fila inicial para las externas después de las filas UCR
@@ -305,8 +334,8 @@ class DeclaracionExportController extends Controller
         }
 
         // ======= HORARIOS OTRAS INSTITUCIONES =======
-        // La plantilla tiene headers en fila 17-18, empezar datos desde fila 19
-        $fila = max(19, $nextFila); // garantizar que empiece en 19 o después de UCR si ocupó más espacio
+        // Basándome en la imagen, las otras instituciones empiezan en fila 16
+        $fila = max(16, $nextFila); // Empezar en fila 16 según la plantilla
         $horariosExternos = $d->horarios->where('tipo', 'externo');
 
         // Agrupar por 'lugar' (institución). Si no hay 'lugar', agrupar por índice único.
@@ -314,10 +343,26 @@ class DeclaracionExportController extends Controller
         foreach ($horariosExternos as $h) {
             $key = $h->lugar ?? ('_ext_' . $h->id_horario);
             if (!isset($grouped[$key])) {
+                // Procesar jornada correctamente para externos
+                $jornadaTexto = '';
+                if ($h->jornada) {
+                    if (is_object($h->jornada)) {
+                        $tipo = $h->jornada->tipo ?? '';
+                        $horas = $h->jornada->horas_por_semana ?? '';
+                        if ($tipo && $horas) {
+                            $jornadaTexto = $tipo . ' - ' . $horas . ' horas semanales';
+                        } elseif ($tipo) {
+                            $jornadaTexto = $tipo;
+                        }
+                    } else {
+                        $jornadaTexto = (string) $h->jornada;
+                    }
+                }
+                
                 $grouped[$key] = [
                     'lugar' => $h->lugar ?? '',
                     'cargo' => $h->cargo ?? '',
-                    'jornada' => $h->jornada ?? '',
+                    'jornada' => $jornadaTexto,
                     'desde' => $h->desde ?? '',
                     'hasta' => $h->hasta ?? '',
                     'horarios' => [],
@@ -370,7 +415,7 @@ class DeclaracionExportController extends Controller
                         }
                     }
                     
-                    // Escribir en E19+ y F19+ para instituciones externas
+                    // Escribir en E y F para instituciones externas (como funcionaba)
                     $sheet->setCellValue("E{$r}", $desdeExt);
                     $sheet->setCellValue("F{$r}", $hastaExt);
                     
@@ -402,7 +447,8 @@ class DeclaracionExportController extends Controller
                     $sheet->getStyle($endCell)->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
                 }
 
-                $sheet->getRowDimension($r)->setRowHeight(18);
+                // Ajustar altura automáticamente para que el texto sea visible
+                $sheet->getRowDimension($r)->setRowHeight(-1); // Auto height
             }
 
             // actualizar fila siguiente para el próximo grupo
@@ -412,20 +458,40 @@ class DeclaracionExportController extends Controller
         }
 
         // ======= AJUSTES VISUALES =======
-        $sheet->getStyle('B3:R6')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->getStyle('B3:R6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        $sheet->getStyle('B3:R6')->getFont()->getColor()->setRGB('000000');
+        $sheet->getStyle('B3:R5')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('B3:R5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('B3:R5')->getFont()->getColor()->setRGB('000000');
 
         // ======= OBSERVACIONES =======
-        // La plantilla ya tiene "Observaciones:" en fila 32, solo actualizar el contenido en fila 33
-        $sheet->setCellValue("B33", $d->observaciones_adicionales ?? 'Sin observaciones.');
-        $sheet->getStyle("B33:R33")->getAlignment()
+        // C21: Centrado verticalmente, texto alineado a la izquierda
+        $sheet->setCellValue("C21", $d->observaciones_adicionales ?? 'Sin observaciones.');
+        $sheet->getStyle("C21:R25")->getAlignment()
             ->setWrapText(true)
-            ->setVertical(Alignment::VERTICAL_TOP)
-            ->setHorizontal(Alignment::HORIZONTAL_LEFT);
+            ->setVertical(Alignment::VERTICAL_CENTER)  // Centrado en altura
+            ->setHorizontal(Alignment::HORIZONTAL_LEFT);  // Texto desde la izquierda
       
-        // ======= NO AGREGAR FIRMAS NI NOTA AL PIE - YA ESTÁN EN LA PLANTILLA =======
-        // La plantilla ya incluye las firmas en las filas 41+ con el formato correcto
+        // ======= ALINEACIÓN DE FIRMAS EXISTENTES EN LA PLANTILLA =======
+        // Solo alinear las celdas de líneas de firma que ya existen: B24, E24, K24, O24
+        
+        // Línea de firma 1: B24
+        $sheet->getStyle("B24")->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
+            
+        // Línea de firma 2: E24  
+        $sheet->getStyle("E24")->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
+            
+        // Línea de firma 3: K24
+        $sheet->getStyle("K24")->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
+            
+        // Línea de firma 4: O24
+        $sheet->getStyle("O24")->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
 
         // ======= EXPORTAR Y GUARDAR =======
         $nombre = 'Declaracion_' . Str::slug(($d->usuario->nombre ?? '') . ' ' . ($d->usuario->apellido ?? '')) . '_' . $d->id_declaracion . '.xlsx';
