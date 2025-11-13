@@ -156,7 +156,19 @@
 @endphp
 
 @php
-    $esAdmin = (function_exists('auth') && auth()->check() && (auth()->user()->rol ?? '') === 'admin');
+    // Determinar si el usuario es admin
+    $esAdmin = false;
+    
+    if ($usuarioActual) {
+        // Verificar desde el modelo Usuario (que usa el campo 'rol')
+        if ($usuarioActual->rol === 'admin') {
+            $esAdmin = true;
+        }
+        // También verificar si usa el modelo User de Laravel
+        elseif (function_exists('auth') && auth()->check() && (auth()->user()->rol ?? '') === 'admin') {
+            $esAdmin = true;
+        }
+    }
 @endphp
 
 
@@ -358,7 +370,7 @@
                         <span class="font-medium">Sedes</span>
                     </a>
 
-                    @if (Route::has('usuarios.index'))
+                    @if ($esAdmin && Route::has('usuarios.index'))
                         <a href="{{ route('usuarios.index') }}" class="nav-item">
                             <img src="{{ asset('imagenes/usuarios.png') }}" alt="Usuarios" class="inline-block w-4 h-4 mr-2">
                             <span class="font-medium">Usuarios</span>
@@ -404,7 +416,7 @@
                     @if (Route::has('documentos.index'))
                         <a href="{{ route('documentos.index') }}" class="nav-item">
                             <img src="{{ asset('imagenes/documentos.png') }}" alt="Documentos" class="inline-block w-4 h-4 mr-2">
-                            <span class="font-medium">Documentos</span>
+                            <span class="font-medium">Historial</span>
                         </a>
                     @endif
 
