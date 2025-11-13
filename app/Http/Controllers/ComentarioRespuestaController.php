@@ -23,15 +23,26 @@ class ComentarioRespuestaController extends Controller
         return null;
     }
 
-    // ADMIN responde en el hilo
+    // ADMIN o AUTOR responden en el hilo
     public function store(Request $request, $idComentario)
     {
         $user = $this->usuarioActual($request);
-        if (!$user || $user->rol !== 'admin') {
+        if (!$user) {
             abort(403);
         }
 
+        // Buscar el comentario
         $comentario = Comentario::findOrFail($idComentario);
+
+        // Sólo puede responder el ADMIN o el AUTOR del comentario
+        $esAdmin = $user->rol === 'admin';
+        $esAutor = $comentario->id_usuario === $user->id_usuario;
+
+        if (!($esAdmin || $esAutor)) {
+            abort(403);
+        }
+
+        // No permitir respuestas si el hilo está cerrado
         if ($comentario->estado !== 'abierto') {
             return back()->with('ok', 'El hilo está cerrado.');
         }
@@ -52,6 +63,7 @@ class ComentarioRespuestaController extends Controller
     public function update(Request $request, $id)
     {
         $user = $this->usuarioActual($request);
+        // Solo admin puede editar respuestas
         if (!$user || $user->rol !== 'admin') {
             abort(403);
         }
@@ -70,6 +82,7 @@ class ComentarioRespuestaController extends Controller
     public function destroy(Request $request, $id)
     {
         $user = $this->usuarioActual($request);
+        // Solo admin puede eliminar respuestas
         if (!$user || $user->rol !== 'admin') {
             abort(403);
         }
