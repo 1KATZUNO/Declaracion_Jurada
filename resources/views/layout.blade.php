@@ -155,6 +155,11 @@
         : collect();
 @endphp
 
+@php
+    $esAdmin = (function_exists('auth') && auth()->check() && (auth()->user()->rol ?? '') === 'admin');
+@endphp
+
+
 {{-- TOPBAR --}}
 <header class="w-full" style="background:#0369a1;">
     <div class="mx-auto max-w-[var(--container-max)] topbar-container" style="height:var(--topbar-h);">
@@ -409,6 +414,17 @@
                             <span class="font-medium">Notificaciones</span>
                         </a>
                     @endif
+
+@if (Route::has('comentarios.index') || Route::has('admin.comentarios.index'))
+    <a href="{{ $esAdmin ? route('admin.comentarios.index') : route('comentarios.index') }}" class="nav-item">
+        <img src="{{ asset('imagenes/comentario.png') }}"
+             alt="Comentarios"
+             class="inline-block w-4 h-4 mr-2"
+             onerror="this.style.display='none'">
+        <span class="font-medium">Comentarios</span>
+    </a>
+@endif
+
                 </nav>
             </aside>
         @endunless

@@ -20,6 +20,9 @@
       <a href="{{ route('horarios.index') }}">Horarios</a>
       <a href="{{ route('documentos.index') }}">Documentos</a>
       <a href="{{ route('notificaciones.index') }}">Notificaciones</a>
+      <a href="{{ route('comentarios.index') }}">Comentarios</a>
+    
+      
     </div>
   </nav>
   <main class="container mx-auto w-full px-2 sm:px-4 md:px-8 py-6">

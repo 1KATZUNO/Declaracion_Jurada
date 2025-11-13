@@ -13,8 +13,11 @@ use App\Http\Controllers\{
     DocumentoController,
     NotificacionController,
     DeclaracionExportController,
-    LoginController
+    LoginController,
+    ComentarioController,
+    ComentarioRespuestaController,
 };
+
 
 // Auth Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -36,6 +39,9 @@ Route::resource('declaraciones', DeclaracionController::class);
 Route::resource('jornadas', JornadaController::class)->except(['show']);
 Route::resource('documentos', DocumentoController::class)->only(['index','show','destroy']);
 Route::resource('notificaciones', NotificacionController::class);
+Route::resource('comentarios', ComentarioController::class);
+
+
 // Ruta extra para "Marcar todas como leídas en notificacion
 Route::post('/notificaciones/marcar-todas', [NotificacionController::class, 'marcarTodasLeidas'])
     ->name('notificaciones.marcar-todas');
@@ -65,3 +71,21 @@ Route::post('/perfil', [UsuarioController::class, 'updateProfile'])->name('perfi
 Route::get('/catalogos/unidades', [UnidadAcademicaController::class, 'catalogo'])
     ->name('unidades.catalogo');
 
+// Funcionario: CRUD de comentarios
+
+
+// Admin: ver todos + responder + cerrar/reabrir
+Route::get('admin/comentarios', [ComentarioController::class, 'adminIndex'])
+    ->name('admin.comentarios.index');
+
+Route::post('admin/comentarios/{comentario}/respuestas', [ComentarioRespuestaController::class, 'store'])
+    ->name('admin.comentarios.respuestas.store');
+
+Route::put('admin/respuestas/{respuesta}', [ComentarioRespuestaController::class, 'update'])
+    ->name('admin.respuestas.update');
+
+Route::delete('admin/respuestas/{respuesta}', [ComentarioRespuestaController::class, 'destroy'])
+    ->name('admin.respuestas.destroy');
+
+Route::patch('admin/comentarios/{comentario}/estado', [ComentarioController::class, 'cambiarEstado'])
+    ->name('admin.comentarios.estado');
