@@ -180,4 +180,22 @@ class JornadaController extends Controller
             }
         }
     }
+    
+    public function login(Request $request)
+{
+    $credentials = $request->validate([
+        'correo' => 'required|string',
+        'contrasena' => 'required|string',
+    ]);
+
+    if (auth()->attempt([
+        'correo' => $credentials['correo'],
+        'contrasena' => $credentials['contrasena']
+    ])) {
+        return redirect()->intended('/declaraciones');
+    }
+
+    return back()->withErrors(['correo' => 'Credenciales incorrectas']);
+}
+
 }

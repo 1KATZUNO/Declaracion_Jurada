@@ -11,6 +11,8 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use App\Services\NotificacionService;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DeclaracionExportController extends Controller
 {
@@ -110,13 +112,25 @@ class DeclaracionExportController extends Controller
         ]);
 
         //🔔 Notificación: Export PDF
-        $notificacionService = new NotificacionService();
-        $notificacionService->notificarExportarDeclaracion($d, 'PDF');
+$notificacionService = new NotificacionService();
+$notificacionService->notificarExportarDeclaracion($d, 'PDF');
 
-        // Generar el PDF y forzar descarga con diálogo "Guardar como"
-        return response($pdf->output(), 200)
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="' . $nombre . '"');
+// 👉 GUARDAR EL DOCUMENTO EN LA BASE DE DATOS
+DB::table('documento')->insert([
+    'id_declaracion' => $d->id_declaracion, // ← CORREGIDO
+    'archivo'        => $nombre,
+    'formato'        => 'PDF',
+    'fecha_generacion' => now(),
+    'created_at'     => now(),
+    'updated_at'     => now(),
+]);
+
+
+// Generar el PDF y forzar descarga
+return response($pdf->output(), 200)
+    ->header('Content-Type', 'application/pdf')
+    ->header('Content-Disposition', 'attachment; filename="' . $nombre . '"');
+
     }
 
     public function exportar($id)
@@ -499,27 +513,47 @@ class DeclaracionExportController extends Controller
             ->setVertical(Alignment::VERTICAL_CENTER);
 
         // ======= EXPORTAR Y GUARDAR =======
-        $nombre = 'Declaracion_' . Str::slug(($d->usuario->nombre ?? '') . ' ' . ($d->usuario->apellido ?? '')) . '_' . $d->id_declaracion . '.xlsx';
+       $nombre = 'Declaracion_' . Str::slug(($d->usuario->nombre ?? '') . ' ' . ($d->usuario->apellido ?? '')) . '_' . $d->id_declaracion . '.xlsx';
         $dir = storage_path('app/public');
         if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
+            if (!@mkdir($dir, 0755, true) && !is_dir($dir)) {
+                Log::error("No se pudo crear el directorio: {$dir}");
+                return response()->json(['error' => 'No se pudo crear el directorio para guardar archivos. Revisa permisos.'], 500);
+            }
+        }
+        $ruta = $dir . DIRECTORY_SEPARATOR . $nombre;
+
+        try {
+            (new Xlsx($spreadsheet))->save($ruta);
+        } catch (\Throwable $e) {
+            Log::error("Error al guardar Excel en ruta {$ruta}: " . $e->getMessage());
+            return response()->json(['error' => 'Error al generar el Excel. Revisa logs.'], 500);
         }
 
-        $ruta = $dir . DIRECTORY_SEPARATOR . $nombre;
-        (new Xlsx($spreadsheet))->save($ruta);
+        if (!file_exists($ruta)) {
+            Log::error("El archivo Excel no existe tras intentar guardarlo: {$ruta}");
+            return response()->json(['error' => 'El archivo Excel no se guardó correctamente. Revisa permisos y espacio en disco.'], 500);
+        }
 
-        Documento::create([
-            'id_declaracion' => $d->id_declaracion,
-            'archivo' => "public/{$nombre}",
-            'formato' => 'EXCEL',
-            'fecha_generacion' => now(),
-        ]);
+        try {
+            Documento::create([
+                'id_declaracion' => $d->id_declaracion,
+                'archivo' => "public/{$nombre}",
+                'formato' => 'EXCEL',
+                'fecha_generacion' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error("Error al insertar Documento DB (Excel) para {$ruta}: " . $e->getMessage());
+            return response()->json(['error' => 'El archivo Excel se generó pero no se registró en la base de datos. Revisa logs.'], 500);
+        }
 
-        //🔔 Notificación: Export Excel
-        $notificacionService = new NotificacionService();
-        $notificacionService->notificarExportarDeclaracion($d, 'Excel');
+        try {
+            $notificacionService = new NotificacionService();
+            $notificacionService->notificarExportarDeclaracion($d, 'Excel');
+        } catch (\Throwable $e) {
+            Log::warning("No se pudo enviar notificación de export Excel: " . $e->getMessage());
+        }
 
-        // No eliminar el archivo tras el envío para que el registro Documento apunte a un archivo existente.
         return response()->download($ruta, $nombre)->deleteFileAfterSend(false);
     }
 }

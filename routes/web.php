@@ -19,73 +19,133 @@ use App\Http\Controllers\{
 };
 
 
-// Auth Routes
+// ======================
+// 🔐 AUTH ROUTES
+// ======================
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Home
+// 🔸 Home redirige al login
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
 
-// CRUDs
+
+// ======================
+// 🧑‍💼 CRUDs PRINCIPALES
+// ======================
 Route::middleware([VerificarRol::class . ':admin'])->group(function () {
     Route::resource('usuarios', UsuarioController::class);
 });
+
 Route::resource('sedes', SedeController::class);
 Route::resource('unidades', UnidadAcademicaController::class);
 Route::resource('cargos', CargoController::class);
 Route::resource('formularios', FormularioController::class);
 Route::resource('declaraciones', DeclaracionController::class);
 Route::resource('jornadas', JornadaController::class)->except(['show']);
-Route::resource('documentos', DocumentoController::class)->only(['index','show','destroy']);
+
+
+// ======================
+// 📄 DOCUMENTOS (YA LISTO)
+// ======================
+// index, show y destroy solamente
+Route::resource('documentos', DocumentoController::class)
+    ->only(['index', 'show', 'destroy']);
+
+
+// ======================
+// 🔔 NOTIFICACIONES
+// ======================
 Route::resource('notificaciones', NotificacionController::class);
+
+// Marcar todas como leídas
+Route::post('/notificaciones/marcar-todas', 
+    [NotificacionController::class, 'marcarTodasLeidas']
+)->name('notificaciones.marcar-todas');
+
+// Notificaciones no leídas vía AJAX
+Route::get('/notificaciones-unread', 
+    [NotificacionController::class, 'getUnread']
+)->name('notificaciones.unread');
+
+
+// ======================
+// 📤 EXPORTACIONES
+// ======================
+Route::get('/declaraciones/{id}/exportar', 
+    [DeclaracionExportController::class, 'exportar']
+)->name('declaraciones.exportar');
+
+Route::get('/declaraciones/{id}/pdf', 
+    [DeclaracionExportController::class, 'exportarPdf']
+)->name('declaraciones.pdf');
+
+
+// ======================
+// 🔗 API INTERNAS
+// ======================
+Route::get('/api/unidades-por-sede/{id_sede}', 
+    [DeclaracionController::class, 'getUnidadesPorSede']
+)->name('api.unidades-por-sede');
+
+
+// ======================
+// 🔑 LOGIN extra
+// ======================
+Route::post('/login', [LoginController::class, 'login'])
+    ->name('login.submit');
+
+
+// ======================
+// 🔐 CAMBIO DE CONTRASEÑA
+// ======================
+Route::get('/change-password', 
+    [LoginController::class, 'showChangePasswordForm']
+)->name('password.form');
+
+Route::post('/change-password', 
+    [LoginController::class, 'changePassword']
+)->name('password.change');
+
+Route::post('/perfil', 
+    [UsuarioController::class, 'updateProfile']
+)->name('perfil.update');
+
+
+// ======================
+// 📚 CATÁLOGOS
+// ======================
+Route::get('/catalogos/unidades', 
+    [UnidadAcademicaController::class, 'catalogo']
+)->name('unidades.catalogo');
+
+
+// ======================
+// 💬 COMENTARIOS FUNCIONARIO
+// ======================
 Route::resource('comentarios', ComentarioController::class);
 
 
-// Ruta extra para "Marcar todas como leídas en notificacion
-Route::post('/notificaciones/marcar-todas', [NotificacionController::class, 'marcarTodasLeidas'])
-    ->name('notificaciones.marcar-todas');
-// Ruta para obtener notificaciones no leídas vía AJAX
-Route::get('/notificaciones-unread', [NotificacionController::class, 'getUnread'])
-    ->name('notificaciones.unread');
+// ======================
+// 🛠 ADMIN COMENTARIOS
+// ======================
+Route::get('admin/comentarios', 
+    [ComentarioController::class, 'adminIndex']
+)->name('admin.comentarios.index');
+
+Route::post('admin/comentarios/{comentario}/respuestas', 
+    [ComentarioRespuestaController::class, 'store']
+)->name('admin.comentarios.respuestas.store');
+
+Route::put('admin/respuestas/{respuesta}', 
+    [ComentarioRespuestaController::class, 'update']
+)->name('admin.respuestas.update');
+
+Route::delete('/documentos/{documento}', 
+    [DocumentoController::class, 'destroy']
+)->name('documentos.destroy');
 
 
-// Exportación Excel
-Route::get('/declaraciones/{id}/exportar', [DeclaracionExportController::class, 'exportar'])
-     ->name('declaraciones.exportar');
-
-// Exportación PDF
-Route::get('/declaraciones/{id}/pdf', [DeclaracionExportController::class, 'exportarPdf'])
-     ->name('declaraciones.pdf');
-
-// API Routes
-Route::get('/api/unidades-por-sede/{id_sede}', [DeclaracionController::class, 'getUnidadesPorSede'])
-     ->name('api.unidades-por-sede');
-
-Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
-
-// Formulario de cambio de contraseña
-Route::get('/change-password', [LoginController::class, 'showChangePasswordForm'])->name('password.form');
-Route::post('/change-password', [LoginController::class, 'changePassword'])->name('password.change');
-Route::post('/perfil', [UsuarioController::class, 'updateProfile'])->name('perfil.update');
-Route::get('/catalogos/unidades', [UnidadAcademicaController::class, 'catalogo'])
-    ->name('unidades.catalogo');
-
-// Funcionario: CRUD de comentarios
-
-
-// Admin: ver todos + responder + cerrar/reabrir
-Route::get('admin/comentarios', [ComentarioController::class, 'adminIndex'])
-    ->name('admin.comentarios.index');
-
-Route::post('admin/comentarios/{comentario}/respuestas', [ComentarioRespuestaController::class, 'store'])
-    ->name('admin.comentarios.respuestas.store');
-
-Route::put('admin/respuestas/{respuesta}', [ComentarioRespuestaController::class, 'update'])
-    ->name('admin.respuestas.update');
-
-Route::delete('admin/respuestas/{respuesta}', [ComentarioRespuestaController::class, 'destroy'])
-    ->name('admin.respuestas.destroy');
-
-Route::patch('admin/comentarios/{comentario}/estado', [ComentarioController::class, 'cambiarEstado'])
-    ->name('admin.comentarios.estado');
+Route::patch('admin/comentarios/{comentario}/estado', 
+    [ComentarioController::class, 'cambiarEstado']
+)->name('admin.comentarios.estado');

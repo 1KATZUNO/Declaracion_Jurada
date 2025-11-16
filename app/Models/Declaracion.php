@@ -11,6 +11,7 @@ class Declaracion extends Model
 
     protected $table = 'declaracion';
     protected $primaryKey = 'id_declaracion';
+
     protected $fillable = [
         'id_usuario',
         'id_formulario',
@@ -23,10 +24,11 @@ class Declaracion extends Model
         'observaciones_adicionales',
     ];
 
-    public function usuario()
-    {
-        return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
-    }
+    // --- Relaciones ---
+  public function usuario()
+{
+    return $this->belongsTo(User::class, 'id_usuario', 'id_usuario');
+}
 
     public function formulario()
     {
@@ -52,10 +54,4 @@ class Declaracion extends Model
     {
         return $this->hasMany(Documento::class, 'id_declaracion', 'id_declaracion');
     }
-    public function declaracion()
-{
-    return $this->belongsTo(Declaracion::class, 'id_declaracion', 'id_declaracion');
 }
-}
-
-
