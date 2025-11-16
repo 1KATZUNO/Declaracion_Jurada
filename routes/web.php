@@ -16,6 +16,7 @@ use App\Http\Controllers\{
     LoginController,
     ComentarioController,
     ComentarioRespuestaController,
+    ActividadLogController,
 };
 
 
@@ -149,3 +150,19 @@ Route::delete('/documentos/{documento}',
 Route::patch('admin/comentarios/{comentario}/estado', 
     [ComentarioController::class, 'cambiarEstado']
 )->name('admin.comentarios.estado');
+
+
+// ======================
+// 📊 LOGS DE ACTIVIDAD
+// ======================
+Route::middleware([VerificarRol::class . ':admin'])->group(function () {
+    Route::get('/actividad-logs', [ActividadLogController::class, 'index'])
+        ->name('actividad-logs.index');
+    Route::get('/actividad-logs/{id}', [ActividadLogController::class, 'show'])
+        ->name('actividad-logs.show');
+    Route::delete('/actividad-logs/{id}', [ActividadLogController::class, 'destroy'])
+        ->name('actividad-logs.destroy');
+    Route::post('/actividad-logs/limpiar', [ActividadLogController::class, 'limpiar'])
+        ->name('actividad-logs.limpiar');
+});
+

@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\LogsActivity;
 
 
 class Usuario extends Model
 {
     use HasFactory;
     use Notifiable; // Permite enviar y recibir notificaciones (correo y base de datos)
+    use LogsActivity; // Registra automáticamente las actividades
 
     protected $table = 'usuario';
     protected $primaryKey = 'id_usuario';

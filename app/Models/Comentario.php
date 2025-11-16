@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class Comentario extends Model
 {
+    use LogsActivity;
     protected $table = 'comentario';
     protected $primaryKey = 'id_comentario';
     protected $fillable = ['id_usuario','titulo','mensaje','estado'];

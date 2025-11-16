@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Traits\LogsActivity;
 
 class Horario extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     protected $table = 'horario';
     protected $primaryKey = 'id_horario';

@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class Documento extends Model
 {
+    use LogsActivity;
     protected $table = 'documento';
     protected $primaryKey = 'id_documento';
 

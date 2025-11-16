@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class Notificacion extends Model
 {
+    use LogsActivity;
     protected $table = 'notificacion';
     protected $primaryKey = 'id_notificacion';
     protected $fillable = [
