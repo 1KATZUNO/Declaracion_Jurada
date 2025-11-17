@@ -130,26 +130,21 @@ Route::resource('comentarios', ComentarioController::class);
 // ======================
 // 🛠 ADMIN COMENTARIOS
 // ======================
-Route::get('admin/comentarios', 
-    [ComentarioController::class, 'adminIndex']
-)->name('admin.comentarios.index');
+// Admin: ver todos + responder + cerrar/reabrir
+Route::get('admin/comentarios', [ComentarioController::class, 'adminIndex'])
+    ->name('admin.comentarios.index');
 
-Route::post('admin/comentarios/{comentario}/respuestas', 
-    [ComentarioRespuestaController::class, 'store']
-)->name('admin.comentarios.respuestas.store');
+Route::post('admin/comentarios/{comentario}/respuestas', [ComentarioRespuestaController::class, 'store'])
+    ->name('admin.comentarios.respuestas.store');
 
-Route::put('admin/respuestas/{respuesta}', 
-    [ComentarioRespuestaController::class, 'update']
-)->name('admin.respuestas.update');
+Route::put('admin/respuestas/{respuesta}', [ComentarioRespuestaController::class, 'update'])
+    ->name('admin.respuestas.update');
 
-Route::delete('/documentos/{documento}', 
-    [DocumentoController::class, 'destroy']
-)->name('documentos.destroy');
+Route::delete('admin/respuestas/{respuesta}', [ComentarioRespuestaController::class, 'destroy'])
+    ->name('admin.respuestas.destroy');
 
-
-Route::patch('admin/comentarios/{comentario}/estado', 
-    [ComentarioController::class, 'cambiarEstado']
-)->name('admin.comentarios.estado');
+Route::patch('admin/comentarios/{comentario}/estado', [ComentarioController::class, 'cambiarEstado'])
+    ->name('admin.comentarios.estado');
 
 
 // ======================

@@ -88,20 +88,14 @@
 
                 {{-- Cerrar SOLO si está abierto --}}
                 @if($isOpen)
-                  <form action="{{ route('admin.comentarios.estado', $c->id_comentario) }}"
-                        method="POST"
-                        onsubmit="return confirm('¿Cerrar este hilo?');">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="estado" value="cerrado">
-                    <button type="submit"
-                      class="text-xs px-2 py-1 rounded border border-red-300 text-red-700 bg-red-50 hover:bg-red-100">
-                      Cerrar
-                    </button>
-                  </form>
+                  <button type="button"
+                          class="text-xs px-2 py-1 rounded border border-red-300 text-red-700 bg-red-50 hover:bg-red-100"
+                          data-action="{{ route('admin.comentarios.estado', $c->id_comentario) }}"
+                          onclick="openCloseComentarioModal(this)">
+                    Cerrar
+                  </button>
                 @endif
 
-                {{-- Cuando está cerrado NO mostramos nada más --}}
               </div>
             </td>
 
@@ -123,4 +117,52 @@
     </div>
   </div>
 </div>
+
+{{-- MODAL BONITO PARA CERRAR HILO --}}
+<div id="modal-cerrar-comentario"
+     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full mx-4 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-2">
+            Cerrar hilo de comentarios
+        </h2>
+        <p class="text-sm text-gray-600 mb-4">
+            ¿Deseas marcar este hilo como <span class="font-semibold">cerrado</span>?  
+            Los funcionarios ya no podrán editar ni eliminar el comentario.
+        </p>
+
+        <form id="form-cerrar-comentario" method="POST" action="#">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="estado" value="cerrado">
+
+            <div class="flex justify-end gap-2 mt-4">
+                <button type="button"
+                        onclick="closeCloseComentarioModal()"
+                        class="px-3 py-2 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="px-3 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700">
+                    Cerrar hilo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- SCRIPT DEL MODAL --}}
+<script>
+    function openCloseComentarioModal(button) {
+        const modal = document.getElementById('modal-cerrar-comentario');
+        const form  = document.getElementById('form-cerrar-comentario');
+
+        form.action = button.dataset.action;
+        modal.classList.remove('hidden');
+    }
+
+    function closeCloseComentarioModal() {
+        const modal = document.getElementById('modal-cerrar-comentario');
+        modal.classList.add('hidden');
+    }
+</script>
 @endsection
