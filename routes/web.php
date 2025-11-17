@@ -53,6 +53,10 @@ Route::resource('jornadas', JornadaController::class)->except(['show']);
 Route::resource('documentos', DocumentoController::class)
     ->only(['index', 'show', 'destroy']);
 
+// Ruta para descargar documentos
+Route::get('/documentos/{id}/download', [DocumentoController::class, 'download'])
+    ->name('documentos.download');
+
 
 // ======================
 // 🔔 NOTIFICACIONES
