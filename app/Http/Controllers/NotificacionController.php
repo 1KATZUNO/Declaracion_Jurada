@@ -53,7 +53,8 @@ class NotificacionController extends Controller
 
         $usuario->notify(new NotificacionPersonalizada(
             $data['mensaje'],
-            $data['estado']
+            $data['estado'],
+            $data['tipo'] ?? 'general' // Default to 'general' if $tipo is not provided
         ));
 
         if ($data['estado'] === 'leída') {

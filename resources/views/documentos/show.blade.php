@@ -148,6 +148,12 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
+                                @php
+                                    $horariosUCR = collect($horariosUCR)->filter(function($h) {
+                                        return $h && isset($h->hora_inicio, $h->hora_fin);
+                                    });
+                                @endphp
+
                                 @foreach ($horariosUCR as $h)
                                     <tr class="hover:bg-gray-50 transition-colors">
                                         <td class="py-3 px-4 text-sm text-gray-900">{{ $h->dia }}</td>

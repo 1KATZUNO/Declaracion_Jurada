@@ -332,11 +332,15 @@ class DeclaracionController extends Controller
         }
 
         // Crear la declaración
+        $usuario = Usuario::find($data['id_usuario']);
+
         $declaracion = Declaracion::create([
             'id_usuario' => $data['id_usuario'],
             'id_formulario' => $data['id_formulario'],
             'id_unidad' => $data['id_unidad'],
             'id_cargo' => $cargoPrincipal,
+            'identificacion' => $usuario->identificacion ?? null,
+            'telefono' => $usuario->telefono ?? null,
             'fecha_desde' => $fechaDesdeGlobal,
             'fecha_hasta' => $fechaHastaGlobal,
             'horas_totales' => $horasTotales,
@@ -535,11 +539,15 @@ class DeclaracionController extends Controller
         }
 
         // Actualizar la declaración
+        $usuario = Usuario::find($data['id_usuario']);
+
         $d->update([
             'id_usuario' => $data['id_usuario'],
             'id_formulario' => $data['id_formulario'],
             'id_unidad' => $data['id_unidad'],
             'id_cargo' => $cargoPrincipal,
+            'identificacion' => $usuario->identificacion ?? null,
+            'telefono' => $usuario->telefono ?? null,
             'fecha_desde' => $data['fecha_desde'] ?? null,
             'fecha_hasta' => $data['fecha_hasta'] ?? null,
             'horas_totales' => $horasTotales,

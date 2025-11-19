@@ -12,6 +12,7 @@ use App\Services\NotificacionService;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class DeclaracionExportController extends Controller
@@ -20,9 +21,9 @@ class DeclaracionExportController extends Controller
     {
         $d = Declaracion::with(['usuario','unidad.sede','cargo','horarios.jornada','horarios.cargo','formulario'])->findOrFail($id);
 
-        // Obtener identificación
-        $identificacion = null;
-        if ($d->usuario) {
+        // Preferir identificación y teléfono guardados en la declaración; si no existen, obtenerlos del usuario
+        $identificacion = $d->identificacion ?? null;
+        if (!$identificacion && $d->usuario) {
             $attrs = $d->usuario->getAttributes();
             foreach (['identificacion','cedula','numero_identificacion','numero_cedula','dni','ci'] as $key) {
                 if (!empty($attrs[$key])) { $identificacion = trim($attrs[$key]); break; }
@@ -36,6 +37,7 @@ class DeclaracionExportController extends Controller
         }
 
         $correo = $d->usuario->correo ?? $d->usuario->email ?? '';
+        $telefono = $d->telefono ?? $d->usuario->telefono ?? '';
 
         // Agrupar horarios UCR por día
         $horariosUCR = $d->horarios->where('tipo', 'ucr');
@@ -137,15 +139,13 @@ return response($pdf->output(), 200)
     {
         $d = Declaracion::with(['usuario','unidad.sede','cargo','horarios.jornada','horarios.cargo','formulario'])->findOrFail($id);
 
-        // --- Fallback robusto para identificación y correo ---
-        $identificacion = null;
-        if ($d->usuario) {
-            // primero intentar sobre los atributos crudos (evita depender solo de accessors)
+        // Preferir valores guardados en la declaración y si no están, obtener del usuario
+        $identificacion = $d->identificacion ?? null;
+        if (!$identificacion && $d->usuario) {
             $attrs = $d->usuario->getAttributes();
             foreach (['identificacion','cedula','numero_identificacion','numero_cedula','dni','ci'] as $key) {
                 if (!empty($attrs[$key])) { $identificacion = trim($attrs[$key]); break; }
             }
-            // si sigue vacío, probar accessors / propiedades dinámicas como último recurso
             if (empty($identificacion)) {
                 foreach (['identificacion','cedula','numero_identificacion','numero_cedula','dni','ci'] as $key) {
                     $val = $d->usuario->{$key} ?? null;
@@ -155,7 +155,7 @@ return response($pdf->output(), 200)
         }
 
         $correo = $d->usuario->correo ?? $d->usuario->email ?? '';
-        $telefono = $d->usuario->telefono ?? '';
+        $telefono = $d->telefono ?? $d->usuario->telefono ?? '';
 
         // Debug para verificar los valores
         // dd(['nombre' => $nombreCompleto, 'id' => $identificacion, 'tel' => $telefono, 'correo' => $correo]);
