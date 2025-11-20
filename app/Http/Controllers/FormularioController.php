@@ -9,7 +9,7 @@ class FormularioController extends Controller
 {
     public function index()
     { 
-        $formularios = Formulario::select('id_formulario', 'nombre', 'titulo', 'descripcion', 'fecha_creacion')
+        $formularios = Formulario::select('id_formulario', 'titulo', 'descripcion', 'fecha_creacion')
             ->orderBy('fecha_creacion', 'desc')
             ->paginate(15); 
         return view('formularios.index',compact('formularios')); 

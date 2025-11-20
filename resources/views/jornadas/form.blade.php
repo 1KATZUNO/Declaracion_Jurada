@@ -9,7 +9,7 @@
       <h2 class="text-2xl font-semibold text-white tracking-tight">
         {{ $mode === 'create' ? 'Nueva Jornada' : 'Editar Jornada' }}
       </h2>
-      <p class="text-blue-100 text-sm mt-1">Ingrese cuántas horas por semana corresponde a esta jornada. Si modifica la jornada <strong>Tiempo completo (TC)</strong>, el sistema recalculará automáticamente las jornadas fraccionarias existentes (1/8,1/4,1/2,3/4).</p>
+      <p class="text-blue-50 text-sm mt-1">Ingrese cuántas horas por semana corresponde a esta jornada. Si modifica la jornada <strong>Tiempo completo (TC)</strong>, el sistema recalculará automáticamente las jornadas fraccionarias existentes (1/8,1/4,1/2,3/4).</p>
     </div>
 
     <div class="p-8">

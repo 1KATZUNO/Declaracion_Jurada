@@ -18,7 +18,7 @@
                     <h2 class="text-3xl font-bold text-white">
                         Declaraciones UCR
                     </h2>
-                    <p class="mt-2 text-blue-100">
+                    <p class="mt-2 text-blue-50">
                         Iniciar Sesión
                     </p>
                     

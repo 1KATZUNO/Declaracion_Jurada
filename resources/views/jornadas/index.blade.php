@@ -9,7 +9,7 @@
     <div class="relative px-8 py-7 flex items-center justify-between bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600">
       <div>
         <h2 class="text-2xl font-semibold text-white tracking-tight">Jornadas laborales</h2>
-        <p class="text-blue-100 text-sm mt-1">Gestión de jornadas registradas en el sistema</p>
+        <p class="text-blue-50 text-sm mt-1">Gestión de jornadas registradas en el sistema</p>
       </div>
 
       {{-- Mostrar "Modificar jornada TC" que abre el edit de la jornada TC --}}

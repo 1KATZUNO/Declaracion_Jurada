@@ -54,7 +54,7 @@ class DeclaracionController extends Controller
             'sedes'      => Sede::select('id_sede', 'nombre')->orderBy('nombre')->get(),
             'unidades'   => UnidadAcademica::with('sede:id_sede,nombre')->select('id_unidad', 'nombre', 'id_sede')->get(),
             'cargos'     => Cargo::select('id_cargo', 'nombre')->orderBy('nombre')->get(),
-            'formularios'=> Formulario::select('id_formulario', 'nombre')->get(),
+            'formularios'=> Formulario::select('id_formulario', 'titulo')->get(),
             'jornadas'   => \App\Models\Jornada::select('id_jornada', 'tipo', 'horas_por_semana')->orderBy('tipo')->get(),
             'horarios'   => Horario::whereNull('id_declaracion')
                                 ->where('tipo', 'ucr')
@@ -515,7 +515,7 @@ class DeclaracionController extends Controller
             'sedes'            => Sede::select('id_sede', 'nombre')->orderBy('nombre')->get(),
             'unidades'         => UnidadAcademica::with('sede:id_sede,nombre')->select('id_unidad', 'nombre', 'id_sede')->get(),
             'cargos'           => Cargo::select('id_cargo', 'nombre')->orderBy('nombre')->get(),
-            'formularios'      => Formulario::select('id_formulario', 'nombre')->get(),
+            'formularios'      => Formulario::select('id_formulario', 'titulo')->get(),
             'jornadas'         => \App\Models\Jornada::select('id_jornada', 'tipo', 'horas_por_semana')->orderBy('tipo')->get(),
             'horarios'         => Horario::whereNull('id_declaracion')
                                     ->where('tipo', 'ucr')

@@ -4,10 +4,10 @@
 
 @section('contenido')
 <div class="container mx-auto w-full max-w-7xl px-4 md:px-8 py-8">
-    <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden transition-colors duration-300">
         <div class="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
             <h1 class="text-3xl font-bold text-white">❓ Centro de Ayuda</h1>
-            <p class="text-green-100 text-sm mt-2">Manual de usuario y preguntas frecuentes</p>
+            <p class="text-green-50 text-sm mt-2">Manual de usuario y preguntas frecuentes</p>
         </div>
 
         <div class="p-8">

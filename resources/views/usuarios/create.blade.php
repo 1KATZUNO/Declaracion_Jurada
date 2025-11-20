@@ -5,7 +5,7 @@
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
             <h2 class="text-2xl font-semibold text-white">Registrar nuevo usuario</h2>
-            <p class="text-blue-100 text-sm mt-1">Complete los datos del nuevo usuario</p>
+            <p class="text-blue-50 text-sm mt-1">Complete los datos del nuevo usuario</p>
         </div>
 
         <form action="{{ route('usuarios.store') }}" method="POST" class="p-2 sm:p-4 md:p-8">

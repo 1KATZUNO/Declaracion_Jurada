@@ -1,11 +1,19 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="transition-colors duration-300">
 <head>
     @csrf
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('titulo', 'Declaraciones UCR')</title>
+
+    {{-- Tailwind CDN con modo oscuro --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
 
     {{-- Tipografía --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,10 +37,24 @@
             --user-avatar:28px;
         }
 
+        .dark {
+            --ucr-azul:#1e3a5f;
+            --ucr-azul-menu:#1a2f4d;
+            --ucr-fondo:#0f172a;
+            --ucr-top-gray:#374151;
+            --ucr-top-border:#4b5563;
+        }
+
         html,body{
             font-family:'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans';
             background:var(--ucr-fondo);
             color:#0f172a;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .dark body {
+            background:#0f172a;
+            color:#f1f5f9;
         }
 
         .nav-item{
@@ -44,8 +66,14 @@
             color:#0f172a;
             transition:background .15s ease;
         }
+        .dark .nav-item {
+            color:#e2e8f0;
+        }
         .nav-item:hover{
             background:#e5e7eb;
+        }
+        .dark .nav-item:hover{
+            background:#374151;
         }
 
         /* Topbar responsive tweaks */
@@ -179,7 +207,7 @@
 
 
 {{-- TOPBAR --}}
-<header class="w-full" style="background:#0369a1;">
+<header class="w-full bg-sky-700 dark:bg-slate-800 transition-colors duration-300">
     <div class="mx-auto max-w-[var(--container-max)] topbar-container" style="height:var(--topbar-h);">
         <div class="flex items-center gap-3">
             {{-- Logo Universidad + firma --}}
@@ -187,13 +215,13 @@
                 <div style="height:var(--logo-size); width:var(--logo-size);">
                     <img src="{{ asset('imagenes/uc_logo.png') }}"
                          alt="Universidad de Costa Rica"
-                         class="h-full w-full object-contain"
+                         class="h-full w-full object-contain dark:brightness-90"
                          onerror="this.onerror=null; this.style.display='none'">
                 </div>
                 <div class="ml-0">
                     <img src="{{ asset('imagenes/firma-horizontal-una-linea-reverso-rgb.png') }}"
                          alt="Firma UCR"
-                         class="h-20 object-contain"
+                         class="h-20 object-contain dark:brightness-90"
                          style="max-height:90px; display:block;"
                          onerror="this.onerror=null; this.style.display='none'">
                 </div>
@@ -202,6 +230,19 @@
 
         {{-- Derecha: campanita + cerrar sesión + usuario --}}
         <div class="flex items-center gap-4">
+
+            {{-- Botón modo oscuro --}}
+            <button type="button"
+                    id="theme-toggle"
+                    class="text-white hover:text-gray-200 transition-colors duration-200 focus:outline-none p-2 rounded-lg hover:bg-white/10"
+                    aria-label="Cambiar tema">
+                <svg id="theme-toggle-dark-icon" class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+                <svg id="theme-toggle-light-icon" class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                </svg>
+            </button>
 
             {{-- Campanita de notificaciones --}}
 @if($usuarioActual)
@@ -345,12 +386,12 @@
     </div>
 
     {{-- Enlaces auxiliares (md+) --}}
-    <div class="w-full aux-nav" style="background:#0369a1;">
+    <div class="w-full aux-nav bg-sky-700 dark:bg-slate-700 transition-colors duration-300">
         <div class="mx-auto max-w-[var(--container-max)] px-8 py-2">
-            <nav class="flex items-center justify-start gap-6 text-sm text-white/90">
-                <a href="{{ route('accesibilidad') }}" class="hover:underline">ACCESIBILIDAD</a>
-                <a href="{{ route('ayuda') }}" class="hover:underline">AYUDA</a>
-                <a href="{{ route('acerca-de') }}" class="hover:underline">ACERCA DE</a>
+            <nav class="flex items-center justify-start gap-6 text-sm text-white/90 dark:text-slate-200">
+                <a href="{{ route('accesibilidad') }}" class="hover:underline hover:text-white">ACCESIBILIDAD</a>
+                <a href="{{ route('ayuda') }}" class="hover:underline hover:text-white">AYUDA</a>
+                <a href="{{ route('acerca-de') }}" class="hover:underline hover:text-white">ACERCA DE</a>
             </nav>
         </div>
     </div>
@@ -361,11 +402,11 @@
     $hideSidebar = View::hasSection('hide_sidebar');
 @endphp
 
-<div class="w-full bg-white">
+<div class="w-full bg-white dark:bg-slate-900 transition-colors duration-300">
     <div class="flex flex-col md:flex-row w-full h-[calc(100vh-var(--topbar-h))]">
         @unless($hideSidebar)
-            <aside class="w-full md:w-[var(--sidebar-w)] flex-shrink-0 bg-[var(--ucr-top-gray)] border-r border-gray-300 hidden md:block overflow-y-auto">
-                <div class="bg-[var(--ucr-azul-menu)] text-white px-4 py-2.5 text-[13px] font-semibold uppercase">
+            <aside class="w-full md:w-[var(--sidebar-w)] flex-shrink-0 bg-gray-300 dark:bg-slate-800 border-r border-gray-300 dark:border-slate-700 hidden md:block overflow-y-auto transition-colors duration-300">
+                <div class="bg-blue-900 dark:bg-slate-700 text-white px-4 py-2.5 text-[13px] font-semibold uppercase">
                     Menú Principal
                 </div>
 
@@ -462,7 +503,7 @@
             </aside>
         @endunless
 
-        <main class="flex-grow overflow-auto bg-[var(--ucr-fondo)]">
+        <main class="flex-grow overflow-auto bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
             <div class="container mx-auto px-4 py-6">
                 @includeIf('components.flash')
 
@@ -477,7 +518,7 @@
 </div>
 
 {{-- FOOTER --}}
-<footer class="bg-[var(--ucr-azul)] text-blue-100 text-center text-[11px] py-3">
+<footer class="bg-[var(--ucr-azul)] text-blue-50 text-center text-[11px] py-3">
     © {{ date('Y') }} Universidad de Costa Rica — Sistema de Declaraciones Juradas de Horario
 </footer>
 
@@ -824,6 +865,43 @@ window.addEventListener('beforeunload', function() {
         if (previewImg) {
             previewImg.onload = cleanup;
             previewImg.onerror = cleanup;
+        }
+    });
+})();
+
+// Theme toggle (modo oscuro/claro)
+(function() {
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+    // Obtener tema guardado o usar preferencia del sistema
+    let theme = localStorage.getItem('theme');
+    if (!theme) {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    // Aplicar tema inicial
+    if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        themeToggleLightIcon.classList.remove('hidden');
+    } else {
+        document.documentElement.classList.remove('dark');
+        themeToggleDarkIcon.classList.remove('hidden');
+    }
+
+    // Toggle theme
+    themeToggleBtn.addEventListener('click', function() {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            themeToggleLightIcon.classList.add('hidden');
+            themeToggleDarkIcon.classList.remove('hidden');
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            themeToggleDarkIcon.classList.add('hidden');
+            themeToggleLightIcon.classList.remove('hidden');
         }
     });
 })();

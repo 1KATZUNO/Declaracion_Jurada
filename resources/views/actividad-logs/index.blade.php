@@ -7,7 +7,7 @@
     <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
             <h2 class="text-2xl font-semibold text-white">Registro de Actividades</h2>
-            <p class="text-blue-100 text-sm mt-1">Historial de acciones del sistema</p>
+            <p class="text-blue-50 text-sm mt-1">Historial de acciones del sistema</p>
         </div>
 
         <div class="p-8">

@@ -4,10 +4,10 @@
 
 @section('contenido')
 <div class="container mx-auto w-full max-w-6xl px-4 md:px-8 py-8">
-    <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden transition-colors duration-300">
         <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6">
             <h1 class="text-3xl font-bold text-white">♿ Accesibilidad</h1>
-            <p class="text-purple-100 text-sm mt-2">Comprometidos con la inclusión digital</p>
+            <p class="text-purple-50 text-sm mt-2">Comprometidos con la inclusión digital</p>
         </div>
 
         <div class="p-8 space-y-8">

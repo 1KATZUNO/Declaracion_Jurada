@@ -8,7 +8,7 @@
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-semibold text-white">Cargos del Personal</h2>
-                <p class="text-blue-100 text-sm mt-1">Gestión de cargos de la UCR</p>
+                <p class="text-blue-50 text-sm mt-1">Gestión de cargos de la UCR</p>
             </div>
             <a href="{{ route('cargos.create') }}"
                class="px-5 py-2.5 text-sm font-medium text-blue-700 bg-white border border-transparent rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white transition-colors shadow-sm">
