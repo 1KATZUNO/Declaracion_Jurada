@@ -224,7 +224,7 @@
             @endif
 
             {{-- Cerrar sesión --}}
-            <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 inline">
+            <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 inline" onsubmit="clearSessionData()">
                 @csrf
                 <button type="submit"
                         class="text-white bg-transparent border-0 p-0 m-0 cursor-pointer text-sm font-medium">
@@ -269,8 +269,14 @@
                         <p class="text-sm font-semibold text-gray-800">
                             {{ $nombreActual }}
                         </p>
-                        <p class="text-xs text-gray-500 mb-3">
+                        <p class="text-xs text-gray-500 mb-1">
                             {{ session('usuario_rol') ? strtoupper(session('usuario_rol')) : 'ROL DESCONOCIDO' }}
+                        </p>
+                        <p class="text-xs text-blue-600 mb-3" id="session-indicator" style="display:none;">
+                            <svg class="w-3 h-3 inline-block" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Sesión independiente activa
                         </p>
 
                         <form action="{{ route('perfil.update') }}"
@@ -470,6 +476,114 @@
 </footer>
 
 <script>
+// ============================================
+// SISTEMA DE MULTI-SESIÓN
+// ============================================
+(function() {
+    // Generar un ID único para esta ventana/pestaña
+    const windowId = 'window_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    // Obtener o crear token de sesión para esta ventana
+    let sessionToken = sessionStorage.getItem('app_session_token');
+    
+    @if(session('session_token'))
+        // Si hay un nuevo token desde el login, usarlo
+        sessionToken = '{{ session('session_token') }}';
+        sessionStorage.setItem('app_session_token', sessionToken);
+        
+        // Guardar en cookie para requests
+        document.cookie = `app_session_token=${sessionToken}; path=/; SameSite=Lax`;
+    @elseif(session('current_session_token'))
+        // Si ya hay un token de sesión activo, asegurarse de tenerlo
+        if (!sessionToken) {
+            sessionToken = '{{ session('current_session_token') }}';
+            sessionStorage.setItem('app_session_token', sessionToken);
+            document.cookie = `app_session_token=${sessionToken}; path=/; SameSite=Lax`;
+        }
+    @endif
+    
+    // Interceptar todos los fetch requests para agregar el token
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+        const token = sessionStorage.getItem('app_session_token');
+        if (token && args[1]) {
+            args[1].headers = args[1].headers || {};
+            args[1].headers['X-Session-Token'] = token;
+        } else if (token) {
+            args[1] = { headers: { 'X-Session-Token': token } };
+        }
+        return originalFetch.apply(this, args);
+    };
+    
+    // Agregar token a formularios al enviar
+    document.addEventListener('submit', function(e) {
+        const token = sessionStorage.getItem('app_session_token');
+        if (token && e.target.tagName === 'FORM') {
+            let tokenInput = e.target.querySelector('input[name="_session_token"]');
+            if (!tokenInput) {
+                tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '_session_token';
+                e.target.appendChild(tokenInput);
+            }
+            tokenInput.value = token;
+        }
+    });
+    
+    // Detectar cuando se cierra la ventana/pestaña y limpiar sesión
+    window.addEventListener('beforeunload', function() {
+        // Solo limpiar si es la última ventana
+        const windows = JSON.parse(localStorage.getItem('open_windows') || '[]');
+        const index = windows.indexOf(windowId);
+        if (index > -1) {
+            windows.splice(index, 1);
+            localStorage.setItem('open_windows', JSON.stringify(windows));
+        }
+    });
+    
+    // Registrar esta ventana
+    const openWindows = JSON.parse(localStorage.getItem('open_windows') || '[]');
+    openWindows.push(windowId);
+    localStorage.setItem('open_windows', JSON.stringify(openWindows));
+    
+    // Mostrar indicador si hay múltiples ventanas
+    function updateSessionIndicator() {
+        const windows = JSON.parse(localStorage.getItem('open_windows') || '[]');
+        const indicator = document.getElementById('session-indicator');
+        if (indicator && windows.length > 1) {
+            indicator.style.display = 'block';
+            indicator.innerHTML = `
+                <svg class="w-3 h-3 inline-block" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Sesión independiente (${windows.length} ventanas activas)
+            `;
+        }
+    }
+    
+    updateSessionIndicator();
+    setInterval(updateSessionIndicator, 3000); // Actualizar cada 3 segundos
+    
+    // Función global para limpiar datos de sesión al hacer logout
+    window.clearSessionData = function() {
+        sessionStorage.removeItem('app_session_token');
+        document.cookie = 'app_session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        
+        // Remover esta ventana del registro
+        const windows = JSON.parse(localStorage.getItem('open_windows') || '[]');
+        const index = windows.indexOf(windowId);
+        if (index > -1) {
+            windows.splice(index, 1);
+            localStorage.setItem('open_windows', JSON.stringify(windows));
+        }
+    };
+    
+    console.log('Multi-sesión activa. Window ID:', windowId, 'Session Token:', sessionToken ? 'presente' : 'ausente');
+})();
+
+// ============================================
+// RESTO DEL CÓDIGO
+// ============================================
 document.addEventListener('click', function(e) {
     // Dropdown usuario
     const userBtn = document.getElementById('user-button');

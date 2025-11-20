@@ -1,23 +1,25 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 
-class VerificarRol
+class MultiSessionAuth
 {
-    public function handle(Request $request, Closure $next, string $rolPermitido)
+    public function handle(Request $request, Closure $next)
     {
-        // Obtener el token de sesión
+        // Obtener el token de sesión de la cookie o header
         $sessionToken = $request->cookie('app_session_token') 
-                     ?? $request->input('_session_token')
                      ?? $request->header('X-Session-Token')
                      ?? session('current_session_token');
 
-        // Si hay un token específico, restaurar esa sesión
         if ($sessionToken) {
+            // Buscar los datos de sesión para este token
             $sessionData = session('auth_sessions.' . $sessionToken);
+            
             if ($sessionData) {
+                // Restaurar datos de sesión para esta request
                 session([
                     'usuario_id' => $sessionData['usuario_id'],
                     'usuario_nombre' => $sessionData['usuario_nombre'],
@@ -30,12 +32,10 @@ class VerificarRol
 
         // Verificar autenticación
         if (!session('usuario_id')) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'No autenticado'], 401);
+            }
             return redirect()->route('login');
-        }
-
-        // Verificar rol
-        if (session('usuario_rol') !== $rolPermitido) {
-            abort(403, 'Acceso no autorizado');
         }
 
         return $next($request);

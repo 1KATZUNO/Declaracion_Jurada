@@ -43,14 +43,31 @@ class LoginController extends Controller
             $avatarUrl = $this->normalizeAvatarPublicUrl($usuario->avatar);
         }
 
-        session([ 
-            'usuario_id' => $usuario->id_usuario ?? $usuario->id, 
-            'usuario_nombre' => trim(($usuario->nombre ?? '') . ' ' . ($usuario->apellido ?? '')), 
-            'usuario_rol' => $usuario->rol, 
+        // Generar token único para esta sesión
+        $sessionToken = bin2hex(random_bytes(32));
+        
+        // Guardar datos de la sesión con el token como clave
+        $sessionData = [
+            'usuario_id' => $usuario->id_usuario ?? $usuario->id,
+            'usuario_nombre' => trim(($usuario->nombre ?? '') . ' ' . ($usuario->apellido ?? '')),
+            'usuario_rol' => $usuario->rol,
             'usuario_avatar' => $avatarUrl,
-        ]); 
+            'created_at' => now(),
+        ];
+        
+        // Almacenar en sesión usando el token como namespace
+        session()->put('auth_sessions.' . $sessionToken, $sessionData);
+        
+        // También mantener compatibilidad con sesión tradicional
+        session([
+            'usuario_id' => $usuario->id_usuario ?? $usuario->id,
+            'usuario_nombre' => trim(($usuario->nombre ?? '') . ' ' . ($usuario->apellido ?? '')),
+            'usuario_rol' => $usuario->rol,
+            'usuario_avatar' => $avatarUrl,
+            'current_session_token' => $sessionToken,
+        ]);
 
-        return redirect()->route('declaraciones.index'); 
+        return redirect()->route('declaraciones.index')->with('session_token', $sessionToken); 
     } 
     // Copia del helper para este controlador
     private function normalizeAvatarPublicUrl(?string $value): ?string
@@ -101,8 +118,29 @@ public function changePassword(Request $request)
 
     // Cerrar sesión 
     public function logout(Request $request) 
-    { 
-        $request->session()->flush(); 
-        return redirect()->route('login'); 
+    {
+        // Obtener el token de sesión actual
+        $sessionToken = $request->cookie('app_session_token') 
+                     ?? $request->input('_session_token')
+                     ?? session('current_session_token');
+        
+        // Si hay un token específico, solo eliminar esa sesión
+        if ($sessionToken) {
+            $request->session()->forget('auth_sessions.' . $sessionToken);
+        }
+        
+        // Limpiar la sesión tradicional (solo para esta ventana)
+        $request->session()->forget([
+            'usuario_id',
+            'usuario_nombre',
+            'usuario_rol',
+            'usuario_avatar',
+            'current_session_token',
+        ]);
+        
+        // No hacer flush completo para no afectar otras ventanas
+        // $request->session()->flush(); 
+        
+        return redirect()->route('login')->withCookie(cookie()->forget('app_session_token'));
     } 
 }
