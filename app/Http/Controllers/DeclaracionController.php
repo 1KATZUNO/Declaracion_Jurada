@@ -10,16 +10,25 @@ use Illuminate\Support\Facades\Log;
 
 class DeclaracionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
-            // Optimización: Usar paginación para mejorar rendimiento
-            $declaraciones = Declaracion::with(['usuario:id_usuario,nombre,apellido,correo', 
-                                                'unidad:id_unidad,nombre', 
-                                                'cargo:id_cargo,nombre', 
-                                                'formulario:id_formulario,nombre'])
-                ->latest()
-                ->paginate(20);
+            // Obtener usuario actual desde sesión
+            $userId = $request->session()->get('usuario_id');
+            $usuarioActual = $userId ? Usuario::find($userId) : null;
+            
+            $query = Declaracion::with(['usuario:id_usuario,nombre,apellido,correo', 
+                                        'unidad:id_unidad,nombre', 
+                                        'cargo:id_cargo,nombre', 
+                                        'formulario:id_formulario,titulo'])
+                ->latest();
+            
+            // Si es funcionario, solo mostrar sus declaraciones
+            if ($usuarioActual && $usuarioActual->rol === 'funcionario') {
+                $query->where('id_usuario', $usuarioActual->id_usuario);
+            }
+            
+            $declaraciones = $query->paginate(20);
 
             return view('declaraciones.index', compact('declaraciones'));
         } catch (\Exception $e) {
