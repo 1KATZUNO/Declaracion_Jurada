@@ -14,7 +14,14 @@ class HorarioController extends Controller
     public function index()
     {
         // Cargar detalles y jornada para poder mostrar todos los intervalos del horario
-        $horarios = Horario::with(['detalles','jornada'])->orderBy('id_horario', 'desc')->paginate(10);
+        $horarios = Horario::with([
+            'detalles:id_detalle,id_horario,dia,hora_inicio,hora_fin',
+            'jornada:id_jornada,tipo,horas_por_semana'
+        ])
+        ->select('id_horario', 'tipo', 'id_jornada', 'id_declaracion', 'created_at')
+        ->orderBy('id_horario', 'desc')
+        ->paginate(10);
+        
         return view('horarios.index', compact('horarios'));
     }
 
@@ -22,7 +29,7 @@ class HorarioController extends Controller
     public function create(Request $request)
     {
         // Ya no pedimos declaraciones aquí: los horarios son plantillas independientes (tipo UCR)
-        $jornadas = Jornada::orderBy('tipo')->get();
+        $jornadas = Jornada::select('id_jornada', 'tipo', 'horas_por_semana')->orderBy('tipo')->get();
         return view('horarios.create', compact('jornadas'));
     }
 

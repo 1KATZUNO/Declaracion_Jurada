@@ -137,7 +137,13 @@
     // Avatar
     $avatarSrc = session('usuario_avatar') ?? null;
     if (!$avatarSrc && $usuarioActual && !empty($usuarioActual->avatar ?? null)) {
-        $avatarSrc = Storage::url($usuarioActual->avatar);
+        // Si el avatar empieza con 'public/', quitarlo
+        $avatarPath = $usuarioActual->avatar;
+        if (strpos($avatarPath, 'public/') === 0) {
+            $avatarPath = substr($avatarPath, 7); // Quitar 'public/'
+        }
+        // Convertir a URL pública: /storage/avatars/xxx.jpg
+        $avatarSrc = '/storage/' . ltrim($avatarPath, '/');
     }
     if (!empty($avatarSrc)
         && !preg_match('/^(?:https?:)?\/\//', $avatarSrc)
@@ -342,9 +348,9 @@
     <div class="w-full aux-nav" style="background:#0369a1;">
         <div class="mx-auto max-w-[var(--container-max)] px-8 py-2">
             <nav class="flex items-center justify-start gap-6 text-sm text-white/90">
-                <a href="#" class="hover:underline">ACCESIBILIDAD</a>
-                <a href="#" class="hover:underline">AYUDA</a>
-                <a href="#" class="hover:underline">ACERCA DE</a>
+                <a href="{{ route('accesibilidad') }}" class="hover:underline">ACCESIBILIDAD</a>
+                <a href="{{ route('ayuda') }}" class="hover:underline">AYUDA</a>
+                <a href="{{ route('acerca-de') }}" class="hover:underline">ACERCA DE</a>
             </nav>
         </div>
     </div>

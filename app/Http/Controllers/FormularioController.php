@@ -7,7 +7,13 @@ use Illuminate\Http\Request;
 
 class FormularioController extends Controller
 {
-    public function index(){ $formularios = Formulario::all(); return view('formularios.index',compact('formularios')); }
+    public function index()
+    { 
+        $formularios = Formulario::select('id_formulario', 'nombre', 'titulo', 'descripcion', 'fecha_creacion')
+            ->orderBy('fecha_creacion', 'desc')
+            ->paginate(15); 
+        return view('formularios.index',compact('formularios')); 
+    }
     public function create(){ return view('formularios.create'); }
     public function store(Request $r){
         $data = $r->validate([

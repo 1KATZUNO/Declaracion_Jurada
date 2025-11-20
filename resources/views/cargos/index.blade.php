@@ -51,6 +51,11 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination Links -->
+            <div class="mt-6">
+                {{ $cargos->links() }}
+            </div>
         </div>
     </div>
 </div>

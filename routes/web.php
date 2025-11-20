@@ -17,6 +17,7 @@ use App\Http\Controllers\{
     ComentarioController,
     ComentarioRespuestaController,
     ActividadLogController,
+    InfoController,
 };
 
 
@@ -165,3 +166,10 @@ Route::middleware([VerificarRol::class . ':admin'])->group(function () {
         ->name('actividad-logs.limpiar');
 });
 
+
+// ======================
+// ℹ️ PÁGINAS INFORMATIVAS
+// ======================
+Route::get('/accesibilidad', [InfoController::class, 'accesibilidad'])->name('accesibilidad');
+Route::get('/ayuda', [InfoController::class, 'ayuda'])->name('ayuda');
+Route::get('/acerca-de', [InfoController::class, 'acercaDe'])->name('acerca-de');

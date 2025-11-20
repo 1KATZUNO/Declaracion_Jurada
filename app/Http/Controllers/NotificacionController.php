@@ -36,7 +36,10 @@ class NotificacionController extends Controller
 
     public function create()
     {
-        $usuarios = Usuario::orderBy('nombre')->orderBy('apellido')->get();
+        $usuarios = Usuario::select('id_usuario', 'nombre', 'apellido', 'correo')
+            ->orderBy('nombre')
+            ->orderBy('apellido')
+            ->get();
 
         return view('notificaciones.create', compact('usuarios'));
     }

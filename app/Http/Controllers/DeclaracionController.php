@@ -13,9 +13,13 @@ class DeclaracionController extends Controller
     public function index()
     {
         try {
-            $declaraciones = Declaracion::with(['usuario', 'unidad', 'cargo', 'formulario'])
+            // Optimización: Usar paginación para mejorar rendimiento
+            $declaraciones = Declaracion::with(['usuario:id_usuario,nombre,apellido,correo', 
+                                                'unidad:id_unidad,nombre', 
+                                                'cargo:id_cargo,nombre', 
+                                                'formulario:id_formulario,nombre'])
                 ->latest()
-                ->get();
+                ->paginate(20);
 
             return view('declaraciones.index', compact('declaraciones'));
         } catch (\Exception $e) {
@@ -44,17 +48,18 @@ class DeclaracionController extends Controller
                 : 'Usuario no identificado');
 
         return view('declaraciones.create', [
-            'usuarios'   => Usuario::all(),
+            'usuarios'   => Usuario::select('id_usuario', 'nombre', 'apellido', 'correo', 'identificacion', 'telefono')->orderBy('nombre')->get(),
             'usuarioActual' => $usuarioActual,
             'nombreUsuario' => $nombreUsuario,
-            'sedes'      => Sede::orderBy('nombre')->get(),
-            'unidades'   => UnidadAcademica::with('sede')->get(),
-            'cargos'     => Cargo::all(),
-            'formularios'=> Formulario::all(),
-            'jornadas'   => \App\Models\Jornada::orderBy('tipo')->get(),
+            'sedes'      => Sede::select('id_sede', 'nombre')->orderBy('nombre')->get(),
+            'unidades'   => UnidadAcademica::with('sede:id_sede,nombre')->select('id_unidad', 'nombre', 'id_sede')->get(),
+            'cargos'     => Cargo::select('id_cargo', 'nombre')->orderBy('nombre')->get(),
+            'formularios'=> Formulario::select('id_formulario', 'nombre')->get(),
+            'jornadas'   => \App\Models\Jornada::select('id_jornada', 'tipo', 'horas_por_semana')->orderBy('tipo')->get(),
             'horarios'   => Horario::whereNull('id_declaracion')
                                 ->where('tipo', 'ucr')
-                                ->with('jornada')
+                                ->with('jornada:id_jornada,tipo,horas_por_semana')
+                                ->select('id_horario', 'id_jornada', 'tipo')
                                 ->get(),
         ]);
     }
@@ -460,7 +465,10 @@ class DeclaracionController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $d = Declaracion::with(['horarios.jornada', 'cargo'])->findOrFail($id);
+        $d = Declaracion::with([
+            'horarios.jornada:id_jornada,tipo,horas_por_semana',
+            'cargo:id_cargo,nombre'
+        ])->findOrFail($id);
 
         // Obtener usuario actual
         $usuarioActual = null;
@@ -489,7 +497,7 @@ class DeclaracionController extends Controller
             // Si no tiene jornada asignada, intentar deducir por las horas totales
             $horasTotales = $d->horas_totales;
             if ($horasTotales) {
-                $jornadas = \App\Models\Jornada::all();
+                $jornadas = \App\Models\Jornada::select('id_jornada', 'tipo', 'horas_por_semana')->get();
                 $jornadaActual = $jornadas->sortBy(function($jornada) use ($horasTotales) {
                     return abs($jornada->horas_por_semana - $horasTotales);
                 })->first();
@@ -501,14 +509,14 @@ class DeclaracionController extends Controller
         return view('declaraciones.edit', [
             'd'                => $d,
             'jornadaActual'    => $jornadaActual,
-            'usuarios'         => Usuario::all(),
+            'usuarios'         => Usuario::select('id_usuario', 'nombre', 'apellido', 'correo', 'identificacion', 'telefono')->orderBy('nombre')->get(),
             'usuarioActual'    => $usuarioActual,
             'nombreUsuario'    => $nombreUsuario,
-            'sedes'            => Sede::orderBy('nombre')->get(),
-            'unidades'         => UnidadAcademica::with('sede')->get(),
-            'cargos'           => Cargo::all(),
-            'formularios'      => Formulario::all(),
-            'jornadas'         => \App\Models\Jornada::orderBy('tipo')->get(),
+            'sedes'            => Sede::select('id_sede', 'nombre')->orderBy('nombre')->get(),
+            'unidades'         => UnidadAcademica::with('sede:id_sede,nombre')->select('id_unidad', 'nombre', 'id_sede')->get(),
+            'cargos'           => Cargo::select('id_cargo', 'nombre')->orderBy('nombre')->get(),
+            'formularios'      => Formulario::select('id_formulario', 'nombre')->get(),
+            'jornadas'         => \App\Models\Jornada::select('id_jornada', 'tipo', 'horas_por_semana')->orderBy('tipo')->get(),
             'horarios'         => Horario::whereNull('id_declaracion')
                                     ->where('tipo', 'ucr')
                                     ->with('jornada')

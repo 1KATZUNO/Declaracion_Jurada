@@ -9,19 +9,21 @@ class SedeController extends Controller
 {
     public function index(Request $r)
     {
-    $query = Sede::query()->withCount('unidadesAcademicas');
+        $query = Sede::query()
+            ->withCount('unidadesAcademicas')
+            ->select('id_sede', 'nombre', 'ubicacion');
 
-    if ($r->filled('nombre')) {
-        $query->where('nombre', 'like', '%' . $r->nombre . '%');
-    }
+        if ($r->filled('nombre')) {
+            $query->where('nombre', 'like', '%' . $r->nombre . '%');
+        }
 
-    if ($r->filled('ubicacion')) {
-        $query->where('ubicacion', 'like', '%' . $r->ubicacion . '%');
-    }
+        if ($r->filled('ubicacion')) {
+            $query->where('ubicacion', 'like', '%' . $r->ubicacion . '%');
+        }
 
-    $sedes = $query->orderBy('nombre')->paginate(10)->withQueryString();
+        $sedes = $query->orderBy('nombre')->paginate(10)->withQueryString();
 
-    return view('sedes.index', compact('sedes'));
+        return view('sedes.index', compact('sedes'));
     } 
 
 

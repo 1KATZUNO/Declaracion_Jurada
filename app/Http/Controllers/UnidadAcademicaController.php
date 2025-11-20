@@ -9,23 +9,24 @@ use Illuminate\Http\Request;
 class UnidadAcademicaController extends Controller
 {
     public function index(Request $r) {
-    $q = UnidadAcademica::with('sede')
-        ->withCount('declaraciones')
-        ->when($r->filled('search'), fn($qq) =>
-            $qq->where('nombre', 'like', '%'.$r->search.'%'))
-        ->when($r->filled('sede_id'), fn($qq) =>
-            $qq->where('id_sede', $r->sede_id))
-        ->when($r->filled('estado'), fn($qq) =>
-            $qq->where('estado', $r->estado))
-        ->orderBy('nombre');
+        $q = UnidadAcademica::with('sede:id_sede,nombre')
+            ->withCount('declaraciones')
+            ->select('id_unidad', 'nombre', 'id_sede', 'estado')
+            ->when($r->filled('search'), fn($qq) =>
+                $qq->where('nombre', 'like', '%'.$r->search.'%'))
+            ->when($r->filled('sede_id'), fn($qq) =>
+                $qq->where('id_sede', $r->sede_id))
+            ->when($r->filled('estado'), fn($qq) =>
+                $qq->where('estado', $r->estado))
+            ->orderBy('nombre');
 
-    $unidades = $q->paginate(10)->withQueryString();
+        $unidades = $q->paginate(10)->withQueryString();
 
-    $sedes   = Sede::orderBy('nombre')->get(['id_sede','nombre']);
-    $estados = ['ACTIVA','INACTIVA'];
+        $sedes   = Sede::select('id_sede', 'nombre')->orderBy('nombre')->get();
+        $estados = ['ACTIVA','INACTIVA'];
 
-    return view('unidades.index', compact('unidades','sedes','estados'));
-}
+        return view('unidades.index', compact('unidades','sedes','estados'));
+    }
 
 
     public function create() {

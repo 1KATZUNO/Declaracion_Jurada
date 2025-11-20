@@ -14,9 +14,13 @@ class JornadaController extends Controller
         // Asegurar que las jornadas base existan (TC + fracciones)
         $this->ensureConversionesBase();
 
-        $jornadas = Jornada::orderBy('horas_por_semana', 'asc')->paginate(10);
+        $jornadas = Jornada::select('id_jornada', 'tipo', 'horas_por_semana')
+            ->orderBy('horas_por_semana', 'asc')
+            ->paginate(10);
         // pasar la jornada TC para usar el botón "Modificar jornada TC"
-        $tcJornada = Jornada::where('tipo','TC')->first();
+        $tcJornada = Jornada::select('id_jornada', 'tipo', 'horas_por_semana')
+            ->where('tipo','TC')
+            ->first();
         return view('jornadas.index', compact('jornadas','tcJornada'));
     }
  

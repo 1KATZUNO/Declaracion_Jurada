@@ -101,7 +101,8 @@ public function store(Request $request)
         $path = null;
         if ($request->hasFile('avatar')) {
             // Guardar en storage/app/public/avatars
-            $path = $request->file('avatar')->store('public/avatars'); // ej. "public/avatars/xxx.jpg"
+            // store() devuelve algo como "avatars/xxx.jpg" (sin el prefijo 'public/')
+            $path = $request->file('avatar')->store('avatars', 'public');
         }
 
         if ($user) {
@@ -110,7 +111,7 @@ public function store(Request $request)
             if (isset($data['apellido'])) $update['apellido'] = $data['apellido'];
 
             if ($path && Schema::hasColumn($user->getTable(), 'avatar')) {
-                // Guardar path en BD (public/avatars/...)
+                // Guardar path en BD (avatars/xxx.jpg, sin prefijo 'public/')
                 $update['avatar'] = $path;
             }
 
@@ -163,17 +164,8 @@ public function store(Request $request)
         // Si empieza con 'storage/' (sin slash) -> añadir slash
         if (strpos($value, 'storage/') === 0) return '/'.$value;
 
-        // Si empieza con 'public/' -> Storage::url lo normaliza a /storage/...
-        if (strpos($value, 'public/') === 0) {
-            return \Illuminate\Support\Facades\Storage::url($value);
-        }
-
-        // cualquier otro (por ejemplo guardado directamente como 'avatars/..' o 'public/..'), intentar Storage::url
-        try {
-            return \Illuminate\Support\Facades\Storage::url($value);
-        } catch (\Exception $e) {
-            // fallback: asset si parece una ruta relativa
-            return asset($value);
-        }
+        // Si empieza con 'avatars/' o cualquier otra ruta relativa
+        // convertir a /storage/avatars/xxx.jpg
+        return '/storage/' . ltrim($value, '/');
     }
 }

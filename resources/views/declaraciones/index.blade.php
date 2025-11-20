@@ -76,6 +76,11 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination Links -->
+            <div class="mt-6">
+                {{ $declaraciones->links() }}
+            </div>
             @endif
         </div>
     </div>

@@ -7,7 +7,13 @@ use Illuminate\Http\Request;
 
 class CargoController extends Controller
 {
-    public function index(){ $cargos = Cargo::all(); return view('cargos.index',compact('cargos')); }
+    public function index()
+    { 
+        $cargos = Cargo::select('id_cargo', 'nombre', 'descripcion')
+            ->orderBy('nombre')
+            ->paginate(15); 
+        return view('cargos.index',compact('cargos')); 
+    }
     public function create(){ return view('cargos.create'); }
     public function store(Request $r){
         $data = $r->validate([

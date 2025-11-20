@@ -53,6 +53,11 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination Links -->
+            <div class="mt-6">
+                {{ $formularios->links() }}
+            </div>
         </div>
     </div>
 </div>
