@@ -17,7 +17,7 @@ class DeclaracionController extends Controller
             $declaraciones = Declaracion::with(['usuario:id_usuario,nombre,apellido,correo', 
                                                 'unidad:id_unidad,nombre', 
                                                 'cargo:id_cargo,nombre', 
-                                                'formulario:id_formulario,nombre'])
+                                                'formulario:id_formulario,titulo'])
                 ->latest()
                 ->paginate(20);
 
