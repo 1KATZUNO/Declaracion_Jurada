@@ -138,7 +138,7 @@
                     @else
                         {{-- No eliminable --}}
                         <button type="button"
-                                onclick="alert('No se puede eliminar esta unidad académica porque tiene declaraciones juradas asociadas.')"
+                                onclick="showToast('No se puede eliminar esta unidad académica porque tiene declaraciones juradas asociadas.', 'warning')"
                                 class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded border border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed"
                                 title="No se puede eliminar: tiene declaraciones juradas asociadas. Se marcará INACTIVA desde el sistema.">
                             DJ Asociada

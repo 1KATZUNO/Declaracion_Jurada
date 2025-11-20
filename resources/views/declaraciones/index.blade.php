@@ -15,11 +15,7 @@
         </div>
 
         <div class="p-2 sm:p-4 md:p-8">
-            @if(session('ok'))
-                <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md mb-6">
-                    {{ session('ok') }}
-                </div>
-            @endif
+            @include('components.flash')
 
             @if($declaraciones->isEmpty())
                 <div class="text-center py-12">

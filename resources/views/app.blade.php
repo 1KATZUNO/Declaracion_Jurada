@@ -26,9 +26,7 @@
     </div>
   </nav>
   <main class="container mx-auto w-full px-2 sm:px-4 md:px-8 py-6">
-    @if(session('ok'))
-      <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('ok') }}</div>
-    @endif
+    @include('components.flash')
     @yield('contenido')
   </main>
 </body>

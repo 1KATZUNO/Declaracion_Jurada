@@ -25,11 +25,7 @@
     </div>
 
     {{-- MENSAJE DE ÉXITO --}}
-    @if(session('ok'))
-        <div class="mb-3 text-sm bg-green-100 text-green-800 px-3 py-2 rounded">
-            {{ session('ok') }}
-        </div>
-    @endif
+    @include('components.flash')
 
     {{-- TABLA --}}
     <div class="overflow-x-auto">

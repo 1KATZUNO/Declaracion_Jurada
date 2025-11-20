@@ -166,12 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const consumidas = calcularConsumidas();
         if (idJornadaSel.value === '') {
             e.preventDefault();
-            alert('Seleccione una jornada.');
+            showToast('Seleccione una jornada.', 'warning');
             return;
         }
         if (consumidas !== targetMin) {
             e.preventDefault();
-            alert('La suma de los intervalos debe coincidir exactamente con las horas de la jornada seleccionada.');
+            showToast('La suma de los intervalos debe coincidir exactamente con las horas de la jornada seleccionada.', 'error');
             return;
         }
     });

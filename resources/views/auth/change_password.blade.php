@@ -26,9 +26,7 @@
 
             <!-- Form -->
             <div class="px-6 py-8">
-                @if(session('ok'))
-                    <p class="mb-4 text-green-600 text-center">{{ session('ok') }}</p>
-                @endif
+                @include('components.flash')
 
                 <form method="POST" action="{{ route('password.change') }}" class="space-y-6">
                     @csrf

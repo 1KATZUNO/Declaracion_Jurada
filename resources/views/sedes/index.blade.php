@@ -4,17 +4,7 @@
 
 @section('contenido')
 <div class="container mx-auto w-full max-w-7xl px-2 sm:px-4 md:px-8 py-8">
-    @if(session('error'))
-    <div class="mb-4 px-4 py-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
-        {{ session('error') }}
-    </div>
-@endif
-
-@if(session('ok'))
-    <div class="mb-4 px-4 py-3 rounded-md bg-green-50 text-green-700 text-sm border border-green-200">
-        {{ session('ok') }}
-    </div>
-@endif
+    @include('components.flash')
 
     <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
 

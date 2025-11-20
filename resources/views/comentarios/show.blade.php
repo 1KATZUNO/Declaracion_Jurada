@@ -110,9 +110,7 @@
       </form>
     @endif
 
-    @if(session('ok'))
-      <div class="bg-green-100 text-green-800 text-sm px-3 py-2 rounded mt-3">{{ session('ok') }}</div>
-    @endif
+    @include('components.flash')
 
   </div>
 </div>

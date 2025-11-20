@@ -461,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.target.closest('.fila-horario-ucr').remove();
                 actualizarContadorCargoUCR(cargoBlock);
             } else {
-                alert('Debe mantener al menos un horario por cargo');
+                showToast('Debe mantener al menos un horario por cargo', 'warning');
             }
         }
 
@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cargos.length > 1) {
                 cargoBlock.remove();
             } else {
-                alert('Debe mantener al menos un cargo UCR');
+                showToast('Debe mantener al menos un cargo UCR', 'warning');
             }
         }
     });
@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const conflicto = verificarConflictos();
         if (conflicto) {
             e.preventDefault();
-            alert(conflicto);
+            showToast(conflicto, 'error');
             return;
         }
 
@@ -540,13 +540,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (horasObjetivoCargo > 0) {
                 if (!cargoSelect.value) {
                     e.preventDefault();
-                    alert(`Cargo ${i + 1}: Debe seleccionar un cargo UCR`);
+                    showToast(`Cargo ${i + 1}: Debe seleccionar un cargo UCR`, 'warning');
                     return;
                 }
 
                 if (horasAsignadasCargo === 0) {
                     e.preventDefault();
-                    alert(`Cargo "${nombreCargo}":\nHa seleccionado una jornada pero no ha asignado horarios.`);
+                    showToast(`Cargo "${nombreCargo}": Ha seleccionado una jornada pero no ha asignado horarios.`, 'warning');
                     return;
                 }
 
@@ -561,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         mensajeCargo += `❌ FALTAN ${Math.abs(diferenciaCargo).toFixed(1)} horas para completar la jornada\n`;
                         mensajeCargo += `Asignadas: ${horasAsignadasCargo.toFixed(1)}h | Requeridas: ${horasObjetivoCargo}h`;
                     }
-                    alert(mensajeCargo);
+                    showToast(mensajeCargo, 'error');
                     return;
                 }
             }
@@ -581,13 +581,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (horasObjetivoInst > 0) {
                 if (!nombreInstitucion || nombreInstitucion.trim() === '') {
                     e.preventDefault();
-                    alert(`Institución ${i + 1}: Debe especificar el nombre de la institución`);
+                    showToast(`Institución ${i + 1}: Debe especificar el nombre de la institución`, 'warning');
                     return;
                 }
 
                 if (horasAsignadasInst === 0) {
                     e.preventDefault();
-                    alert(`Institución "${nombreInstitucion}":\nHa seleccionado una jornada pero no ha asignado horarios.`);
+                    showToast(`Institución "${nombreInstitucion}": Ha seleccionado una jornada pero no ha asignado horarios.`, 'warning');
                     return;
                 }
 
@@ -602,7 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         mensajeInst += `❌ FALTAN ${Math.abs(diferenciaInst).toFixed(1)} horas para completar la jornada\n`;
                         mensajeInst += `Asignadas: ${horasAsignadasInst.toFixed(1)}h | Requeridas: ${horasObjetivoInst}h`;
                     }
-                    alert(mensajeInst);
+                    showToast(mensajeInst, 'error');
                     return;
                 }
             }
@@ -721,7 +721,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.target.closest('.fila-horario-externo').remove();
                 actualizarContadorInstitucion(institucionBlock);
             } else {
-                alert('Debe mantener al menos un horario por institución');
+                showToast('Debe mantener al menos un horario por institución', 'warning');
             }
         }
 
@@ -731,7 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (instituciones.length > 1) {
                 institucionBlock.remove();
             } else {
-                alert('Debe mantener al menos una institución externa');
+                showToast('Debe mantener al menos una institución externa', 'warning');
             }
         }
     });

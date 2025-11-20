@@ -665,7 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.target.closest('.fila-horario-ucr').remove();
                 actualizarContadorCargoUCR(cargoBlock);
             } else {
-                alert('Debe mantener al menos un horario por cargo');
+                showToast('Debe mantener al menos un horario por cargo', 'warning');
             }
         }
 
@@ -675,7 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cargos.length > 1) {
                 cargoBlock.remove();
             } else {
-                alert('Debe mantener al menos un cargo UCR');
+                showToast('Debe mantener al menos un cargo UCR', 'warning');
             }
         }
     });
@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.target.closest('.fila-horario-externo').remove();
                 actualizarContadorInstitucion(institucionBlock);
             } else {
-                alert('Debe mantener al menos un horario por institución');
+                showToast('Debe mantener al menos un horario por institución', 'warning');
             }
         }
 
@@ -831,7 +831,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (instituciones.length > 1) {
                 institucionBlock.remove();
             } else {
-                alert('Debe mantener al menos una institución externa');
+                showToast('Debe mantener al menos una institución externa', 'warning');
             }
         }
     });
