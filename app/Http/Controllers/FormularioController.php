@@ -3,15 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Formulario;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 
 class FormularioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     { 
-        $formularios = Formulario::select('id_formulario', 'titulo', 'descripcion', 'fecha_creacion')
-            ->orderBy('fecha_creacion', 'desc')
-            ->paginate(15); 
+        // Obtener usuario actual
+        $userId = $request->session()->get('usuario_id');
+        $usuarioActual = $userId ? Usuario::find($userId) : null;
+        
+        $query = Formulario::select('id_formulario', 'titulo', 'descripcion', 'fecha_creacion', 'id_usuario')
+            ->orderBy('fecha_creacion', 'desc');
+        
+        // Si es funcionario, solo mostrar sus formularios
+        if ($usuarioActual && $usuarioActual->rol === 'funcionario') {
+            $query->where('id_usuario', $usuarioActual->id_usuario);
+        }
+        
+        $formularios = $query->paginate(15); 
         return view('formularios.index',compact('formularios')); 
     }
     public function create(){ return view('formularios.create'); }
@@ -21,6 +32,7 @@ class FormularioController extends Controller
             'descripcion'=>'nullable|string',
             'fecha_creacion'=>'required|date'
         ]);
+        $data['id_usuario'] = $r->session()->get('usuario_id');
         Formulario::create($data); return redirect()->route('formularios.index')->with('ok','Formulario creado');
     }
     public function edit($id){ $formulario = Formulario::findOrFail($id); return view('formularios.edit',compact('formulario')); }

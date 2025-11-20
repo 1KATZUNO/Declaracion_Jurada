@@ -7,11 +7,21 @@ use Illuminate\Http\Request;
 
 class CargoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     { 
-        $cargos = Cargo::select('id_cargo', 'nombre', 'descripcion')
-            ->orderBy('nombre')
-            ->paginate(15); 
+        // Obtener usuario actual
+        $userId = $request->session()->get('usuario_id');
+        $usuarioActual = $userId ? \App\Models\Usuario::find($userId) : null;
+        
+        $query = Cargo::select('id_cargo', 'nombre', 'descripcion', 'id_usuario')
+            ->orderBy('nombre');
+        
+        // Si es funcionario, solo mostrar sus cargos
+        if ($usuarioActual && $usuarioActual->rol === 'funcionario') {
+            $query->where('id_usuario', $usuarioActual->id_usuario);
+        }
+        
+        $cargos = $query->paginate(15); 
         return view('cargos.index',compact('cargos')); 
     }
     public function create(){ return view('cargos.create'); }
@@ -20,6 +30,7 @@ class CargoController extends Controller
             'nombre'=>'required|string|max:100',
             'descripcion'=>'nullable|string'
         ]);
+        $data['id_usuario'] = $r->session()->get('usuario_id');
         Cargo::create($data); return redirect()->route('cargos.index')->with('ok','Cargo creado');
     }
     public function edit($id){ $cargo = Cargo::findOrFail($id); return view('cargos.edit',compact('cargo')); }

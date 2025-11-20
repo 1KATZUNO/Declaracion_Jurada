@@ -9,10 +9,20 @@ use Illuminate\Http\Request;
 class UnidadAcademicaController extends Controller
 {
     public function index(Request $r) {
+        // Obtener usuario actual
+        $userId = $r->session()->get('usuario_id');
+        $usuarioActual = $userId ? \App\Models\Usuario::find($userId) : null;
+        
         $q = UnidadAcademica::with('sede:id_sede,nombre')
             ->withCount('declaraciones')
-            ->select('id_unidad', 'nombre', 'id_sede', 'estado')
-            ->when($r->filled('search'), fn($qq) =>
+            ->select('id_unidad', 'nombre', 'id_sede', 'estado', 'id_usuario');
+        
+        // Si es funcionario, solo mostrar sus unidades
+        if ($usuarioActual && $usuarioActual->rol === 'funcionario') {
+            $q->where('id_usuario', $usuarioActual->id_usuario);
+        }
+        
+        $q->when($r->filled('search'), fn($qq) =>
                 $qq->where('nombre', 'like', '%'.$r->search.'%'))
             ->when($r->filled('sede_id'), fn($qq) =>
                 $qq->where('id_sede', $r->sede_id))
@@ -44,6 +54,8 @@ class UnidadAcademicaController extends Controller
         if (!array_key_exists('estado', $data)) {
             $data['estado'] = 'ACTIVA';
         }
+        
+        $data['id_usuario'] = $r->session()->get('usuario_id');
 
         UnidadAcademica::create($data);
         return redirect()->route('unidades.index')->with('ok','Unidad creada');

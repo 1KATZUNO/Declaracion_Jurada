@@ -19,13 +19,17 @@ class Notificacion extends Model
         'fecha_envio', 
         'estado',
         'leida',
-        'fecha_lectura'
+        'fecha_lectura',
+        'fecha_vencimiento',
+        'vencida'
     ];
 
     protected $casts = [
         'fecha_envio' => 'datetime',
         'fecha_lectura' => 'datetime',
+        'fecha_vencimiento' => 'datetime',
         'leida' => 'boolean',
+        'vencida' => 'boolean',
     ];
 
     // Constantes para tipos de notificación
@@ -55,6 +59,16 @@ class Notificacion extends Model
     public function scopePorTipo($query, $tipo)
     {
         return $query->where('tipo', $tipo);
+    }
+    
+    public function scopeVigentes($query)
+    {
+        return $query->where('vencida', false);
+    }
+    
+    public function scopeVencidas($query)
+    {
+        return $query->where('vencida', true);
     }
 
     // Métodos de utilidad

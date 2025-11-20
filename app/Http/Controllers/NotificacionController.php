@@ -26,8 +26,9 @@ class NotificacionController extends Controller
         $usuario = $this->usuarioActual($request);
         if (!$usuario) abort(403);
 
-        // Usar nuestro modelo personalizado de notificaciones
+        // Usar nuestro modelo personalizado de notificaciones - solo mostrar notificaciones vigentes
         $notificaciones = \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
+            ->vigentes() // Solo mostrar notificaciones no vencidas
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -152,14 +153,16 @@ class NotificacionController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Contar TODAS las notificaciones no leídas
+        // Contar TODAS las notificaciones no leídas y vigentes
         $totalUnread = \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
             ->where('leida', false)
+            ->vigentes() // Solo contar notificaciones no vencidas
             ->count();
 
         // Obtener solo las últimas 5 para mostrar en el dropdown
         $unreadNotifications = \App\Models\Notificacion::where('id_usuario', $usuario->id_usuario)
             ->where('leida', false)
+            ->vigentes() // Solo mostrar notificaciones no vencidas
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();

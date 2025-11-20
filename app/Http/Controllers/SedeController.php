@@ -9,9 +9,18 @@ class SedeController extends Controller
 {
     public function index(Request $r)
     {
+        // Obtener usuario actual
+        $userId = $r->session()->get('usuario_id');
+        $usuarioActual = $userId ? \App\Models\Usuario::find($userId) : null;
+        
         $query = Sede::query()
             ->withCount('unidadesAcademicas')
-            ->select('id_sede', 'nombre', 'ubicacion');
+            ->select('id_sede', 'nombre', 'ubicacion', 'id_usuario');
+        
+        // Si es funcionario, solo mostrar sus sedes
+        if ($usuarioActual && $usuarioActual->rol === 'funcionario') {
+            $query->where('id_usuario', $usuarioActual->id_usuario);
+        }
 
         if ($r->filled('nombre')) {
             $query->where('nombre', 'like', '%' . $r->nombre . '%');
@@ -38,6 +47,9 @@ class SedeController extends Controller
             'nombre' => 'required|string|max:100',
             'ubicacion' => 'nullable|string|max:150'
         ]);
+        
+        // Agregar id del usuario actual
+        $data['id_usuario'] = $r->session()->get('usuario_id');
 
         Sede::create($data);
         return redirect()->route('sedes.index')->with('ok', 'Sede creada correctamente');

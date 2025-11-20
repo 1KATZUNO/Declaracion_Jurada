@@ -13,6 +13,9 @@ class Kernel extends ConsoleKernel
         // MEJORADO: Ahora solo envía recordatorios para declaraciones con fecha_hasta = hoy + 7 días
         $schedule->command('notificaciones:recordatorios-vencimiento')->dailyAt('08:00');
         
+        // Procesar notificaciones vencidas - marca como vencidas (7 días) y elimina (8 días)
+        $schedule->command('notificaciones:procesar-vencidas')->dailyAt('02:00');
+        
         // Alternativas de configuración:
         // Para recordatorios múltiples (uncomment si se necesita):
         // $schedule->command('notificaciones:recordatorios-vencimiento --dias=3')->dailyAt('09:00'); // 3 días antes
