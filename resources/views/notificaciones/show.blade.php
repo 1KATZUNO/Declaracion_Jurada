@@ -11,7 +11,7 @@
                 <h1 class="text-2xl font-semibold text-white">
                     Detalle de la Notificación
                 </h1>
-                <p class="text-sm text-blue-50">
+                <p class="text-sm text-blue-100">
                     Información específica de la notificación seleccionada.
                 </p>
             </div>

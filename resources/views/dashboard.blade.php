@@ -5,11 +5,11 @@
 @section('contenido')
  @csrf
 <div class="container mx-auto w-full max-w-6xl px-2 sm:px-4 md:px-8 py-8">
-    <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 bg-gradient-to-r from-blue-600 to-blue-700 border-b border-gray-200">
+                    <div class="p-6 bg-blue-600 border-b border-gray-200">
                         <h2 class="text-2xl font-bold text-white">Declaraciones UCR</h2>
                     </div>
                     <div class="p-8">

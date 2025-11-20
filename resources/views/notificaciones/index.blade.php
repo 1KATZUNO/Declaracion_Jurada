@@ -11,7 +11,7 @@
                 <h1 class="text-2xl font-semibold text-white">
                     Notificaciones del Sistema
                 </h1>
-                <p class="text-sm text-blue-50">
+                <p class="text-sm text-blue-100">
                     Gestión y visualización de las notificaciones enviadas a los usuarios.
                 </p>
             </div>

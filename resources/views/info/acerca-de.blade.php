@@ -4,8 +4,8 @@
 
 @section('contenido')
 <div class="container mx-auto w-full max-w-6xl px-4 md:px-8 py-8">
-    <div class="bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden transition-colors duration-300">
-        <div class="bg-gradient-to-r from-blue-800 to-blue-900 px-8 py-12 text-center">
+    <div class="bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden transition-colors duration-300">
+        <div class="bg-blue-600 px-8 py-12 text-center">
             <div class="mb-4">
                 <img src="{{ asset('imagenes/uc_logo.png') }}" 
                      alt="UCR Logo" 

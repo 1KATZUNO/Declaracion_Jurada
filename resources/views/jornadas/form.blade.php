@@ -5,11 +5,11 @@
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-10">
   <div class="bg-white/90 backdrop-blur border border-gray-200 rounded-2xl shadow-[0_10px_30px_rgba(2,6,23,0.06)] overflow-hidden">
-    <div class="relative px-8 py-7 bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600">
+    <div class="relative px-8 py-7 bg-blue-600">
       <h2 class="text-2xl font-semibold text-white tracking-tight">
         {{ $mode === 'create' ? 'Nueva Jornada' : 'Editar Jornada' }}
       </h2>
-      <p class="text-blue-50 text-sm mt-1">Ingrese cuántas horas por semana corresponde a esta jornada. Si modifica la jornada <strong>Tiempo completo (TC)</strong>, el sistema recalculará automáticamente las jornadas fraccionarias existentes (1/8,1/4,1/2,3/4).</p>
+      <p class="text-blue-100 text-sm mt-1">Ingrese cuántas horas por semana corresponde a esta jornada. Si modifica la jornada <strong>Tiempo completo (TC)</strong>, el sistema recalculará automáticamente las jornadas fraccionarias existentes (1/8,1/4,1/2,3/4).</p>
     </div>
 
     <div class="p-8">

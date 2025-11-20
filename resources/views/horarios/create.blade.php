@@ -2,9 +2,9 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto py-8">
-    <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+    <div class="bg-white shadow-sm rounded-2xl overflow-hidden">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+        <div class="bg-blue-600 px-6 py-4 flex items-center justify-between">
             <h1 class="text-2xl font-bold text-white">Registrar Horarios (plantilla UCR)</h1>
             <a href="{{ route('horarios.index') }}" class="text-sm text-white underline">Volver a Horarios</a>
         </div>

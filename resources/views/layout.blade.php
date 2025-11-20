@@ -518,7 +518,7 @@
 </div>
 
 {{-- FOOTER --}}
-<footer class="bg-[var(--ucr-azul)] text-blue-50 text-center text-[11px] py-3">
+<footer class="bg-[var(--ucr-azul)] text-blue-100 text-center text-[11px] py-3">
     © {{ date('Y') }} Universidad de Costa Rica — Sistema de Declaraciones Juradas de Horario
 </footer>
 

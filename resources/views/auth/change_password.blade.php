@@ -15,11 +15,11 @@
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-center">
+            <div class="bg-blue-600 px-6 py-8 text-center">
                 <h2 class="text-3xl font-bold text-white">
                     Declaraciones UCR
                 </h2>
-                <p class="mt-2 text-blue-50">
+                <p class="mt-2 text-blue-100">
                     Cambiar Contraseña
                 </p>
             </div>
@@ -79,7 +79,7 @@
                     <!-- Submit Button -->
                     <div>
                         <button type="submit"
-                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
                         >
                             Cambiar Contraseña
                         </button>

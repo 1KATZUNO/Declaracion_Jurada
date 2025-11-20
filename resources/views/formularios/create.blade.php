@@ -3,9 +3,9 @@
 @section('contenido')
  @csrf
 <div class="container mx-auto w-full max-w-4xl px-2 sm:px-4 md:px-8 py-8">
-    <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+    <div class="bg-white shadow-sm rounded-2xl overflow-hidden">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+        <div class="bg-blue-600 px-6 py-4">
             <h1 class="text-2xl font-bold text-white">Registrar Formulario</h1>
         </div>
 

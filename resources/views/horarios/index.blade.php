@@ -4,10 +4,10 @@
 <div class="max-w-7xl mx-auto px-4 py-10 relative">
     <div class="bg-white/90 backdrop-blur border border-gray-200 rounded-2xl shadow-[0_10px_30px_rgba(2,6,23,0.06)] overflow-hidden">
         <!-- Header -->
-        <div class="relative px-8 py-7 flex items-center justify-between bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600">
+        <div class="relative px-8 py-7 flex items-center justify-between bg-blue-600">
             <div>
                 <h2 class="text-2xl font-semibold text-white tracking-tight">Lista de Horarios</h2>
-                <p class="text-blue-50 text-sm mt-1">Gestión de horarios registrados</p>
+                <p class="text-blue-100 text-sm mt-1">Gestión de horarios registrados</p>
             </div>
             <a href="{{ route('horarios.create') }}"
                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-white rounded-lg hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 transition">

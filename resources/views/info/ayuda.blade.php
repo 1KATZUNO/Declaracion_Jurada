@@ -4,10 +4,10 @@
 
 @section('contenido')
 <div class="container mx-auto w-full max-w-7xl px-4 md:px-8 py-8">
-    <div class="bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden transition-colors duration-300">
-        <div class="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
+    <div class="bg-white dark:bg-slate-800 shadow-sm border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden transition-colors duration-300">
+        <div class="bg-green-600 px-8 py-6">
             <h1 class="text-3xl font-bold text-white">❓ Centro de Ayuda</h1>
-            <p class="text-green-50 text-sm mt-2">Manual de usuario y preguntas frecuentes</p>
+            <p class="text-green-100 text-sm mt-2">Manual de usuario y preguntas frecuentes</p>
         </div>
 
         <div class="p-8">
@@ -49,7 +49,7 @@
                 <!-- Secciones del manual -->
                 <div class="space-y-6">
                     @foreach($manual as $index => $seccion)
-                        <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                        <div class="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
                             <div class="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-200">
                                 <div class="flex items-start gap-4">
                                     <span class="text-4xl">{{ $seccion['icono'] }}</span>

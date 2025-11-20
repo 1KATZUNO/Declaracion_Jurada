@@ -4,11 +4,11 @@
 
 @section('contenido')
 <div class="container mx-auto w-full max-w-7xl px-2 sm:px-4 md:px-8 py-8">
-    <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 flex items-center justify-between">
+    <div class="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
+        <div class="bg-blue-600 px-8 py-6 flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-semibold text-white">Usuarios Registrados</h2>
-                <p class="text-blue-50 text-sm mt-1">Gestión de usuarios del sistema</p>
+                <p class="text-blue-100 text-sm mt-1">Gestión de usuarios del sistema</p>
             </div>
             <a href="{{ route('usuarios.create') }}"
                class="px-5 py-2.5 text-sm font-medium text-blue-700 bg-white border border-transparent rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white transition-colors shadow-sm">

@@ -9,7 +9,7 @@
   <div class="px-6 py-4 bg-blue-600 text-white flex items-center justify-between">
     <div>
       <h1 class="text-xl font-semibold">Comentarios</h1>
-      <p class="text-sm text-blue-50">Listado global de hilos creados por funcionarios</p>
+      <p class="text-sm text-blue-100">Listado global de hilos creados por funcionarios</p>
     </div>
     <a href="{{ route('admin.comentarios.index') }}"
        class="text-xs bg-white/10 px-3 py-1.5 rounded hover:bg-white/20">
